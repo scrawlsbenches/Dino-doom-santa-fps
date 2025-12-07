@@ -4,363 +4,338 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 
 ---
 
-## 🔴 MVP TASKS (Do First)
+## 🔴 BUG FIXES (Critical/High Priority from Code Review)
 
-### TASK-001: Hit Markers System
-**Estimate**: 2-3 hours
-**Priority**: P0
-**Dependencies**: None
+### BUG-001: Fix Race Condition in Boss Intro Cutscene
+**Estimate**: 1 hour
+**Priority**: P0 (Critical)
+**Source**: Code Review
 
-**Scope**:
-- Add visual hit marker (white X) that appears at crosshair on enemy hit
-- Add hit marker sound effect (short "tick" sound)
-- Different color for critical hits (yellow/gold X)
-- Hit marker fades out over 200ms
-- Add headshot detection zone for enemies (top 30% = headshot)
+**Issue**: If the player dies during a boss intro cutscene (from lingering projectiles), the game enters an inconsistent state where `gameState.paused = false` is called after `gameOver()`.
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Location**: `SantaGigaChadDino.htm:3636-3693`
 
-**Acceptance Criteria**:
-- [ ] White X appears on regular hits
-- [ ] Gold X appears on critical hits
-- [ ] Sound plays on each hit
-- [ ] Markers fade smoothly
-
----
-
-### TASK-002: Kill Streak Announcements
-**Estimate**: 2-3 hours
-**Priority**: P0
-**Dependencies**: None
-
-**Scope**:
-- Track consecutive kills within 3-second windows
-- Display announcement text center-screen:
-  - 2 kills: "DOUBLE KILL"
-  - 3 kills: "TRIPLE KILL"
-  - 4 kills: "OVERKILL"
-  - 5 kills: "KILLTACULAR"
-  - 6+ kills: "KILLIONAIRE"
-- Add corresponding sound effects (escalating intensity)
-- Announcement animates in (scale up) and fades out
-
-**Files to modify**: `SantaGigaChadDino.htm`
-
-**Acceptance Criteria**:
-- [ ] Kill streak tracked correctly with 3s window
-- [ ] Each tier has unique text and sound
-- [ ] Animation is smooth and readable
-- [ ] Streak resets after 3s of no kills
-
----
-
-### TASK-003: Enemy Dialogue Bubbles
-**Estimate**: 3-4 hours
-**Priority**: P0
-**Dependencies**: None
-
-**Scope**:
-- Create speech bubble component that appears above enemies
-- Trigger dialogue on:
-  - Enemy spawn (50% chance)
-  - Enemy attack
-  - Boss entrance (100%)
-- Dialogue pool per enemy type:
-  - Gigachad: gym/gains quotes
-  - Buff Nerd: intellectual flex quotes
-  - Boss: dramatic villain quotes
-- Bubble appears for 2 seconds then fades
-- Maximum 2 bubbles on screen at once
-
-**Files to modify**: `SantaGigaChadDino.htm`
-
-**Dialogue examples**:
-```
-Gigachad: "DO YOU EVEN LIFT?", "THESE GAINS ARE ETERNAL", "CREATINE-POWERED"
-Buff Nerd: "ACTUALLY...", "SKILL ISSUE DETECTED", "RATIO + L"
-Boss: "YOU DARE CHALLENGE ME?", "WITNESS TRUE POWER"
+**Fix**:
+```javascript
+// In playBossIntro setTimeout callback (around line 3688)
+setTimeout(() => {
+    overlay.classList.remove('active');
+    if (gameState.running) {  // Add this check
+        gameState.paused = false;
+        if (callback) callback(bossInfo);
+    }
+}, 3000);
 ```
 
 **Acceptance Criteria**:
-- [ ] Bubbles render above enemies correctly
-- [ ] Different dialogue per enemy type
-- [ ] Bubbles don't spam (max 2 visible)
-- [ ] Smooth fade in/out animation
+- [ ] Player dying during boss intro doesn't break game state
+- [ ] Boss intro correctly canceled if game ends
 
 ---
 
-### TASK-004: Screen Shake System
+### BUG-002: Add localStorage Error Handling
+**Estimate**: 1 hour
+**Priority**: P0 (Critical)
+**Source**: Code Review
+
+**Issue**: `loadSkinState()` doesn't handle storage access errors. In private browsing mode or when storage is full, `localStorage.getItem()` can throw.
+
+**Location**: `SantaGigaChadDino.htm:1388-1398`
+
+**Fix**:
+```javascript
+function loadSkinState() {
+    try {
+        const saved = localStorage.getItem('santaSkinState');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            skinState = { ...skinState, ...parsed };
+        }
+    } catch (e) {
+        console.error('Failed to access localStorage:', e);
+    }
+}
+
+function saveSkinState() {
+    try {
+        localStorage.setItem('santaSkinState', JSON.stringify(skinState));
+    } catch (e) {
+        console.error('Failed to save skin state:', e);
+    }
+}
+```
+
+**Acceptance Criteria**:
+- [ ] Game works in private browsing mode
+- [ ] Game handles storage quota errors gracefully
+- [ ] No uncaught exceptions from localStorage
+
+---
+
+### BUG-003: Add Null Checks for DOM Elements
+**Estimate**: 1-2 hours
+**Priority**: P0 (Critical)
+**Source**: Code Review
+
+**Issue**: Multiple DOM element accesses assume elements always exist. If HTML is modified or elements fail to load, these will throw.
+
+**Locations**:
+- `SantaGigaChadDino.htm:2603`
+- `SantaGigaChadDino.htm:3708`
+- Various HUD update functions
+
+**Fix**: Add optional chaining or null checks:
+```javascript
+document.getElementById('boss-health-bar')?.style.width = ...
+// OR
+const healthBar = document.getElementById('boss-health-bar');
+if (healthBar) healthBar.style.width = ...
+```
+
+**Acceptance Criteria**:
+- [ ] No null reference errors in console
+- [ ] Game handles missing DOM elements gracefully
+
+---
+
+### BUG-004: Fix Array Modification During Iteration
 **Estimate**: 2 hours
-**Priority**: P0
-**Dependencies**: None
+**Priority**: P1 (High)
+**Source**: Code Review
 
-**Scope**:
-- Create reusable screen shake function with parameters:
-  - intensity (pixels of displacement)
-  - duration (ms)
-  - decay (how quickly it settles)
-- Trigger shake on:
-  - Player takes damage (medium shake)
-  - Enemy dies (small shake)
-  - Boss slam attacks (large shake)
-  - Critical hits (small shake)
-- Apply shake via CSS transform on game container
+**Issue**: In `Projectile.update()`, the code iterates over `enemies` and splices items while the main game loop may also be iterating over it.
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Location**: `SantaGigaChadDino.htm:2816-2846`
+
+**Fix**: Mark enemies for removal with a flag and clean up in a single pass:
+```javascript
+// In Projectile.update()
+if (e.takeDamage(this.damage)) {
+    e.markedForRemoval = true;  // Mark instead of immediate splice
+}
+
+// In game loop, after all updates:
+enemies = enemies.filter(e => !e.markedForRemoval);
+```
 
 **Acceptance Criteria**:
-- [ ] Shake function works with different intensities
-- [ ] Shakes feel impactful but not nauseating
-- [ ] Multiple shakes can queue/overlap smoothly
-- [ ] No visual artifacts after shake ends
+- [ ] No array index errors during gameplay
+- [ ] All enemy deaths handled correctly
+- [ ] No "ghost" enemies remaining
 
 ---
 
-### TASK-005: Meme Death Screen
-**Estimate**: 3-4 hours
-**Priority**: P0
-**Dependencies**: None
+### BUG-005: Clear Timeouts on Game Restart
+**Estimate**: 1-2 hours
+**Priority**: P1 (High)
+**Source**: Code Review
 
-**Scope**:
-- Redesign game over screen with "receipt" style layout
-- Include stats:
-  - Waves survived
-  - Dinos eliminated
-  - Total score
-  - Coins earned
-  - Cause of death (last enemy type that hit you)
-  - Time survived
-- Generate meme rating based on performance:
-  - <1000: "Actual NPC"
-  - 1000-5000: "Kinda Mid"
-  - 5000-10000: "Certified Decent"
-  - 10000-25000: "Built Moderately Different"
-  - 25000+: "GIGACHAD"
-- "COPY TO CLIPBOARD" button for sharing
-- Random "last words" from a pool
+**Issue**: `setTimeout` callbacks in `showEnemyDialogue()` and Enemy constructor may fire after game restart, affecting the new game.
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Locations**:
+- `SantaGigaChadDino.htm:2111-2114`
+- `SantaGigaChadDino.htm:2441-2442`
+
+**Fix**: Track timeout IDs and clear them on game restart:
+```javascript
+let activeTimeouts = [];
+
+// When creating timeouts:
+activeTimeouts.push(setTimeout(() => {...}, 2000));
+
+// In startGame():
+activeTimeouts.forEach(clearTimeout);
+activeTimeouts = [];
+```
 
 **Acceptance Criteria**:
-- [ ] Death screen shows all stats
-- [ ] Rating calculated correctly
-- [ ] Copy button works (clipboard API)
-- [ ] Looks like a meme receipt
+- [ ] No old dialogue appearing after restart
+- [ ] No old effects triggering in new game
+- [ ] Clean slate on game restart
 
 ---
 
-### TASK-006: New Weapon - Moai Cannon
-**Estimate**: 2-3 hours
-**Priority**: P1
-**Dependencies**: None
+### BUG-006: Add Audio Context Resume Logic
+**Estimate**: 30 minutes
+**Priority**: P1 (High)
+**Source**: Code Review
 
-**Scope**:
-- Add new weapon to WEAPONS object:
-  - emoji: 🗿
-  - damage: 70
-  - fireRate: 25
-  - speed: 18
-  - price: 1500
-- Projectile is a spinning 🗿
-- On hit, briefly show "Yo, Angelo" text
-- Stone sound effect on fire
+**Issue**: Audio context may be suspended due to browser autoplay policies. Modern browsers block audio until user interaction.
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Location**: `SantaGigaChadDino.htm:1557-1562`
+
+**Fix**:
+```javascript
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new AudioCtx();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+```
 
 **Acceptance Criteria**:
-- [ ] Weapon appears in shop
-- [ ] Can purchase and equip
-- [ ] Projectile renders as spinning moai
-- [ ] "Yo, Angelo" appears on hit
+- [ ] Audio works on first user interaction
+- [ ] No silent gameplay due to suspended context
 
 ---
 
-### TASK-007: New Weapon - Doot Cannon
-**Estimate**: 2-3 hours
-**Priority**: P1
-**Dependencies**: None
+## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
 
-**Scope**:
-- Add new weapon to WEAPONS object:
-  - emoji: 🎺
-  - damage: 45
-  - fireRate: 15
-  - speed: 22
-  - price: 800
-- Plays "doot" sound on fire (trumpet note)
-- Projectile leaves trail of 💀 emojis
-- Skeleton appears briefly on kill
+### REFACTOR-001: Extract Magic Numbers to Constants
+**Estimate**: 2 hours
+**Priority**: P2 (Medium)
+**Source**: Code Review
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Issue**: Many hardcoded values without explanation throughout the codebase.
+
+**Examples**:
+```javascript
+const minZ = -80;  // What does this represent?
+const hitRadius = 60 + (e.size / 3);  // Why this formula?
+if (-e.z < 50 || -e.z > 2000) return;  // Render distance?
+```
+
+**Fix**: Create a CONSTANTS section:
+```javascript
+const GAME_CONSTANTS = {
+    RENDER_MIN_DISTANCE: 50,
+    RENDER_MAX_DISTANCE: 2000,
+    ENEMY_MIN_Z_POSITION: -80,
+    HIT_RADIUS_BASE: 60,
+    HIT_RADIUS_SIZE_FACTOR: 3,
+    PERSPECTIVE_SCALE: 400,
+    KILL_STREAK_TIMEOUT_MS: 3000,
+    // ... etc
+};
+```
 
 **Acceptance Criteria**:
-- [ ] Weapon purchasable in shop
-- [ ] Doot sound plays on fire
-- [ ] Skull trail effect works
-- [ ] Skeleton flash on kill
+- [ ] All magic numbers extracted to constants
+- [ ] Constants have descriptive names
+- [ ] Code is more self-documenting
 
 ---
 
-### TASK-008: Achievement Toast System
-**Estimate**: 3-4 hours
-**Priority**: P1
-**Dependencies**: TASK-002 (kill streaks)
+### REFACTOR-002: Consolidate Duplicate Achievement Check
+**Estimate**: 30 minutes
+**Priority**: P2 (Medium)
+**Source**: Code Review
 
-**Scope**:
-- Create toast notification component (top-right corner)
-- Toast slides in from right, stays 3s, slides out
-- Achievement types:
-  - "FIRST BLOOD" - First kill of the game
-  - "WAVE SURVIVOR" - Complete a wave without damage
-  - "BUILT DIFFERENT" - One-shot a Gigachad
-  - "SKILL ISSUE" - Die on Wave 1
-  - "IS THIS EASY MODE?" - Reach Wave 10 without taking damage
-  - "BIG SPENDER" - Spend 1000 coins in shop
-- Track achievements in session (don't repeat)
-- Play achievement sound
+**Issue**: BIG_SPENDER achievement check is duplicated in weapons and upgrades purchase handlers.
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Locations**:
+- `SantaGigaChadDino.htm:3412-3416`
+- `SantaGigaChadDino.htm:3449-3453`
+
+**Fix**: Extract to helper function:
+```javascript
+function trackShopSpending(amount) {
+    achievementTracking.shopSpending += amount;
+    if (achievementTracking.shopSpending >= 1000) {
+        unlockAchievement('BIG_SPENDER');
+    }
+}
+```
 
 **Acceptance Criteria**:
-- [ ] Toast appears on achievement unlock
-- [ ] Each achievement only triggers once per game
-- [ ] Animation is smooth
-- [ ] Sound plays on unlock
+- [ ] Single source of truth for spending logic
+- [ ] Achievement still triggers correctly
 
 ---
 
-## 🟡 NICE TO HAVE TASKS
+### REFACTOR-003: Add Object Pooling for Particles
+**Estimate**: 2 hours
+**Priority**: P2 (Medium)
+**Source**: Code Review
 
-### TASK-009: New Enemy - Gamer Dino
-**Estimate**: 3-4 hours
-**Priority**: P2
-**Dependencies**: None
+**Issue**: Each particle is created with `new`, causing GC pressure during intense gameplay.
 
-**Scope**:
-- Add new enemy type GAMER_DINO:
-  - emoji: 🦕🎮
-  - health: 100
-  - damage: 20
-  - speed: 2.5
-  - Has RGB color cycling glow effect
-  - Special: Every 5 seconds, yells "360 NO SCOPE" and does a ranged attack
-- Ranged attack is a slow-moving 🎯 projectile
-- On death, drops gaming-related text ("GG", "EZ", "GET GOOD")
+**Location**: `SantaGigaChadDino.htm:3121-3157`
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Fix**:
+```javascript
+const particlePool = [];
+const MAX_POOL_SIZE = 200;
+
+function getParticle(x, y, z, color) {
+    let p = particlePool.pop();
+    if (!p) {
+        p = new Particle(x, y, z, color);
+    } else {
+        p.reset(x, y, z, color);
+    }
+    return p;
+}
+
+function returnParticle(p) {
+    if (particlePool.length < MAX_POOL_SIZE) {
+        particlePool.push(p);
+    }
+}
+```
 
 **Acceptance Criteria**:
-- [ ] Enemy spawns in waves (wave 3+)
-- [ ] RGB glow effect visible
-- [ ] Ranged attack works
-- [ ] Unique death messages
+- [ ] Particles reused from pool
+- [ ] No performance regression
+- [ ] Reduced GC pauses during intense combat
 
 ---
 
-### TASK-010: New Enemy - Sigma Dino
-**Estimate**: 2-3 hours
-**Priority**: P2
-**Dependencies**: None
+### REFACTOR-004: Remove Unused Code
+**Estimate**: 30 minutes
+**Priority**: P3 (Low)
+**Source**: Code Review
 
-**Scope**:
-- Add new enemy type SIGMA_DINO:
-  - emoji: 🦖👔
-  - health: 120
-  - damage: 0 (doesn't attack!)
-  - speed: 1 (walks slowly across screen)
-  - Drops 3x coins on death
-- Behavior: Ignores player, walks from one side to another
-- Says "On my grind" or "Sigma rule #X" occasionally
-- If player doesn't kill before it leaves, taunts them
+**Issue**: The `keys` object tracks keyboard state but is never used (WASD movement isn't implemented).
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Location**: `SantaGigaChadDino.htm:1333`
+
+**Fix**: Either implement WASD movement or remove the tracking:
+```javascript
+// Remove these lines if not implementing movement:
+let keys = {};
+document.addEventListener('keydown', (e) => { keys[e.key] = true; ... });
+document.addEventListener('keyup', (e) => { keys[e.key] = false; });
+```
 
 **Acceptance Criteria**:
-- [ ] Sigma spawns rarely (10% chance per wave)
-- [ ] Walks across screen without attacking
-- [ ] Drops bonus coins
-- [ ] Has unique dialogue
+- [ ] No unused code remains
+- [ ] OR WASD movement implemented
 
 ---
 
-### TASK-011: Boss Intro Cutscenes
-**Estimate**: 3-4 hours
-**Priority**: P2
-**Dependencies**: None
+### REFACTOR-005: Add Error Handling to playSound
+**Estimate**: 30 minutes
+**Priority**: P3 (Low)
+**Source**: Code Review
 
-**Scope**:
-- Create 3-second boss intro sequence:
-  - Screen darkens
-  - Boss slides in from top
-  - Name + title appear with dramatic font
-  - Boss does a pose (sprite animation or emoji swap)
-  - Flash effect, then gameplay resumes
-- Unique names per boss wave:
-  - Wave 5: "CHADOSAURUS - Never Skips Leg Day"
-  - Wave 10: "PROFESSOR GAINS - PhD in Lifting"
-  - Wave 15: "THE RATIO KING - Undefeated in Arguments"
-  - Wave 20: "ZYZZ-REX - Forever Mirin'"
+**Issue**: `playSound()` doesn't handle oscillator creation failures (can happen if audio context limit is reached).
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Location**: `SantaGigaChadDino.htm:1564-1688`
+
+**Fix**:
+```javascript
+function playSound(type) {
+    if (!audioCtx) return;
+    try {
+        const osc = audioCtx.createOscillator();
+        // ... rest of sound code
+    } catch (e) {
+        console.warn('Failed to play sound:', e);
+    }
+}
+```
 
 **Acceptance Criteria**:
-- [ ] Intro plays before boss fight starts
-- [ ] Unique name/title per boss wave
-- [ ] Animation is dramatic and fun
-- [ ] Gameplay pauses during intro
+- [ ] No crashes from audio errors
+- [ ] Graceful degradation if audio fails
 
 ---
 
-### TASK-012: Shop Keeper NPC
-**Estimate**: 2-3 hours
-**Priority**: P2
-**Dependencies**: None
-
-**Scope**:
-- Add shopkeeper to shop screen (Rare Pepe 🐸 or Moai 🗿)
-- Displays random dialogue when shop opens
-- Dialogue changes based on player's coins:
-  - Rich (>2000): "Ah, a fellow person of wealth"
-  - Broke (<100): "Broke? Sounds like a skill issue"
-  - Normal: Random meme quote
-- Rename shop to "THE GRINDSET EMPORIUM"
-- Shopkeeper reacts to purchases
-
-**Files to modify**: `SantaGigaChadDino.htm`
-
-**Acceptance Criteria**:
-- [ ] Shopkeeper visible in shop
-- [ ] Dialogue changes based on coins
-- [ ] Reacts to purchases
-- [ ] Shop renamed
-
----
-
-### TASK-013: Santa Skins System
-**Estimate**: 4 hours
-**Priority**: P2
-**Dependencies**: None
-
-**Scope**:
-- Add skin selection to start screen
-- Skins are cosmetic only (different colors/effects on weapon view)
-- Available skins:
-  - Default Santa (free)
-  - Drip Santa - chains emoji overlay (500 coins)
-  - Tactical Santa - camo colors (1000 coins)
-  - Gigachad Santa - extra jawline (2500 coins)
-- Skins persist in localStorage
-- Selected skin shown in weapon render
-
-**Files to modify**: `SantaGigaChadDino.htm`
-
-**Acceptance Criteria**:
-- [ ] Skin selector on start screen
-- [ ] Can purchase skins with coins
-- [ ] Selected skin affects weapon visuals
-- [ ] Persists between sessions
-
----
+## 🟡 REMAINING FEATURE TASKS
 
 ### TASK-014: Combo Counter System
 **Estimate**: 2-3 hours
@@ -422,7 +397,7 @@ Boss: "YOU DARE CHALLENGE ME?", "WITNESS TRUE POWER"
 - When enabled:
   - Apply CSS filters: saturate(3) contrast(1.5) brightness(1.2)
   - Add chromatic aberration effect
-  - Random lens flare emojis (😂🔥💯) appear on kills
+  - Random lens flare emojis appear on kills
   - Text gets "deep fried" distortion
 - Performance consideration: can be toggled off
 
@@ -468,11 +443,11 @@ Boss: "YOU DARE CHALLENGE ME?", "WITNESS TRUE POWER"
 
 **Scope**:
 - Implement hidden easter eggs:
-  - Konami code (↑↑↓↓←→←→BA): All enemies shrink for one wave
+  - Konami code: All enemies shrink for one wave
   - Click Santa's hat 10x on start: Enable "DRIP MODE" skin
   - Wave 69: Display "Nice." achievement
   - Wave 420: Screen flashes green, "Dank" text
-  - Type "MORBIN": All enemies become 🦇 for one wave
+  - Type "MORBIN": All enemies become bats for one wave
 - Track discovered eggs in localStorage
 - Secret achievements for finding eggs
 
@@ -513,7 +488,7 @@ Boss: "YOU DARE CHALLENGE ME?", "WITNESS TRUE POWER"
 ### TASK-020: Advanced Boss Phases
 **Estimate**: 4 hours (max 1 day)
 **Priority**: P3
-**Dependencies**: TASK-011
+**Dependencies**: TASK-011 (completed)
 
 **Scope**:
 - Enhance boss fights with phases:
@@ -538,25 +513,135 @@ Boss: "YOU DARE CHALLENGE ME?", "WITNESS TRUE POWER"
 
 | Priority | Count | Total Estimate |
 |----------|-------|----------------|
-| P0 (MVP) | 5 | 12-16 hours |
-| P1 (MVP) | 3 | 7-10 hours |
-| P2 (Nice) | 6 | 16-21 hours |
-| P3 (Stretch) | 6 | 18-23 hours |
-| **TOTAL** | **20** | **53-70 hours** |
+| P0 (Critical Bugs) | 3 | 3-4 hours |
+| P1 (High Bugs) | 3 | 3.5-5.5 hours |
+| P2 (Medium/Refactor) | 4 | 5-7 hours |
+| P3 (Low/Features) | 8 | 21-29 hours |
+| **TOTAL** | **18** | **32.5-45.5 hours** |
 
 ---
 
 ## 🏃 SUGGESTED ORDER
 
-1. TASK-004 (Screen Shake) - Quick win, big impact
-2. TASK-001 (Hit Markers) - Core feel improvement
-3. TASK-003 (Enemy Dialogue) - Meme factor boost
-4. TASK-002 (Kill Streaks) - Dopamine system
-5. TASK-005 (Death Screen) - Shareability
-6. TASK-008 (Achievements) - Engagement loop
-7. TASK-006/007 (New Weapons) - Content variety
-8. Continue with P2/P3 based on feedback
+**Phase 1: Critical Bug Fixes**
+1. BUG-001 (Race Condition) - Prevents game state corruption
+2. BUG-002 (localStorage) - Ensures compatibility
+3. BUG-003 (Null Checks) - Prevents crashes
+
+**Phase 2: High Priority Bug Fixes**
+4. BUG-004 (Array Modification) - Core stability
+5. BUG-005 (Timeout Cleanup) - Clean restarts
+6. BUG-006 (Audio Context) - Better UX
+
+**Phase 3: Code Quality**
+7. REFACTOR-001 (Magic Numbers) - Maintainability
+8. REFACTOR-002 (Duplicate Code) - DRY principle
+9. REFACTOR-003 (Object Pooling) - Performance
+
+**Phase 4: Features**
+10. TASK-014 (Combo Counter) - Core gameplay
+11. Continue with stretch goals based on interest
 
 ---
 
-*Let's get this bread 🍞💪*
+## ✅ ARCHIVED (Completed Tasks)
+
+<details>
+<summary>Click to expand completed tasks</summary>
+
+### TASK-001: Hit Markers System ✅
+**Completed**: Commit `6528448`
+- White X appears on regular hits
+- Gold X appears on critical hits
+- Sound plays on each hit
+- Markers fade smoothly
+
+### TASK-002: Kill Streak Announcements ✅
+**Completed**: Commit `9e7dbe4`
+- Kill streak tracked correctly with 3s window
+- Each tier has unique text and sound
+- Animation is smooth and readable
+- Streak resets after 3s of no kills
+
+### TASK-003: Enemy Dialogue Bubbles ✅
+**Completed**: Commit `191c49c`
+- Bubbles render above enemies correctly
+- Different dialogue per enemy type
+- Bubbles don't spam (max 2 visible)
+- Smooth fade in/out animation
+
+### TASK-004: Screen Shake System ✅
+**Completed**: Commit `32d431a`
+- Shake function works with different intensities
+- Shakes feel impactful but not nauseating
+- Multiple shakes can queue/overlap smoothly
+- No visual artifacts after shake ends
+
+### TASK-005: Meme Death Screen ✅
+**Completed**: Commit `e270396`
+- Death screen shows all stats
+- Rating calculated correctly
+- Copy button works (clipboard API)
+- Looks like a meme receipt
+
+### TASK-006: New Weapon - Moai Cannon ✅
+**Completed**: Commit `9b67e90`
+- Weapon appears in shop
+- Can purchase and equip
+- Projectile renders as spinning moai
+- "Yo, Angelo" appears on hit
+
+### TASK-007: New Weapon - Doot Cannon ✅
+**Completed**: Commit `5342d4c`
+- Weapon purchasable in shop
+- Doot sound plays on fire
+- Skull trail effect works
+- Skeleton flash on kill
+
+### TASK-008: Achievement Toast System ✅
+**Completed**: Commit `4a70dcd`
+- Toast appears on achievement unlock
+- Each achievement only triggers once per game
+- Animation is smooth
+- Sound plays on unlock
+
+### TASK-009: New Enemy - Gamer Dino ✅
+**Completed**: Commit `7d39d87`
+- Enemy spawns in waves (wave 3+)
+- RGB glow effect visible
+- Ranged attack works
+- Unique death messages
+
+### TASK-010: New Enemy - Sigma Dino ✅
+**Completed**: Commit `2326219`
+- Sigma spawns rarely
+- Walks across screen without attacking
+- Drops bonus coins
+- Has unique dialogue
+
+### TASK-011: Boss Intro Cutscenes ✅
+**Completed**: Commit `21b04c3`
+- Intro plays before boss fight starts
+- Unique name/title per boss wave
+- Animation is dramatic and fun
+- Gameplay pauses during intro
+
+### TASK-012: Shop Keeper NPC ✅
+**Completed**: Commit `116e383`
+- Shopkeeper visible in shop
+- Dialogue changes based on coins
+- Reacts to purchases
+- Shop renamed to "THE GRINDSET EMPORIUM"
+
+### TASK-013: Santa Skins System ✅
+**Completed**: Commit `34b219d`
+- Skin selector on start screen
+- Can purchase skins with coins
+- Selected skin affects weapon visuals
+- Persists between sessions
+
+</details>
+
+---
+
+*Let's squash these bugs first, then get this bread 🍞💪*
