@@ -1094,6 +1094,157 @@
         function shakeOnBossSlam() { screenShake(25, 400); }    // Boss attack
         function shakeOnBossDeath() { screenShake(30, 500); }   // Boss defeated
 
+        // ==================== ENEMY DIALOGUE SYSTEM ====================
+        const ENEMY_DIALOGUE = {
+            GIGACHAD: {
+                spawn: [
+                    "DO YOU EVEN LIFT, SANTA?",
+                    "THESE GAINS ARE ETERNAL",
+                    "MY PROTEIN SHAKE BRINGS ALL THE BOYS",
+                    "CREATINE-POWERED DESTRUCTION",
+                    "I'M BUILT DIFFERENT",
+                    "WITNESS PEAK PERFORMANCE"
+                ],
+                attack: [
+                    "FEEL MY POWER!",
+                    "GAINS INCOMING!",
+                    "GET SWOLE'D!",
+                    "NO PAIN NO GAIN!"
+                ]
+            },
+            BUFF_NERD: {
+                spawn: [
+                    "ACTUALLY...",
+                    "SKILL ISSUE DETECTED",
+                    "RATIO + L + NO REINDEER",
+                    "MY IQ IS OVER 9000",
+                    "STATISTICALLY, YOU LOSE",
+                    "I STUDIED THE BLADE"
+                ],
+                attack: [
+                    "CALCULATED!",
+                    "ACCORDING TO MY DATA...",
+                    "NERD RAGE!",
+                    "BRAIN DAMAGE!"
+                ]
+            },
+            MINI_BOSS: {
+                spawn: [
+                    "YOU DARE CHALLENGE ME?!",
+                    "I'VE BEEN LIFTING SINCE THE JURASSIC",
+                    "WITNESS TRUE POWER!",
+                    "YOUR PRESENTS ARE WEAK!",
+                    "PREPARE TO BE RATIO'D!"
+                ],
+                attack: [
+                    "FEEL MY WRATH!",
+                    "PATHETIC!",
+                    "IS THAT ALL?!",
+                    "BOW BEFORE ME!"
+                ]
+            }
+        };
+
+        let activeDialogueBubbles = [];
+        const MAX_DIALOGUE_BUBBLES = 2;
+
+        /**
+         * Shows a dialogue bubble above an enemy
+         * @param {Enemy} enemy - The enemy object
+         * @param {string} triggerType - 'spawn' or 'attack'
+         */
+        function showEnemyDialogue(enemy, triggerType) {
+            // Don't show if max bubbles reached
+            if (activeDialogueBubbles.length >= MAX_DIALOGUE_BUBBLES) return;
+
+            // Get dialogue for enemy type
+            const dialogueSet = ENEMY_DIALOGUE[enemy.type];
+            if (!dialogueSet || !dialogueSet[triggerType]) return;
+
+            const lines = dialogueSet[triggerType];
+            const text = lines[Math.floor(Math.random() * lines.length)];
+
+            // Create bubble object
+            const bubble = {
+                enemy: enemy,
+                text: text,
+                life: 120, // 2 seconds at 60fps
+                maxLife: 120
+            };
+
+            activeDialogueBubbles.push(bubble);
+
+            // Auto-remove after timeout
+            setTimeout(() => {
+                const idx = activeDialogueBubbles.indexOf(bubble);
+                if (idx > -1) activeDialogueBubbles.splice(idx, 1);
+            }, 2000);
+        }
+
+        /**
+         * Draws all active dialogue bubbles
+         */
+        function drawDialogueBubbles() {
+            for (let i = activeDialogueBubbles.length - 1; i >= 0; i--) {
+                const bubble = activeDialogueBubbles[i];
+                bubble.life--;
+
+                // Calculate screen position based on enemy
+                const e = bubble.enemy;
+                if (!e || e.health <= 0) {
+                    activeDialogueBubbles.splice(i, 1);
+                    continue;
+                }
+
+                const screenX = canvas.width / 2 + (e.x - player.x) * (400 / Math.max(100, -e.z));
+                const screenY = canvas.height / 2 + 100 * (400 / Math.max(100, -e.z));
+                const scale = 400 / Math.max(100, -e.z);
+
+                if (-e.z < 50 || -e.z > 2000) continue;
+
+                // Fade based on life
+                const alpha = Math.min(1, bubble.life / 30);
+                ctx.globalAlpha = alpha;
+
+                // Draw speech bubble background
+                ctx.font = `bold ${Math.max(10, 14 * scale)}px Orbitron, sans-serif`;
+                const textWidth = ctx.measureText(bubble.text).width;
+                const padding = 10 * scale;
+                const bubbleWidth = Math.min(300, textWidth + padding * 2);
+                const bubbleHeight = 30 * scale;
+                const bubbleX = screenX - bubbleWidth / 2;
+                const bubbleY = screenY - e.size * scale - bubbleHeight - 20 * scale;
+
+                // Bubble background
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.beginPath();
+                ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 8 * scale);
+                ctx.fill();
+
+                // Bubble border
+                ctx.strokeStyle = '#ffcc00';
+                ctx.lineWidth = 2 * scale;
+                ctx.stroke();
+
+                // Bubble tail (triangle pointing down)
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.beginPath();
+                ctx.moveTo(screenX - 8 * scale, bubbleY + bubbleHeight);
+                ctx.lineTo(screenX, bubbleY + bubbleHeight + 10 * scale);
+                ctx.lineTo(screenX + 8 * scale, bubbleY + bubbleHeight);
+                ctx.closePath();
+                ctx.fill();
+
+                // Text
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(bubble.text, screenX, bubbleY + bubbleHeight / 2);
+
+                ctx.globalAlpha = 1;
+            }
+        }
+
         // ==================== KILL STREAK SYSTEM ====================
         let killStreakState = {
             count: 0,
@@ -1296,13 +1447,19 @@
                 this.x = x;
                 this.y = 0;
                 this.z = z;
-                
+
                 this.wobble = 0;
                 this.attackCooldown = 0;
                 this.hitFlash = 0;
                 this.invulnerable = false;
+
+                // Trigger spawn dialogue (100% for boss, 50% for others)
+                if (this.isBoss || Math.random() < 0.5) {
+                    // Small delay so enemy is visible first
+                    setTimeout(() => showEnemyDialogue(this, 'spawn'), 500);
+                }
             }
-            
+
             update() {
                 if (this.invulnerable) return;
                 
@@ -1356,6 +1513,7 @@
                 playSound('damage');
                 showDamageOverlay();
                 shakeOnDamage(); // Screen shake on player damage
+                showEnemyDialogue(this, 'attack'); // Show attack dialogue
 
                 if (gameState.health <= 0) {
                     gameOver();
@@ -2255,6 +2413,9 @@
             killStreakState.count = 0;
             killStreakState.lastKillTime = 0;
 
+            // Reset dialogue bubbles
+            activeDialogueBubbles = [];
+
             player = {
                 x: 0,
                 y: 0,
@@ -2342,7 +2503,8 @@
                 }
                 
                 drawFloatingTexts();
-                
+                drawDialogueBubbles(); // Draw enemy speech bubbles
+
                 // Wave completion
                 if (enemies.length === 0 && gameState.waveInProgress) {
                     gameState.waveInProgress = false;
