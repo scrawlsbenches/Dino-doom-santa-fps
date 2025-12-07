@@ -316,6 +316,126 @@
             }
         }
 
+        /* Boss Intro Cutscene */
+        #boss-intro-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #boss-intro-overlay.active {
+            display: flex;
+            animation: bossDarken 0.5s ease-out forwards;
+        }
+
+        @keyframes bossDarken {
+            0% { background: rgba(0, 0, 0, 0); }
+            100% { background: rgba(0, 0, 0, 0.8); }
+        }
+
+        #boss-intro-emoji {
+            font-size: 150px;
+            opacity: 0;
+            transform: translateY(-200px) scale(0.5);
+        }
+
+        #boss-intro-emoji.slide-in {
+            animation: bossSlideIn 0.8s ease-out forwards;
+        }
+
+        @keyframes bossSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-200px) scale(0.5);
+            }
+            70% {
+                transform: translateY(20px) scale(1.2);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        #boss-intro-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700, 0 0 40px #ff8800;
+            opacity: 0;
+            margin-top: 20px;
+        }
+
+        #boss-intro-name.show {
+            animation: bossNameReveal 0.5s ease-out forwards;
+        }
+
+        @keyframes bossNameReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+                letter-spacing: 20px;
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                letter-spacing: 5px;
+            }
+        }
+
+        #boss-intro-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px;
+            color: #ff4444;
+            text-shadow: 0 0 10px #ff0000;
+            opacity: 0;
+            margin-top: 10px;
+        }
+
+        #boss-intro-title.show {
+            animation: bossTitleReveal 0.4s ease-out forwards;
+        }
+
+        @keyframes bossTitleReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #boss-intro-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #boss-intro-flash.flash {
+            animation: bossFlash 0.3s ease-out forwards;
+        }
+
+        @keyframes bossFlash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
         /* Kill feed */
         #kill-feed {
             position: absolute;
@@ -902,6 +1022,14 @@
             
             <div id="kill-feed"></div>
             <div id="achievement-container"></div>
+
+            <!-- Boss Intro Cutscene Overlay -->
+            <div id="boss-intro-overlay">
+                <div id="boss-intro-emoji">👑</div>
+                <div id="boss-intro-name">BOSS NAME</div>
+                <div id="boss-intro-title">Boss Title</div>
+                <div id="boss-intro-flash"></div>
+            </div>
 
             <div id="boss-health-container">
                 <div id="boss-name">💀 MEGA BOSS 💀</div>
@@ -3143,22 +3271,113 @@
             const z = -800 - Math.random() * 500;
             enemies.push(new Enemy(type, x, z));
         }
-        
+
+        // ==================== BOSS INTRO CUTSCENE SYSTEM ====================
+        const BOSS_NAMES = {
+            5: { name: 'CHADOSAURUS', title: 'Never Skips Leg Day', emoji: '🦖💪' },
+            10: { name: 'PROFESSOR GAINS', title: 'PhD in Lifting', emoji: '🦖🎓' },
+            15: { name: 'THE RATIO KING', title: 'Undefeated in Arguments', emoji: '🦖👑' },
+            20: { name: 'ZYZZ-REX', title: 'Forever Mirin\'', emoji: '🦖✨' },
+            25: { name: 'FINAL FORM CHAD', title: 'We\'re All Gonna Make It', emoji: '🦖🔥' }
+        };
+
+        // Get boss info for current wave (cycles if beyond defined bosses)
+        function getBossInfo(wave) {
+            // Check for exact match first
+            if (BOSS_NAMES[wave]) {
+                return BOSS_NAMES[wave];
+            }
+            // For waves beyond 25, cycle through with increasing power titles
+            const baseWaves = [5, 10, 15, 20, 25];
+            const cycleIndex = Math.floor((wave - 1) / 5) % baseWaves.length;
+            const baseWave = baseWaves[cycleIndex];
+            const base = BOSS_NAMES[baseWave];
+            return {
+                name: base.name + ' MK' + Math.floor(wave / 25 + 1),
+                title: base.title + ' (Ascended)',
+                emoji: base.emoji
+            };
+        }
+
+        // Play boss intro cutscene
+        function playBossIntro(callback) {
+            const bossInfo = getBossInfo(gameState.wave);
+
+            // Pause the game during intro
+            gameState.paused = true;
+
+            // Get overlay elements
+            const overlay = document.getElementById('boss-intro-overlay');
+            const emoji = document.getElementById('boss-intro-emoji');
+            const name = document.getElementById('boss-intro-name');
+            const title = document.getElementById('boss-intro-title');
+            const flash = document.getElementById('boss-intro-flash');
+
+            // Reset classes
+            emoji.className = '';
+            name.className = '';
+            title.className = '';
+            flash.className = '';
+
+            // Set content
+            emoji.textContent = bossInfo.emoji;
+            name.textContent = bossInfo.name;
+            title.textContent = `"${bossInfo.title}"`;
+
+            // Start the sequence
+            overlay.classList.add('active');
+
+            // Timeline:
+            // 0ms - Start darkening
+            // 300ms - Boss emoji slides in
+            // 800ms - Name appears
+            // 1200ms - Title appears
+            // 2500ms - Flash
+            // 3000ms - End and start fight
+
+            setTimeout(() => {
+                emoji.classList.add('slide-in');
+            }, 300);
+
+            setTimeout(() => {
+                name.classList.add('show');
+            }, 800);
+
+            setTimeout(() => {
+                title.classList.add('show');
+            }, 1200);
+
+            setTimeout(() => {
+                flash.classList.add('flash');
+            }, 2500);
+
+            // End cutscene and spawn boss
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                gameState.paused = false;
+                if (callback) callback(bossInfo);
+            }, 3000);
+        }
+
         function spawnBoss() {
-            const boss = new Enemy('MINI_BOSS', 0, -1000);
-            boss.health = 500 + (gameState.wave * 50); // Reduced from 1000 + wave*100
-            boss.maxHealth = boss.health;
-            boss.shootCooldown = 0; // Add shooting cooldown for boss
-            enemies.push(boss);
-            
-            gameState.bossActive = true;
-            gameState.currentBoss = boss;
-            
-            document.getElementById('boss-health-container').style.display = 'block';
-            document.getElementById('boss-name').textContent = `👑 ${boss.name} - WAVE ${gameState.wave} 👑`;
-            document.getElementById('boss-health-bar').style.width = '100%';
-            
-            playSound('boss');
+            // Play intro cutscene first, then spawn boss
+            playBossIntro((bossInfo) => {
+                const boss = new Enemy('MINI_BOSS', 0, -1000);
+                boss.health = 500 + (gameState.wave * 50);
+                boss.maxHealth = boss.health;
+                boss.shootCooldown = 0;
+                boss.customName = bossInfo.name; // Store custom name
+                enemies.push(boss);
+
+                gameState.bossActive = true;
+                gameState.currentBoss = boss;
+
+                document.getElementById('boss-health-container').style.display = 'block';
+                document.getElementById('boss-name').textContent = `👑 ${bossInfo.name} 👑`;
+                document.getElementById('boss-health-bar').style.width = '100%';
+
+                playSound('boss');
+            });
         }
         
         function spawnWave() {
