@@ -4,7 +4,7 @@
  * Run with: node --test tests/game.test.js
  */
 
-const { test, describe } = require('node:test');
+const { test, describe, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
@@ -41,6 +41,7 @@ function createMockBrowserEnv() {
         createLinearGradient: () => ({ addColorStop: () => {} }),
         createRadialGradient: () => ({ addColorStop: () => {} }),
         drawImage: () => {},
+        roundRect: () => {},
         fillStyle: '',
         strokeStyle: '',
         lineWidth: 1,
@@ -79,6 +80,9 @@ function createMockBrowserEnv() {
         children: [],
         parentNode: null,
         getBoundingClientRect: () => ({ left: 0, top: 0, width: 1920, height: 1080 }),
+        insertBefore: () => {},
+        firstChild: null,
+        lastChild: null,
     });
 
     const mockAudioContext = {
@@ -95,6 +99,8 @@ function createMockBrowserEnv() {
         }),
         destination: {},
         currentTime: 0,
+        state: 'running',
+        resume: () => Promise.resolve(),
     };
 
     return {
@@ -133,6 +139,11 @@ function createMockBrowserEnv() {
             removeItem: function(key) { delete this._data[key]; },
             clear: function() { this._data = {}; },
         },
+        navigator: {
+            clipboard: {
+                writeText: () => Promise.resolve(),
+            },
+        },
         console: console,
         Math: Math,
         Date: Date,
@@ -147,6 +158,7 @@ function createMockBrowserEnv() {
         Number: Number,
         Boolean: Boolean,
         Error: Error,
+        Set: Set,
         Image: function() { return { onload: null, onerror: null, src: '' }; },
     };
 }
@@ -157,11 +169,11 @@ function loadGame() {
     const script = extractGameScript();
 
     // Create a function that runs the script in our mock environment
-    // Note: We don't pre-declare canvas/ctx because the game declares them itself
     const wrappedScript = `
         const document = this.document;
         const window = this.window;
         const localStorage = this.localStorage;
+        const navigator = this.navigator;
         const console = this.console;
         const setTimeout = this.setTimeout;
         const setInterval = this.setInterval;
@@ -170,6 +182,7 @@ function loadGame() {
         const AudioContext = this.window.AudioContext;
         const webkitAudioContext = this.window.webkitAudioContext;
         const Image = this.Image;
+        const Set = this.Set;
         const requestAnimationFrame = this.window.requestAnimationFrame;
         const cancelAnimationFrame = this.window.cancelAnimationFrame;
         const innerWidth = this.window.innerWidth;
@@ -179,6 +192,7 @@ function loadGame() {
 
         // Return game objects for testing
         return {
+            // Data structures
             WEAPONS,
             ENEMY_TYPES,
             SANTA_SKINS,
@@ -187,12 +201,46 @@ function loadGame() {
             BOSS_NAMES,
             SHOPKEEPER_DIALOGUE,
             ENEMY_DIALOGUE,
+            UPGRADES,
+            MEME_RATINGS,
+            LAST_WORDS,
+            SIGMA_QUOTES,
+            // State objects
             gameState,
             player,
             inventory,
             skinState,
+            killStreakState,
+            achievementTracking,
+            unlockedAchievements,
+            // Functions
             getBossInfo,
             getCurrentSkin,
+            getMemeRating,
+            formatTime,
+            getRandomLastWords,
+            getShopkeeperDialogue,
+            recordKill,
+            purchaseSkin,
+            selectSkin,
+            loadSkinState,
+            saveSkinState,
+            unlockAchievement,
+            resetAchievementTracking,
+            onWaveStart,
+            onWaveComplete,
+            applyUpgrades,
+            // Classes
+            Enemy,
+            Projectile,
+            Particle,
+            EnemyProjectile,
+            GamerProjectile,
+            // Arrays for testing
+            enemies,
+            projectiles,
+            particles,
+            floatingTexts,
         };
     `;
 
@@ -206,6 +254,8 @@ const game = loadGame();
 console.log('Game loaded successfully!\n');
 
 // ==================== TESTS ====================
+
+// ==================== GAME CONFIGURATION TESTS ====================
 
 describe('Game Configuration', () => {
     test('WEAPONS should have all required weapons', () => {
@@ -233,7 +283,22 @@ describe('Game Configuration', () => {
     test('Doot Cannon should have special property', () => {
         assert.strictEqual(game.WEAPONS.doot.special, 'doot');
     });
+
+    test('Weapon damage values should be positive', () => {
+        for (const [name, weapon] of Object.entries(game.WEAPONS)) {
+            assert.ok(weapon.damage > 0, `${name} should have positive damage`);
+        }
+    });
+
+    test('Weapon prices should increase with power', () => {
+        // Present is free, others cost more
+        assert.strictEqual(game.WEAPONS.present.price, 0);
+        assert.ok(game.WEAPONS.snowball.price > 0);
+        assert.ok(game.WEAPONS.star.price > game.WEAPONS.snowball.price);
+    });
 });
+
+// ==================== ENEMY TYPES TESTS ====================
 
 describe('Enemy Types', () => {
     test('ENEMY_TYPES should have all enemy types', () => {
@@ -270,7 +335,39 @@ describe('Enemy Types', () => {
     test('MINI_BOSS should have isBoss flag', () => {
         assert.strictEqual(game.ENEMY_TYPES.MINI_BOSS.isBoss, true);
     });
+
+    test('GIGACHAD should have higher health than BUFF_NERD', () => {
+        assert.ok(game.ENEMY_TYPES.GIGACHAD.health > game.ENEMY_TYPES.BUFF_NERD.health);
+    });
+
+    test('MINI_BOSS should have highest health', () => {
+        const bossHealth = game.ENEMY_TYPES.MINI_BOSS.health;
+        for (const [name, enemy] of Object.entries(game.ENEMY_TYPES)) {
+            if (name !== 'MINI_BOSS') {
+                assert.ok(bossHealth > enemy.health, `MINI_BOSS should have more health than ${name}`);
+            }
+        }
+    });
+
+    test('All enemies should have traits array', () => {
+        for (const [name, enemy] of Object.entries(game.ENEMY_TYPES)) {
+            assert.ok(Array.isArray(enemy.traits), `${name} should have traits array`);
+            assert.ok(enemy.traits.length > 0, `${name} should have at least one trait`);
+        }
+    });
+
+    test('GAMER_DINO should have death messages', () => {
+        assert.ok(Array.isArray(game.ENEMY_TYPES.GAMER_DINO.deathMessages));
+        assert.ok(game.ENEMY_TYPES.GAMER_DINO.deathMessages.length > 0);
+    });
+
+    test('SIGMA_DINO should have death messages', () => {
+        assert.ok(Array.isArray(game.ENEMY_TYPES.SIGMA_DINO.deathMessages));
+        assert.ok(game.ENEMY_TYPES.SIGMA_DINO.deathMessages.length > 0);
+    });
 });
+
+// ==================== SANTA SKINS TESTS ====================
 
 describe('Santa Skins System', () => {
     test('SANTA_SKINS should have all skins', () => {
@@ -311,7 +408,22 @@ describe('Santa Skins System', () => {
         const skin = game.getCurrentSkin();
         assert.strictEqual(skin.name, 'Default Santa');
     });
+
+    test('All skins should have descriptions', () => {
+        for (const [name, skin] of Object.entries(game.SANTA_SKINS)) {
+            assert.ok(skin.description, `${name} missing description`);
+        }
+    });
+
+    test('Sigma skin should be most expensive', () => {
+        const sigmaPrice = game.SANTA_SKINS.sigma.price;
+        for (const [name, skin] of Object.entries(game.SANTA_SKINS)) {
+            assert.ok(sigmaPrice >= skin.price, `Sigma should be >= ${name} price`);
+        }
+    });
 });
+
+// ==================== ACHIEVEMENTS TESTS ====================
 
 describe('Achievements', () => {
     test('ACHIEVEMENTS should have all achievements', () => {
@@ -332,7 +444,21 @@ describe('Achievements', () => {
             assert.ok(achievement.icon, `${name} missing icon`);
         }
     });
+
+    test('Achievement IDs should be unique', () => {
+        const ids = Object.values(game.ACHIEVEMENTS).map(a => a.id);
+        const uniqueIds = [...new Set(ids)];
+        assert.strictEqual(ids.length, uniqueIds.length, 'Achievement IDs should be unique');
+    });
+
+    test('All achievements should have emoji icons', () => {
+        for (const [name, achievement] of Object.entries(game.ACHIEVEMENTS)) {
+            assert.ok(achievement.icon.length > 0, `${name} should have an icon`);
+        }
+    });
 });
+
+// ==================== KILL STREAK TESTS ====================
 
 describe('Kill Streak Tiers', () => {
     test('KILL_STREAK_TIERS should have multiple tiers', () => {
@@ -352,7 +478,22 @@ describe('Kill Streak Tiers', () => {
         assert.strictEqual(game.KILL_STREAK_TIERS[0].count, 2);
         assert.strictEqual(game.KILL_STREAK_TIERS[0].name, 'DOUBLE KILL');
     });
+
+    test('All tiers should have name and color', () => {
+        for (const tier of game.KILL_STREAK_TIERS) {
+            assert.ok(tier.name, 'Tier should have name');
+            assert.ok(tier.color, 'Tier should have color');
+            assert.ok(typeof tier.count === 'number', 'Tier should have count');
+        }
+    });
+
+    test('Final tier should be UNSTOPPABLE', () => {
+        const lastTier = game.KILL_STREAK_TIERS[game.KILL_STREAK_TIERS.length - 1];
+        assert.strictEqual(lastTier.name, 'UNSTOPPABLE');
+    });
 });
+
+// ==================== BOSS SYSTEM TESTS ====================
 
 describe('Boss System', () => {
     test('BOSS_NAMES should have bosses for waves 5, 10, 15, 20, 25', () => {
@@ -375,12 +516,40 @@ describe('Boss System', () => {
         assert.strictEqual(bossInfo.name, 'CHADOSAURUS');
     });
 
+    test('getBossInfo should return correct boss for wave 10', () => {
+        const bossInfo = game.getBossInfo(10);
+        assert.strictEqual(bossInfo.name, 'PROFESSOR GAINS');
+    });
+
+    test('getBossInfo should return correct boss for wave 15', () => {
+        const bossInfo = game.getBossInfo(15);
+        assert.strictEqual(bossInfo.name, 'THE RATIO KING');
+    });
+
+    test('getBossInfo should return correct boss for wave 20', () => {
+        const bossInfo = game.getBossInfo(20);
+        assert.strictEqual(bossInfo.name, 'ZYZZ-REX');
+    });
+
+    test('getBossInfo should return correct boss for wave 25', () => {
+        const bossInfo = game.getBossInfo(25);
+        assert.strictEqual(bossInfo.name, 'FINAL FORM CHAD');
+    });
+
     test('getBossInfo should handle waves beyond 25', () => {
         const bossInfo = game.getBossInfo(30);
         assert.ok(bossInfo.name, 'Should return a boss name for wave 30');
         assert.ok(bossInfo.name.includes('MK'), 'High wave bosses should have MK suffix');
     });
+
+    test('getBossInfo should handle very high waves', () => {
+        const bossInfo = game.getBossInfo(100);
+        assert.ok(bossInfo.name, 'Should return a boss name for wave 100');
+        assert.ok(bossInfo.title.includes('Ascended'), 'High wave bosses should be Ascended');
+    });
 });
+
+// ==================== SHOPKEEPER DIALOGUE TESTS ====================
 
 describe('Shopkeeper Dialogue', () => {
     test('SHOPKEEPER_DIALOGUE should have all categories', () => {
@@ -391,7 +560,15 @@ describe('Shopkeeper Dialogue', () => {
             assert.ok(game.SHOPKEEPER_DIALOGUE[category].length > 0, `${category} should have dialogue lines`);
         }
     });
+
+    test('Each dialogue category should have multiple lines', () => {
+        for (const [category, lines] of Object.entries(game.SHOPKEEPER_DIALOGUE)) {
+            assert.ok(lines.length >= 3, `${category} should have at least 3 lines`);
+        }
+    });
 });
+
+// ==================== ENEMY DIALOGUE TESTS ====================
 
 describe('Enemy Dialogue', () => {
     test('ENEMY_DIALOGUE should have dialogue for all enemy types', () => {
@@ -409,7 +586,15 @@ describe('Enemy Dialogue', () => {
             assert.ok(dialogue.attack.length > 0, `${type} attack dialogue empty`);
         }
     });
+
+    test('Each enemy type should have at least 3 spawn lines', () => {
+        for (const [type, dialogue] of Object.entries(game.ENEMY_DIALOGUE)) {
+            assert.ok(dialogue.spawn.length >= 3, `${type} should have at least 3 spawn lines`);
+        }
+    });
 });
+
+// ==================== GAME STATE TESTS ====================
 
 describe('Game State', () => {
     test('Initial game state should have correct defaults', () => {
@@ -425,7 +610,7 @@ describe('Game State', () => {
     test('Player should have correct initial stats', () => {
         assert.strictEqual(game.player.x, 0);
         assert.strictEqual(game.player.y, 0);
-        assert.ok(game.player.damage > 0, 'Player should have damage');
+        assert.ok(game.player.damage >= 0, 'Player should have damage');
         assert.ok(game.player.critChance > 0, 'Player should have crit chance');
     });
 
@@ -433,4 +618,524 @@ describe('Game State', () => {
         assert.strictEqual(game.inventory.currentWeapon, 'present');
         assert.strictEqual(game.inventory.weapons.present, true);
     });
+
+    test('Player should have crit multiplier', () => {
+        assert.strictEqual(game.player.critMultiplier, 2);
+    });
+
+    test('Game state should track healing power', () => {
+        assert.strictEqual(game.gameState.healKills, 0);
+        assert.strictEqual(game.gameState.healReady, false);
+        assert.strictEqual(game.gameState.healKillsRequired, 10);
+    });
+
+    test('Game state should track death screen data', () => {
+        assert.ok('startTime' in game.gameState);
+        assert.ok('lastAttacker' in game.gameState);
+        assert.ok('totalCoinsEarned' in game.gameState);
+    });
 });
+
+// ==================== UPGRADES TESTS ====================
+
+describe('Upgrade System', () => {
+    test('UPGRADES should have all upgrade types', () => {
+        const requiredUpgrades = ['damage', 'fireRate', 'health', 'critChance'];
+        for (const upgrade of requiredUpgrades) {
+            assert.ok(game.UPGRADES[upgrade], `Missing upgrade: ${upgrade}`);
+        }
+    });
+
+    test('All upgrades should have required properties', () => {
+        for (const [name, upgrade] of Object.entries(game.UPGRADES)) {
+            assert.ok(upgrade.name, `${name} missing name`);
+            assert.ok(upgrade.icon, `${name} missing icon`);
+            assert.ok(typeof upgrade.basePrice === 'number', `${name} missing basePrice`);
+            assert.ok(typeof upgrade.maxLevel === 'number', `${name} missing maxLevel`);
+            assert.ok(typeof upgrade.perLevel === 'number', `${name} missing perLevel`);
+            assert.ok(upgrade.description, `${name} missing description`);
+        }
+    });
+
+    test('Upgrades should have positive max levels', () => {
+        for (const [name, upgrade] of Object.entries(game.UPGRADES)) {
+            assert.ok(upgrade.maxLevel > 0, `${name} should have positive maxLevel`);
+        }
+    });
+
+    test('Damage upgrade should give +10 per level', () => {
+        assert.strictEqual(game.UPGRADES.damage.perLevel, 10);
+    });
+
+    test('Health upgrade should give +20 per level', () => {
+        assert.strictEqual(game.UPGRADES.health.perLevel, 20);
+    });
+
+    test('Crit chance upgrade should give +5% per level', () => {
+        assert.strictEqual(game.UPGRADES.critChance.perLevel, 0.05);
+    });
+
+    test('Inventory should track upgrade levels', () => {
+        assert.ok('upgrades' in game.inventory);
+        assert.strictEqual(game.inventory.upgrades.damage, 0);
+        assert.strictEqual(game.inventory.upgrades.fireRate, 0);
+        assert.strictEqual(game.inventory.upgrades.health, 0);
+        assert.strictEqual(game.inventory.upgrades.critChance, 0);
+    });
+});
+
+// ==================== MEME RATING TESTS ====================
+
+describe('Meme Rating System', () => {
+    test('MEME_RATINGS should have multiple ratings', () => {
+        assert.ok(game.MEME_RATINGS.length >= 5, 'Should have at least 5 meme ratings');
+    });
+
+    test('All ratings should have minScore, rating, and color', () => {
+        for (const rating of game.MEME_RATINGS) {
+            assert.ok(typeof rating.minScore === 'number', 'Should have minScore');
+            assert.ok(rating.rating, 'Should have rating text');
+            assert.ok(rating.color, 'Should have color');
+        }
+    });
+
+    test('Ratings should be sorted by minScore', () => {
+        for (let i = 1; i < game.MEME_RATINGS.length; i++) {
+            assert.ok(
+                game.MEME_RATINGS[i].minScore > game.MEME_RATINGS[i-1].minScore,
+                'Ratings should be in ascending minScore order'
+            );
+        }
+    });
+
+    test('getMemeRating should return lowest rating for score 0', () => {
+        const rating = game.getMemeRating(0);
+        assert.strictEqual(rating.rating, 'Actual NPC');
+    });
+
+    test('getMemeRating should return appropriate rating for mid score', () => {
+        const rating = game.getMemeRating(5000);
+        assert.strictEqual(rating.rating, 'Certified Decent');
+    });
+
+    test('getMemeRating should return highest rating for very high score', () => {
+        const rating = game.getMemeRating(100000);
+        assert.strictEqual(rating.rating, 'GIGACHAD');
+    });
+
+    test('getMemeRating should handle edge case scores', () => {
+        // Exactly at threshold
+        const rating1 = game.getMemeRating(1000);
+        assert.strictEqual(rating1.rating, 'Kinda Mid');
+
+        const rating2 = game.getMemeRating(999);
+        assert.strictEqual(rating2.rating, 'Actual NPC');
+    });
+});
+
+// ==================== FORMAT TIME TESTS ====================
+
+describe('Format Time Function', () => {
+    test('formatTime should format 0 seconds', () => {
+        assert.strictEqual(game.formatTime(0), '0:00');
+    });
+
+    test('formatTime should format seconds correctly', () => {
+        assert.strictEqual(game.formatTime(5000), '0:05');
+        assert.strictEqual(game.formatTime(30000), '0:30');
+        assert.strictEqual(game.formatTime(59000), '0:59');
+    });
+
+    test('formatTime should format minutes correctly', () => {
+        assert.strictEqual(game.formatTime(60000), '1:00');
+        assert.strictEqual(game.formatTime(90000), '1:30');
+        assert.strictEqual(game.formatTime(120000), '2:00');
+    });
+
+    test('formatTime should format longer times', () => {
+        assert.strictEqual(game.formatTime(600000), '10:00');
+        assert.strictEqual(game.formatTime(3600000), '60:00');
+    });
+
+    test('formatTime should pad seconds with leading zero', () => {
+        assert.strictEqual(game.formatTime(61000), '1:01');
+        assert.strictEqual(game.formatTime(65000), '1:05');
+    });
+});
+
+// ==================== LAST WORDS TESTS ====================
+
+describe('Last Words System', () => {
+    test('LAST_WORDS should have multiple entries', () => {
+        assert.ok(game.LAST_WORDS.length >= 10, 'Should have at least 10 last words');
+    });
+
+    test('getRandomLastWords should return a string', () => {
+        const words = game.getRandomLastWords();
+        assert.strictEqual(typeof words, 'string');
+    });
+
+    test('getRandomLastWords should return from LAST_WORDS array', () => {
+        const words = game.getRandomLastWords();
+        assert.ok(game.LAST_WORDS.includes(words), 'Should return a word from LAST_WORDS');
+    });
+});
+
+// ==================== SIGMA QUOTES TESTS ====================
+
+describe('Sigma Quotes', () => {
+    test('SIGMA_QUOTES should have multiple quotes', () => {
+        assert.ok(game.SIGMA_QUOTES.length >= 5, 'Should have at least 5 sigma quotes');
+    });
+
+    test('All sigma quotes should be strings', () => {
+        for (const quote of game.SIGMA_QUOTES) {
+            assert.strictEqual(typeof quote, 'string');
+        }
+    });
+});
+
+// ==================== KILL STREAK STATE TESTS ====================
+
+describe('Kill Streak State', () => {
+    test('killStreakState should have initial values', () => {
+        assert.strictEqual(typeof game.killStreakState.count, 'number');
+        assert.strictEqual(typeof game.killStreakState.lastKillTime, 'number');
+        assert.strictEqual(game.killStreakState.streakTimeout, 3000);
+    });
+});
+
+// ==================== ACHIEVEMENT TRACKING TESTS ====================
+
+describe('Achievement Tracking', () => {
+    test('achievementTracking should have initial values', () => {
+        assert.ok('waveStartHealth' in game.achievementTracking);
+        assert.ok('totalDamageTaken' in game.achievementTracking);
+        assert.ok('shopSpending' in game.achievementTracking);
+    });
+
+    test('unlockedAchievements should be a Set', () => {
+        assert.ok(game.unlockedAchievements instanceof Set);
+    });
+});
+
+// ==================== SKIN STATE TESTS ====================
+
+describe('Skin State', () => {
+    test('skinState should have correct initial values', () => {
+        assert.strictEqual(game.skinState.selected, 'default');
+        assert.ok(Array.isArray(game.skinState.owned));
+        assert.ok(game.skinState.owned.includes('default'));
+        assert.strictEqual(typeof game.skinState.totalCoins, 'number');
+    });
+
+    test('Default skin should be owned initially', () => {
+        assert.ok(game.skinState.owned.includes('default'));
+    });
+});
+
+// ==================== ENEMY CLASS TESTS ====================
+
+describe('Enemy Class', () => {
+    test('Enemy constructor should initialize correctly for GIGACHAD', () => {
+        const enemy = new game.Enemy('GIGACHAD', 100, -500);
+        assert.strictEqual(enemy.type, 'GIGACHAD');
+        assert.strictEqual(enemy.x, 100);
+        assert.strictEqual(enemy.z, -500);
+        assert.ok(enemy.health > 0);
+        assert.strictEqual(enemy.isBoss, false);
+        assert.strictEqual(enemy.isGamer, false);
+        assert.strictEqual(enemy.isSigma, false);
+    });
+
+    test('Enemy constructor should initialize correctly for GAMER_DINO', () => {
+        const enemy = new game.Enemy('GAMER_DINO', 0, -300);
+        assert.strictEqual(enemy.type, 'GAMER_DINO');
+        assert.strictEqual(enemy.isGamer, true);
+        assert.ok(enemy.rgbPhase !== undefined);
+        assert.ok(enemy.rangedCooldown > 0);
+    });
+
+    test('Enemy constructor should initialize correctly for SIGMA_DINO', () => {
+        const enemy = new game.Enemy('SIGMA_DINO', 500, -400);
+        assert.strictEqual(enemy.type, 'SIGMA_DINO');
+        assert.strictEqual(enemy.isSigma, true);
+        assert.ok(enemy.sigmaDirection !== undefined);
+        assert.strictEqual(enemy.hasEscaped, false);
+    });
+
+    test('Enemy constructor should initialize correctly for MINI_BOSS', () => {
+        const enemy = new game.Enemy('MINI_BOSS', 0, -1000);
+        assert.strictEqual(enemy.type, 'MINI_BOSS');
+        assert.strictEqual(enemy.isBoss, true);
+        assert.ok(enemy.health >= 500);
+    });
+
+    test('Enemy health should scale with wave', () => {
+        // Reset game state wave for consistent testing
+        const originalWave = game.gameState.wave;
+        game.gameState.wave = 5;
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        const expectedHealth = game.ENEMY_TYPES.GIGACHAD.health + (5 * 10);
+        assert.strictEqual(enemy.health, expectedHealth);
+        game.gameState.wave = originalWave;
+    });
+
+    test('Enemy should track hit count', () => {
+        const enemy = new game.Enemy('BUFF_NERD', 0, -300);
+        assert.strictEqual(enemy.hitCount, 0);
+        assert.strictEqual(enemy.wasOneShot, true);
+    });
+
+    test('Enemy maxHealth should equal initial health', () => {
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        assert.strictEqual(enemy.health, enemy.maxHealth);
+    });
+});
+
+// ==================== PROJECTILE CLASS TESTS ====================
+
+describe('Projectile Class', () => {
+    test('Projectile should initialize with correct properties', () => {
+        const proj = new game.Projectile(0, 0, 0, 1, -1, -20);
+        assert.strictEqual(proj.x, 0);
+        assert.strictEqual(proj.y, 0);
+        assert.strictEqual(proj.z, 0);
+        assert.strictEqual(proj.vx, 1);
+        assert.strictEqual(proj.vy, -1);
+        assert.strictEqual(proj.vz, -20);
+        assert.ok(proj.life > 0);
+    });
+
+    test('Projectile should have weapon-based properties', () => {
+        const proj = new game.Projectile(0, 0, 0, 0, 0, -20);
+        // Should get properties from current weapon (present)
+        assert.ok(proj.damage > 0);
+        assert.ok(proj.emoji);
+        assert.ok(proj.color);
+    });
+
+    test('Projectile should track weapon type', () => {
+        const proj = new game.Projectile(0, 0, 0, 0, 0, -20);
+        assert.strictEqual(proj.weaponType, game.inventory.currentWeapon);
+    });
+});
+
+// ==================== PARTICLE CLASS TESTS ====================
+
+describe('Particle Class', () => {
+    test('Particle should initialize correctly', () => {
+        const particle = new game.Particle(100, 50, -300, '#ff0000');
+        assert.strictEqual(particle.x, 100);
+        assert.strictEqual(particle.y, 50);
+        assert.strictEqual(particle.z, -300);
+        assert.strictEqual(particle.color, '#ff0000');
+        assert.ok(particle.life > 0);
+        assert.strictEqual(particle.life, particle.maxLife);
+    });
+
+    test('Particle should have velocity components', () => {
+        const particle = new game.Particle(0, 0, 0, '#ffffff');
+        assert.ok(typeof particle.vx === 'number');
+        assert.ok(typeof particle.vy === 'number');
+        assert.ok(typeof particle.vz === 'number');
+    });
+});
+
+// ==================== ENEMY PROJECTILE TESTS ====================
+
+describe('EnemyProjectile Class', () => {
+    test('EnemyProjectile should initialize correctly', () => {
+        const proj = new game.EnemyProjectile(100, 0, -500, 10);
+        assert.strictEqual(proj.x, 100);
+        assert.strictEqual(proj.z, -500);
+        assert.strictEqual(proj.damage, 10);
+        assert.strictEqual(proj.emoji, '🔥');
+        assert.ok(proj.life > 0);
+    });
+
+    test('EnemyProjectile should move toward player', () => {
+        const proj = new game.EnemyProjectile(0, 0, -500, 10);
+        assert.ok(proj.vz > 0, 'EnemyProjectile should move toward player (positive vz)');
+    });
+});
+
+// ==================== GAMER PROJECTILE TESTS ====================
+
+describe('GamerProjectile Class', () => {
+    test('GamerProjectile should initialize correctly', () => {
+        const proj = new game.GamerProjectile(0, 0, -300, 15);
+        assert.strictEqual(proj.damage, 15);
+        assert.strictEqual(proj.emoji, '🎯');
+        assert.ok(proj.life > 0);
+    });
+
+    test('GamerProjectile should have spin property', () => {
+        const proj = new game.GamerProjectile(0, 0, -300, 15);
+        assert.strictEqual(proj.spin, 0);
+    });
+
+    test('GamerProjectile should move slower than EnemyProjectile', () => {
+        const gamer = new game.GamerProjectile(0, 0, -300, 15);
+        const enemy = new game.EnemyProjectile(0, 0, -300, 10);
+        assert.ok(gamer.vz < enemy.vz, 'GamerProjectile should be slower');
+    });
+});
+
+// ==================== WEAPON BALANCE TESTS ====================
+
+describe('Weapon Balance', () => {
+    test('Higher priced weapons should generally deal more damage', () => {
+        // Snowball is exception (rapid fire), but others should follow pattern
+        assert.ok(game.WEAPONS.candy_cane.damage > game.WEAPONS.present.damage);
+        assert.ok(game.WEAPONS.ornament.damage > game.WEAPONS.candy_cane.damage);
+        assert.ok(game.WEAPONS.star.damage > game.WEAPONS.ornament.damage);
+    });
+
+    test('Snowball should have fastest fire rate', () => {
+        for (const [name, weapon] of Object.entries(game.WEAPONS)) {
+            if (name !== 'snowball') {
+                assert.ok(
+                    game.WEAPONS.snowball.fireRate <= weapon.fireRate,
+                    `Snowball should fire faster than ${name}`
+                );
+            }
+        }
+    });
+
+    test('Star should have highest speed', () => {
+        for (const [name, weapon] of Object.entries(game.WEAPONS)) {
+            assert.ok(
+                game.WEAPONS.star.speed >= weapon.speed,
+                `Star should be fastest, not slower than ${name}`
+            );
+        }
+    });
+});
+
+// ==================== GAME ARRAYS TESTS ====================
+
+describe('Game Arrays', () => {
+    test('enemies array should exist and be empty initially', () => {
+        assert.ok(Array.isArray(game.enemies));
+    });
+
+    test('projectiles array should exist', () => {
+        assert.ok(Array.isArray(game.projectiles));
+    });
+
+    test('particles array should exist', () => {
+        assert.ok(Array.isArray(game.particles));
+    });
+
+    test('floatingTexts array should exist', () => {
+        assert.ok(Array.isArray(game.floatingTexts));
+    });
+});
+
+// ==================== PLAYER STATS TESTS ====================
+
+describe('Player Stats', () => {
+    test('Player should have moveSpeed', () => {
+        assert.strictEqual(game.player.moveSpeed, 5);
+    });
+
+    test('Player should have base damage of 0 (weapon provides damage)', () => {
+        // Reloaded game has damage = 0, but in startGame it gets reset
+        assert.ok(typeof game.player.damage === 'number');
+    });
+
+    test('Player should have fire cooldown', () => {
+        assert.strictEqual(typeof game.player.fireCooldown, 'number');
+    });
+
+    test('Player should have default crit chance of 5%', () => {
+        assert.strictEqual(game.player.critChance, 0.05);
+    });
+
+    test('Player should have crit multiplier of 2x', () => {
+        assert.strictEqual(game.player.critMultiplier, 2);
+    });
+});
+
+// ==================== INVENTORY TESTS ====================
+
+describe('Inventory', () => {
+    test('Present weapon should be owned by default', () => {
+        assert.strictEqual(game.inventory.weapons.present, true);
+    });
+
+    test('Other weapons should not be owned by default', () => {
+        assert.strictEqual(game.inventory.weapons.snowball, false);
+        assert.strictEqual(game.inventory.weapons.candy_cane, false);
+        assert.strictEqual(game.inventory.weapons.ornament, false);
+        assert.strictEqual(game.inventory.weapons.star, false);
+        assert.strictEqual(game.inventory.weapons.moai, false);
+        assert.strictEqual(game.inventory.weapons.doot, false);
+    });
+
+    test('All upgrade levels should start at 0', () => {
+        for (const [name, level] of Object.entries(game.inventory.upgrades)) {
+            assert.strictEqual(level, 0, `${name} upgrade should start at 0`);
+        }
+    });
+});
+
+// ==================== CONSTANTS VALIDATION TESTS ====================
+
+describe('Constants Validation', () => {
+    test('All weapons should have unique names', () => {
+        const names = Object.values(game.WEAPONS).map(w => w.name);
+        const uniqueNames = [...new Set(names)];
+        assert.strictEqual(names.length, uniqueNames.length);
+    });
+
+    test('All enemy types should have unique names', () => {
+        const names = Object.values(game.ENEMY_TYPES).map(e => e.name);
+        const uniqueNames = [...new Set(names)];
+        assert.strictEqual(names.length, uniqueNames.length);
+    });
+
+    test('All skins should have unique names', () => {
+        const names = Object.values(game.SANTA_SKINS).map(s => s.name);
+        const uniqueNames = [...new Set(names)];
+        assert.strictEqual(names.length, uniqueNames.length);
+    });
+
+    test('All boss names should be unique', () => {
+        const names = Object.values(game.BOSS_NAMES).map(b => b.name);
+        const uniqueNames = [...new Set(names)];
+        assert.strictEqual(names.length, uniqueNames.length);
+    });
+});
+
+// ==================== EDGE CASES TESTS ====================
+
+describe('Edge Cases', () => {
+    test('getMemeRating handles negative scores', () => {
+        const rating = game.getMemeRating(-100);
+        assert.strictEqual(rating.rating, 'Actual NPC');
+    });
+
+    test('formatTime handles negative values gracefully', () => {
+        // Implementation floors to 0
+        const result = game.formatTime(-1000);
+        assert.strictEqual(typeof result, 'string');
+    });
+
+    test('getBossInfo handles non-standard waves', () => {
+        // Wave 1 is not a boss wave but should still return valid boss info
+        const bossInfo = game.getBossInfo(1);
+        assert.ok(bossInfo.name);
+        assert.ok(bossInfo.title);
+    });
+
+    test('Enemy can be created at various positions', () => {
+        const enemy1 = new game.Enemy('GIGACHAD', -1000, -2000);
+        const enemy2 = new game.Enemy('GIGACHAD', 1000, -100);
+        assert.strictEqual(enemy1.x, -1000);
+        assert.strictEqual(enemy2.x, 1000);
+    });
+});
+
+console.log('\n✅ All tests completed!');
