@@ -156,6 +156,56 @@
             box-shadow: 0 0 15px #ff0000;
         }
 
+        /* Hit Markers - COD style X */
+        .hit-marker {
+            position: absolute;
+            pointer-events: none;
+            z-index: 60;
+            width: 40px;
+            height: 40px;
+            transform: translate(-50%, -50%);
+            animation: hitMarkerFade 0.2s ease-out forwards;
+        }
+
+        .hit-marker::before,
+        .hit-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 3px;
+            background: white;
+            box-shadow: 0 0 8px white, 0 0 15px white;
+        }
+
+        .hit-marker::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .hit-marker::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .hit-marker.crit::before,
+        .hit-marker.crit::after {
+            background: #ffd700;
+            box-shadow: 0 0 10px #ffd700, 0 0 20px #ff8800;
+            width: 25px;
+            height: 4px;
+        }
+
+        @keyframes hitMarkerFade {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
         /* Kill feed */
         #kill-feed {
             position: absolute;
@@ -1007,6 +1057,60 @@
         function shakeOnBossSlam() { screenShake(25, 400); }    // Boss attack
         function shakeOnBossDeath() { screenShake(30, 500); }   // Boss defeated
 
+        // ==================== HIT MARKER SYSTEM ====================
+        /**
+         * Creates a hit marker at the crosshair position
+         * @param {boolean} isCrit - Whether this was a critical hit
+         */
+        function showHitMarker(isCrit = false) {
+            const marker = document.createElement('div');
+            marker.className = 'hit-marker' + (isCrit ? ' crit' : '');
+            marker.style.left = mousePos.x + 'px';
+            marker.style.top = mousePos.y + 'px';
+
+            document.getElementById('game-container').appendChild(marker);
+
+            // Play hit marker sound
+            playHitMarkerSound(isCrit);
+
+            // Remove after animation completes
+            setTimeout(() => {
+                marker.remove();
+            }, 200);
+        }
+
+        /**
+         * Plays the hit marker sound effect
+         * @param {boolean} isCrit - Whether this was a critical hit
+         */
+        function playHitMarkerSound(isCrit = false) {
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (isCrit) {
+                // Crit: Higher pitched, more satisfying ding
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1600, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } else {
+                // Normal: Quick tick sound
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
         // ==================== ENEMY TYPES ====================
         const ENEMY_TYPES = {
             GIGACHAD: {
@@ -1150,11 +1254,12 @@
                 this.health -= finalDamage;
                 this.hitFlash = 1;
                 playSound('hit');
-                
+                showHitMarker(isCrit); // Show hit marker at crosshair
+
                 for (let i = 0; i < 5; i++) {
                     particles.push(new Particle(this.x, this.y, this.z, this.color));
                 }
-                
+
                 // Floating damage
                 floatingTexts.push({
                     text: isCrit ? `CRIT ${Math.floor(finalDamage)}!` : `-${Math.floor(finalDamage)}`,
