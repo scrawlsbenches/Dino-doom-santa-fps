@@ -24,6 +24,7 @@
             width: 100vw;
             height: 100vh;
             background: linear-gradient(180deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
+            transition: transform 0.05s ease-out;
         }
 
         #game-canvas {
@@ -155,6 +156,286 @@
             box-shadow: 0 0 15px #ff0000;
         }
 
+        /* Hit Markers - COD style X */
+        .hit-marker {
+            position: absolute;
+            pointer-events: none;
+            z-index: 60;
+            width: 40px;
+            height: 40px;
+            transform: translate(-50%, -50%);
+            animation: hitMarkerFade 0.2s ease-out forwards;
+        }
+
+        .hit-marker::before,
+        .hit-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 3px;
+            background: white;
+            box-shadow: 0 0 8px white, 0 0 15px white;
+        }
+
+        .hit-marker::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .hit-marker::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .hit-marker.crit::before,
+        .hit-marker.crit::after {
+            background: #ffd700;
+            box-shadow: 0 0 10px #ffd700, 0 0 20px #ff8800;
+            width: 25px;
+            height: 4px;
+        }
+
+        @keyframes hitMarkerFade {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Kill Streak Announcements */
+        .kill-streak-announcement {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bungee', cursive;
+            font-size: 64px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 70;
+            animation: killStreakAnimate 1.5s ease-out forwards;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        @keyframes killStreakAnimate {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            15% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.3);
+            }
+            30% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        /* Achievement Toasts */
+        #achievement-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            pointer-events: none;
+            z-index: 80;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .achievement-toast {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(50, 50, 50, 0.95));
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: achievementSlideIn 0.5s ease-out forwards;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .achievement-toast.hiding {
+            animation: achievementSlideOut 0.5s ease-in forwards;
+        }
+
+        .achievement-icon {
+            font-size: 32px;
+        }
+
+        .achievement-content {
+            flex: 1;
+        }
+
+        .achievement-title {
+            font-family: 'Bungee', cursive;
+            font-size: 14px;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+            margin-bottom: 4px;
+        }
+
+        .achievement-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #ffffff;
+        }
+
+        @keyframes achievementSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes achievementSlideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Boss Intro Cutscene */
+        #boss-intro-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #boss-intro-overlay.active {
+            display: flex;
+            animation: bossDarken 0.5s ease-out forwards;
+        }
+
+        @keyframes bossDarken {
+            0% { background: rgba(0, 0, 0, 0); }
+            100% { background: rgba(0, 0, 0, 0.8); }
+        }
+
+        #boss-intro-emoji {
+            font-size: 150px;
+            opacity: 0;
+            transform: translateY(-200px) scale(0.5);
+        }
+
+        #boss-intro-emoji.slide-in {
+            animation: bossSlideIn 0.8s ease-out forwards;
+        }
+
+        @keyframes bossSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-200px) scale(0.5);
+            }
+            70% {
+                transform: translateY(20px) scale(1.2);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        #boss-intro-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700, 0 0 40px #ff8800;
+            opacity: 0;
+            margin-top: 20px;
+        }
+
+        #boss-intro-name.show {
+            animation: bossNameReveal 0.5s ease-out forwards;
+        }
+
+        @keyframes bossNameReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+                letter-spacing: 20px;
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                letter-spacing: 5px;
+            }
+        }
+
+        #boss-intro-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px;
+            color: #ff4444;
+            text-shadow: 0 0 10px #ff0000;
+            opacity: 0;
+            margin-top: 10px;
+        }
+
+        #boss-intro-title.show {
+            animation: bossTitleReveal 0.4s ease-out forwards;
+        }
+
+        @keyframes bossTitleReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #boss-intro-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #boss-intro-flash.flash {
+            animation: bossFlash 0.3s ease-out forwards;
+        }
+
+        @keyframes bossFlash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
         /* Kill feed */
         #kill-feed {
             position: absolute;
@@ -254,6 +535,88 @@
             margin-top: 10px;
         }
 
+        /* Santa Skin Selector */
+        #skin-selector {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+        }
+
+        #skin-selector h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        #skin-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .skin-option {
+            background: rgba(30, 30, 50, 0.9);
+            border: 3px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .skin-option:hover {
+            border-color: #ffd700;
+            transform: translateY(-3px);
+        }
+
+        .skin-option.selected {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+        }
+
+        .skin-option.locked {
+            opacity: 0.6;
+        }
+
+        .skin-option.locked:hover {
+            border-color: #ff4444;
+        }
+
+        .skin-emoji {
+            font-size: 50px;
+            margin-bottom: 8px;
+        }
+
+        .skin-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .skin-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #ffd700;
+        }
+
+        .skin-price.owned {
+            color: #00ff00;
+        }
+
+        #skin-coins-display {
+            margin-top: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: #ffd700;
+        }
+
         .game-btn {
             font-family: 'Bungee', cursive;
             font-size: 32px;
@@ -310,7 +673,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -318,25 +681,105 @@
             z-index: 100;
         }
 
-        #game-over h1 {
+        /* Death Receipt Styling */
+        #death-receipt {
+            background: #111;
+            border: 3px solid #ff3333;
+            border-radius: 15px;
+            padding: 30px 40px;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .receipt-header h1 {
             font-family: 'Bungee', cursive;
-            font-size: 80px;
-            color: #ff0000;
-            text-shadow: 0 0 50px #ff0000;
+            font-size: 32px;
+            color: #ff3333;
+            text-shadow: 0 0 20px #ff3333;
+            margin: 0 0 5px 0;
             animation: gameOverShake 0.5s ease-in-out infinite;
+        }
+
+        .receipt-subtitle {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #888;
+            letter-spacing: 2px;
+        }
+
+        .receipt-divider {
+            font-family: monospace;
+            color: #444;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+
+        .receipt-stats {
+            text-align: left;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #ccc;
+            margin: 8px 0;
+        }
+
+        .receipt-row span:last-child {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .receipt-rating {
+            margin: 20px 0;
+        }
+
+        .rating-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .rating-value {
+            font-family: 'Bungee', cursive;
+            font-size: 36px;
+            color: #ffd700;
+            text-shadow: 0 0 15px #ffd700;
+        }
+
+        .receipt-lastwords {
+            margin: 15px 0;
+        }
+
+        .lastwords-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .lastwords-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #ff6b6b;
+            font-style: italic;
+        }
+
+        .receipt-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
         }
 
         @keyframes gameOverShake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        #final-score {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 36px;
-            color: #00ff88;
-            margin: 30px 0;
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
         }
 
         /* Wave announcement */
@@ -398,7 +841,40 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 28px;
             color: #ffd700;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* Shopkeeper */
+        #shopkeeper-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(135deg, rgba(40, 30, 60, 0.9), rgba(30, 20, 50, 0.9));
+            border: 2px solid #8b7355;
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(139, 115, 85, 0.3);
+        }
+
+        #shopkeeper-emoji {
+            font-size: 80px;
+            animation: shopkeeperBob 2s ease-in-out infinite;
+        }
+
+        @keyframes shopkeeperBob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        #shopkeeper-dialogue {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            line-height: 1.6;
+            max-width: 400px;
         }
 
         .shop-section {
@@ -660,6 +1136,15 @@
             </div>
             
             <div id="kill-feed"></div>
+            <div id="achievement-container"></div>
+
+            <!-- Boss Intro Cutscene Overlay -->
+            <div id="boss-intro-overlay">
+                <div id="boss-intro-emoji">👑</div>
+                <div id="boss-intro-name">BOSS NAME</div>
+                <div id="boss-intro-title">Boss Title</div>
+                <div id="boss-intro-flash"></div>
+            </div>
 
             <div id="boss-health-container">
                 <div id="boss-name">💀 MEGA BOSS 💀</div>
@@ -695,7 +1180,16 @@
                     <p style="color: #ffd700; font-size: 12px; margin-top: 5px;">EVERY 5 WAVES</p>
                 </div>
             </div>
-            
+
+            <!-- Santa Skin Selector -->
+            <div id="skin-selector">
+                <h3>🎅 SELECT YOUR SANTA 🎅</h3>
+                <div id="skin-options">
+                    <!-- Skins populated by JavaScript -->
+                </div>
+                <div id="skin-coins-display">🪙 <span id="skin-coins">0</span></div>
+            </div>
+
             <button id="start-btn" class="game-btn">🎮 START GAME 🎮</button>
             
             <div class="controls-info">
@@ -708,19 +1202,25 @@
         
         <!-- Shop Screen -->
         <div id="shop-screen">
-            <h1>🛒 SANTA'S WORKSHOP 🛒</h1>
+            <h1>💎 THE GRINDSET EMPORIUM 💎</h1>
             <div id="shop-coins">🪙 0</div>
-            
+
+            <!-- Shopkeeper -->
+            <div id="shopkeeper-container">
+                <div id="shopkeeper-emoji">🗿</div>
+                <div id="shopkeeper-dialogue">Welcome to the grind...</div>
+            </div>
+
             <div class="shop-section">
                 <h2>⚔️ WEAPONS</h2>
                 <div class="shop-items" id="weapons-list"></div>
             </div>
-            
+
             <div class="shop-section">
                 <h2>⬆️ UPGRADES</h2>
                 <div class="shop-items" id="upgrades-list"></div>
             </div>
-            
+
             <button id="continue-btn" class="game-btn green">CONTINUE ➡️</button>
         </div>
 
@@ -733,12 +1233,38 @@
             <div id="minigame-hits">HITS: 0 / DAMAGE: 0</div>
         </div>
         
-        <!-- Game Over Screen -->
+        <!-- Game Over Screen - Meme Receipt Style -->
         <div id="game-over">
-            <h1>💀 GAME OVER 💀</h1>
-            <div id="final-score">Final Score: 0</div>
-            <div id="final-kills" style="font-family: 'Press Start 2P'; color: #ff6b6b; margin-bottom: 30px;">Dinos Defeated: 0</div>
-            <button id="restart-btn" class="game-btn green">🔄 TRY AGAIN</button>
+            <div id="death-receipt">
+                <div class="receipt-header">
+                    <h1>💀 SKILL ISSUE DETECTED 💀</h1>
+                    <div class="receipt-subtitle">DINO DOOM - DEATH RECEIPT</div>
+                </div>
+                <div class="receipt-divider">═══════════════════════════════</div>
+                <div class="receipt-stats">
+                    <div class="receipt-row"><span>Waves Survived:</span><span id="stat-waves">0</span></div>
+                    <div class="receipt-row"><span>Dinos Eliminated:</span><span id="stat-kills">0</span></div>
+                    <div class="receipt-row"><span>Final Score:</span><span id="stat-score">0</span></div>
+                    <div class="receipt-row"><span>Coins Earned:</span><span id="stat-coins">0</span></div>
+                    <div class="receipt-row"><span>Time Survived:</span><span id="stat-time">0:00</span></div>
+                    <div class="receipt-row"><span>Cause of Death:</span><span id="stat-cause">Unknown</span></div>
+                </div>
+                <div class="receipt-divider">───────────────────────────────</div>
+                <div class="receipt-rating">
+                    <div class="rating-label">PERFORMANCE RATING:</div>
+                    <div id="stat-rating" class="rating-value">NPC</div>
+                </div>
+                <div class="receipt-divider">───────────────────────────────</div>
+                <div class="receipt-lastwords">
+                    <div class="lastwords-label">Last Words:</div>
+                    <div id="stat-lastwords" class="lastwords-text">"skill issue"</div>
+                </div>
+                <div class="receipt-divider">═══════════════════════════════</div>
+                <div class="receipt-buttons">
+                    <button id="copy-receipt-btn" class="game-btn" style="font-size: 16px; padding: 10px 20px;">📋 SHARE YOUR L</button>
+                    <button id="restart-btn" class="game-btn green">🔄 TRY AGAIN</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -762,7 +1288,11 @@
             currentBoss: null,
             healKills: 0,
             healReady: false,
-            healKillsRequired: 10
+            healKillsRequired: 10,
+            // Death screen tracking
+            startTime: 0,
+            lastAttacker: 'Unknown',
+            totalCoinsEarned: 0
         };
         
         let player = {
@@ -784,7 +1314,9 @@
                 snowball: false,
                 candy_cane: false,
                 ornament: false,
-                star: false
+                star: false,
+                moai: false,
+                doot: false
             },
             upgrades: {
                 damage: 0,
@@ -800,7 +1332,144 @@
         let floatingTexts = [];
         let keys = {};
         let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        
+
+        // ==================== SANTA SKINS SYSTEM ====================
+        const SANTA_SKINS = {
+            default: {
+                name: 'Default Santa',
+                emoji: '🎅',
+                price: 0,
+                color: '#ff0000',
+                glowColor: '#ff4444',
+                description: 'Classic Santa'
+            },
+            drip: {
+                name: 'Drip Santa',
+                emoji: '🎅💎',
+                price: 500,
+                color: '#00ffff',
+                glowColor: '#00ffff',
+                description: 'Iced out'
+            },
+            tactical: {
+                name: 'Tactical Santa',
+                emoji: '🎅🎯',
+                price: 1000,
+                color: '#556b2f',
+                glowColor: '#6b8e23',
+                description: 'Operator mode'
+            },
+            gigachad: {
+                name: 'Gigachad Santa',
+                emoji: '🎅💪',
+                price: 2500,
+                color: '#ffd700',
+                glowColor: '#ffaa00',
+                description: 'Built different'
+            },
+            sigma: {
+                name: 'Sigma Santa',
+                emoji: '🎅👔',
+                price: 5000,
+                color: '#1a1a2e',
+                glowColor: '#4a4a6e',
+                description: 'On the grind'
+            }
+        };
+
+        // Skin state (persisted to localStorage)
+        let skinState = {
+            selected: 'default',
+            owned: ['default'],
+            totalCoins: 0 // Lifetime coins earned (for purchasing skins)
+        };
+
+        // Load skins from localStorage
+        function loadSkinState() {
+            const saved = localStorage.getItem('santaSkinState');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    skinState = { ...skinState, ...parsed };
+                } catch (e) {
+                    console.error('Failed to load skin state:', e);
+                }
+            }
+        }
+
+        // Save skins to localStorage
+        function saveSkinState() {
+            localStorage.setItem('santaSkinState', JSON.stringify(skinState));
+        }
+
+        // Get current skin
+        function getCurrentSkin() {
+            return SANTA_SKINS[skinState.selected] || SANTA_SKINS.default;
+        }
+
+        // Purchase a skin
+        function purchaseSkin(skinId) {
+            const skin = SANTA_SKINS[skinId];
+            if (!skin) return false;
+            if (skinState.owned.includes(skinId)) return false;
+            if (skinState.totalCoins < skin.price) return false;
+
+            skinState.totalCoins -= skin.price;
+            skinState.owned.push(skinId);
+            skinState.selected = skinId;
+            saveSkinState();
+            playSound('buy');
+            return true;
+        }
+
+        // Select a skin
+        function selectSkin(skinId) {
+            if (!skinState.owned.includes(skinId)) return false;
+            skinState.selected = skinId;
+            saveSkinState();
+            return true;
+        }
+
+        // Render skin selector on start screen
+        function renderSkinSelector() {
+            const container = document.getElementById('skin-options');
+            container.innerHTML = '';
+
+            for (const [id, skin] of Object.entries(SANTA_SKINS)) {
+                const owned = skinState.owned.includes(id);
+                const selected = skinState.selected === id;
+                const canAfford = skinState.totalCoins >= skin.price;
+
+                const option = document.createElement('div');
+                option.className = `skin-option ${selected ? 'selected' : ''} ${!owned ? 'locked' : ''}`;
+                option.innerHTML = `
+                    <div class="skin-emoji">${skin.emoji}</div>
+                    <div class="skin-name">${skin.name}</div>
+                    <div class="skin-price ${owned ? 'owned' : ''}">${owned ? '✓ OWNED' : `🪙 ${skin.price}`}</div>
+                `;
+
+                option.onclick = () => {
+                    if (owned) {
+                        selectSkin(id);
+                        renderSkinSelector();
+                    } else if (canAfford) {
+                        purchaseSkin(id);
+                        renderSkinSelector();
+                    }
+                };
+
+                container.appendChild(option);
+            }
+
+            document.getElementById('skin-coins').textContent = skinState.totalCoins;
+        }
+
+        // Initialize skin system
+        function initSkinSystem() {
+            loadSkinState();
+            renderSkinSelector();
+        }
+
         // ==================== WEAPONS ====================
         const WEAPONS = {
             present: {
@@ -852,9 +1521,31 @@
                 color: '#ffff00',
                 price: 5000,
                 description: 'Ultimate guiding light'
+            },
+            moai: {
+                name: '🗿 Moai Cannon',
+                emoji: '🗿',
+                damage: 70,
+                fireRate: 25,
+                speed: 18,
+                color: '#8b7355',
+                price: 1500,
+                description: 'Yo, Angelo',
+                special: 'moai' // Special projectile behavior
+            },
+            doot: {
+                name: '🎺 Doot Cannon',
+                emoji: '🎺',
+                damage: 45,
+                fireRate: 15,
+                speed: 22,
+                color: '#daa520',
+                price: 800,
+                description: 'Spooky scary skeletons',
+                special: 'doot' // Skull trail + doot sound
             }
         };
-        
+
         const UPGRADES = {
             damage: { name: 'Damage+', icon: '💪', basePrice: 200, maxLevel: 10, perLevel: 10, description: '+10 damage per level' },
             fireRate: { name: 'Fire Rate+', icon: '⚡', basePrice: 300, maxLevel: 5, perLevel: 2, description: '-2 cooldown per level' },
@@ -940,9 +1631,693 @@
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.5);
                     break;
+                case 'moai':
+                    // Deep stone impact sound - 🗿
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'doot':
+                    // Trumpet "doot" sound - 🎺💀
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(392, audioCtx.currentTime); // G4 note
+                    osc.frequency.setValueAtTime(349, audioCtx.currentTime + 0.1); // F4
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                    break;
+                case 'doot_kill':
+                    // Spooky skeleton kill sound
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                    break;
+                case 'achievement':
+                    // Triumphant achievement unlock sound 🏆
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2); // G5
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.3); // C6
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'gamer_attack':
+                    // "360 NO SCOPE" Gamer Dino attack sound 🎮🎯
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                    break;
             }
         }
-        
+
+        // ==================== SCREEN SHAKE SYSTEM ====================
+        // Shake state tracking
+        let shakeState = {
+            intensity: 0,
+            duration: 0,
+            startTime: 0,
+            active: false
+        };
+
+        /**
+         * Triggers screen shake effect
+         * @param {number} intensity - Pixels of max displacement (5=small, 10=medium, 20=large)
+         * @param {number} duration - Duration in ms (default 200)
+         */
+        function screenShake(intensity = 10, duration = 200) {
+            // If new shake is stronger, override current shake
+            if (intensity >= shakeState.intensity || !shakeState.active) {
+                shakeState.intensity = intensity;
+                shakeState.duration = duration;
+                shakeState.startTime = Date.now();
+                shakeState.active = true;
+            }
+        }
+
+        /**
+         * Updates and applies screen shake - called each frame
+         */
+        function updateScreenShake() {
+            const container = document.getElementById('game-container');
+
+            if (!shakeState.active) {
+                container.style.transform = 'translate(0, 0)';
+                return;
+            }
+
+            const elapsed = Date.now() - shakeState.startTime;
+            const progress = elapsed / shakeState.duration;
+
+            if (progress >= 1) {
+                // Shake complete
+                shakeState.active = false;
+                shakeState.intensity = 0;
+                container.style.transform = 'translate(0, 0)';
+                return;
+            }
+
+            // Decay intensity over time (ease out)
+            const currentIntensity = shakeState.intensity * (1 - progress);
+
+            // Random displacement
+            const offsetX = (Math.random() - 0.5) * 2 * currentIntensity;
+            const offsetY = (Math.random() - 0.5) * 2 * currentIntensity;
+
+            container.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        }
+
+        // Preset shake functions for common events
+        function shakeOnDamage() { screenShake(15, 300); }      // Player takes damage
+        function shakeOnKill() { screenShake(5, 150); }         // Enemy dies
+        function shakeOnCrit() { screenShake(8, 200); }         // Critical hit
+        function shakeOnBossSlam() { screenShake(25, 400); }    // Boss attack
+        function shakeOnBossDeath() { screenShake(30, 500); }   // Boss defeated
+
+        // ==================== DEATH SCREEN SYSTEM ====================
+        const MEME_RATINGS = [
+            { minScore: 0, rating: 'Actual NPC', color: '#888888' },
+            { minScore: 1000, rating: 'Kinda Mid', color: '#888888' },
+            { minScore: 5000, rating: 'Certified Decent', color: '#00ff00' },
+            { minScore: 10000, rating: 'Built Different', color: '#00ffff' },
+            { minScore: 25000, rating: 'Sigma Energy', color: '#ff00ff' },
+            { minScore: 50000, rating: 'GIGACHAD', color: '#ffd700' }
+        ];
+
+        const LAST_WORDS = [
+            '"skill issue"',
+            '"I was lagging"',
+            '"my mouse died"',
+            '"not my fault"',
+            '"rigged game"',
+            '"built different (negatively)"',
+            '"I let them win"',
+            '"calculated L"',
+            '"gg ez... wait"',
+            '"I blame the dinosaurs"',
+            '"Santa needed a break"',
+            '"tactical defeat"',
+            '"we go next"',
+            '"ratio"',
+            '"at least I tried"'
+        ];
+
+        /**
+         * Gets meme rating based on score
+         */
+        function getMemeRating(score) {
+            let rating = MEME_RATINGS[0];
+            for (const r of MEME_RATINGS) {
+                if (score >= r.minScore) rating = r;
+            }
+            return rating;
+        }
+
+        /**
+         * Gets random last words
+         */
+        function getRandomLastWords() {
+            return LAST_WORDS[Math.floor(Math.random() * LAST_WORDS.length)];
+        }
+
+        /**
+         * Formats time as M:SS
+         */
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        /**
+         * Updates the death screen with current stats
+         */
+        function updateDeathScreen() {
+            const timeSurvived = Date.now() - gameState.startTime;
+            const rating = getMemeRating(gameState.score);
+
+            document.getElementById('stat-waves').textContent = gameState.wave;
+            document.getElementById('stat-kills').textContent = gameState.kills;
+            document.getElementById('stat-score').textContent = gameState.score.toLocaleString();
+            document.getElementById('stat-coins').textContent = gameState.totalCoinsEarned;
+            document.getElementById('stat-time').textContent = formatTime(timeSurvived);
+            document.getElementById('stat-cause').textContent = gameState.lastAttacker;
+
+            const ratingEl = document.getElementById('stat-rating');
+            ratingEl.textContent = rating.rating;
+            ratingEl.style.color = rating.color;
+            ratingEl.style.textShadow = `0 0 15px ${rating.color}`;
+
+            document.getElementById('stat-lastwords').textContent = getRandomLastWords();
+        }
+
+        /**
+         * Copies death receipt to clipboard for sharing
+         */
+        function copyDeathReceipt() {
+            const timeSurvived = Date.now() - gameState.startTime;
+            const rating = getMemeRating(gameState.score);
+
+            const receipt = `
+╔══════════════════════════════════╗
+║   💀 SKILL ISSUE DETECTED 💀      ║
+║      DINO DOOM - DEATH RECEIPT   ║
+╠══════════════════════════════════╣
+║ Waves Survived:    ${String(gameState.wave).padStart(14)} ║
+║ Dinos Eliminated:  ${String(gameState.kills).padStart(14)} ║
+║ Final Score:       ${String(gameState.score.toLocaleString()).padStart(14)} ║
+║ Coins Earned:      ${String(gameState.totalCoinsEarned).padStart(14)} ║
+║ Time Survived:     ${formatTime(timeSurvived).padStart(14)} ║
+║ Cause of Death:    ${gameState.lastAttacker.padStart(14)} ║
+╠══════════════════════════════════╣
+║ Rating: ${rating.rating.padEnd(24)} ║
+╚══════════════════════════════════╝
+🦖 DINO DOOM: Santa's Last Stand 🎅
+            `.trim();
+
+            navigator.clipboard.writeText(receipt).then(() => {
+                const btn = document.getElementById('copy-receipt-btn');
+                btn.textContent = '✓ COPIED!';
+                setTimeout(() => btn.textContent = '📋 SHARE YOUR L', 2000);
+            });
+        }
+
+        // ==================== ACHIEVEMENT SYSTEM ====================
+        const ACHIEVEMENTS = {
+            FIRST_BLOOD: {
+                id: 'first_blood',
+                name: 'FIRST BLOOD',
+                description: 'First kill of the game',
+                icon: '🩸'
+            },
+            WAVE_SURVIVOR: {
+                id: 'wave_survivor',
+                name: 'WAVE SURVIVOR',
+                description: 'Complete a wave without damage',
+                icon: '🛡️'
+            },
+            BUILT_DIFFERENT: {
+                id: 'built_different',
+                name: 'BUILT DIFFERENT',
+                description: 'One-shot a Gigachad',
+                icon: '💪'
+            },
+            SKILL_ISSUE: {
+                id: 'skill_issue',
+                name: 'SKILL ISSUE',
+                description: 'Die on Wave 1',
+                icon: '💀'
+            },
+            EASY_MODE: {
+                id: 'easy_mode',
+                name: 'IS THIS EASY MODE?',
+                description: 'Reach Wave 10 without taking damage',
+                icon: '😎'
+            },
+            BIG_SPENDER: {
+                id: 'big_spender',
+                name: 'BIG SPENDER',
+                description: 'Spend 1000 coins in one shop visit',
+                icon: '💰'
+            },
+            BOSS_SLAYER: {
+                id: 'boss_slayer',
+                name: 'BOSS SLAYER',
+                description: 'Defeat your first boss',
+                icon: '👑'
+            },
+            MEME_LORD: {
+                id: 'meme_lord',
+                name: 'MEME LORD',
+                description: 'Use the Moai Cannon',
+                icon: '🗿'
+            }
+        };
+
+        let unlockedAchievements = new Set();
+        let achievementTracking = {
+            waveStartHealth: 100,
+            totalDamageTaken: 0,
+            shopSpending: 0
+        };
+
+        /**
+         * Unlocks an achievement and shows toast
+         * @param {string} achievementKey - Key from ACHIEVEMENTS object
+         */
+        function unlockAchievement(achievementKey) {
+            const achievement = ACHIEVEMENTS[achievementKey];
+            if (!achievement) return;
+
+            // Don't unlock twice
+            if (unlockedAchievements.has(achievement.id)) return;
+
+            unlockedAchievements.add(achievement.id);
+            showAchievementToast(achievement);
+            playSound('achievement');
+        }
+
+        /**
+         * Shows achievement toast notification
+         * @param {object} achievement - Achievement object
+         */
+        function showAchievementToast(achievement) {
+            const container = document.getElementById('achievement-container');
+
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-content">
+                    <div class="achievement-title">🏆 ACHIEVEMENT UNLOCKED</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Start hiding after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                // Remove after animation
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        /**
+         * Resets achievement tracking for new game
+         */
+        function resetAchievementTracking() {
+            unlockedAchievements.clear();
+            achievementTracking = {
+                waveStartHealth: 100,
+                totalDamageTaken: 0,
+                shopSpending: 0
+            };
+        }
+
+        /**
+         * Called at start of each wave
+         */
+        function onWaveStart() {
+            achievementTracking.waveStartHealth = gameState.health;
+        }
+
+        /**
+         * Called when wave is completed
+         */
+        function onWaveComplete() {
+            // WAVE SURVIVOR - no damage taken this wave
+            if (gameState.health === achievementTracking.waveStartHealth) {
+                unlockAchievement('WAVE_SURVIVOR');
+            }
+
+            // IS THIS EASY MODE? - Reach wave 10 without ever taking damage
+            if (gameState.wave >= 10 && achievementTracking.totalDamageTaken === 0) {
+                unlockAchievement('EASY_MODE');
+            }
+        }
+
+        // ==================== ENEMY DIALOGUE SYSTEM ====================
+        const ENEMY_DIALOGUE = {
+            GIGACHAD: {
+                spawn: [
+                    "DO YOU EVEN LIFT, SANTA?",
+                    "THESE GAINS ARE ETERNAL",
+                    "MY PROTEIN SHAKE BRINGS ALL THE BOYS",
+                    "CREATINE-POWERED DESTRUCTION",
+                    "I'M BUILT DIFFERENT",
+                    "WITNESS PEAK PERFORMANCE"
+                ],
+                attack: [
+                    "FEEL MY POWER!",
+                    "GAINS INCOMING!",
+                    "GET SWOLE'D!",
+                    "NO PAIN NO GAIN!"
+                ]
+            },
+            BUFF_NERD: {
+                spawn: [
+                    "ACTUALLY...",
+                    "SKILL ISSUE DETECTED",
+                    "RATIO + L + NO REINDEER",
+                    "MY IQ IS OVER 9000",
+                    "STATISTICALLY, YOU LOSE",
+                    "I STUDIED THE BLADE"
+                ],
+                attack: [
+                    "CALCULATED!",
+                    "ACCORDING TO MY DATA...",
+                    "NERD RAGE!",
+                    "BRAIN DAMAGE!"
+                ]
+            },
+            MINI_BOSS: {
+                spawn: [
+                    "YOU DARE CHALLENGE ME?!",
+                    "I'VE BEEN LIFTING SINCE THE JURASSIC",
+                    "WITNESS TRUE POWER!",
+                    "YOUR PRESENTS ARE WEAK!",
+                    "PREPARE TO BE RATIO'D!"
+                ],
+                attack: [
+                    "FEEL MY WRATH!",
+                    "PATHETIC!",
+                    "IS THAT ALL?!",
+                    "BOW BEFORE ME!"
+                ]
+            },
+            GAMER_DINO: {
+                spawn: [
+                    "GAMING TIME! 🎮",
+                    "PRESS F TO PAY RESPECTS",
+                    "I HAVE RGB EVERYTHING",
+                    "MY SETUP COST MORE THAN YOUR SLEIGH",
+                    "TWITCH DROPS INCOMING",
+                    "SPONSORED BY G-FUEL"
+                ],
+                attack: [
+                    "360 NO SCOPE!",
+                    "GET REKT NOOB!",
+                    "HEADSHOT!",
+                    "SKILL DIFF!"
+                ]
+            },
+            SIGMA_DINO: {
+                spawn: [
+                    "No time for distractions 👔",
+                    "I walk my own path",
+                    "SIGMA RULE #1: Stay on the grind",
+                    "High value target passing through",
+                    "The grindset continues...",
+                    "No one can stop me"
+                ],
+                attack: [
+                    // Sigma doesn't attack, but just in case
+                    "I don't fight, I profit",
+                    "Violence is for betas"
+                ]
+            }
+        };
+
+        let activeDialogueBubbles = [];
+        const MAX_DIALOGUE_BUBBLES = 2;
+
+        /**
+         * Shows a dialogue bubble above an enemy
+         * @param {Enemy} enemy - The enemy object
+         * @param {string} triggerType - 'spawn' or 'attack'
+         */
+        function showEnemyDialogue(enemy, triggerType) {
+            // Don't show if max bubbles reached
+            if (activeDialogueBubbles.length >= MAX_DIALOGUE_BUBBLES) return;
+
+            // Get dialogue for enemy type
+            const dialogueSet = ENEMY_DIALOGUE[enemy.type];
+            if (!dialogueSet || !dialogueSet[triggerType]) return;
+
+            const lines = dialogueSet[triggerType];
+            const text = lines[Math.floor(Math.random() * lines.length)];
+
+            // Create bubble object
+            const bubble = {
+                enemy: enemy,
+                text: text,
+                life: 120, // 2 seconds at 60fps
+                maxLife: 120
+            };
+
+            activeDialogueBubbles.push(bubble);
+
+            // Auto-remove after timeout
+            setTimeout(() => {
+                const idx = activeDialogueBubbles.indexOf(bubble);
+                if (idx > -1) activeDialogueBubbles.splice(idx, 1);
+            }, 2000);
+        }
+
+        /**
+         * Draws all active dialogue bubbles
+         */
+        function drawDialogueBubbles() {
+            for (let i = activeDialogueBubbles.length - 1; i >= 0; i--) {
+                const bubble = activeDialogueBubbles[i];
+                bubble.life--;
+
+                // Calculate screen position based on enemy
+                const e = bubble.enemy;
+                if (!e || e.health <= 0) {
+                    activeDialogueBubbles.splice(i, 1);
+                    continue;
+                }
+
+                const screenX = canvas.width / 2 + (e.x - player.x) * (400 / Math.max(100, -e.z));
+                const screenY = canvas.height / 2 + 100 * (400 / Math.max(100, -e.z));
+                const scale = 400 / Math.max(100, -e.z);
+
+                if (-e.z < 50 || -e.z > 2000) continue;
+
+                // Fade based on life
+                const alpha = Math.min(1, bubble.life / 30);
+                ctx.globalAlpha = alpha;
+
+                // Draw speech bubble background
+                ctx.font = `bold ${Math.max(10, 14 * scale)}px Orbitron, sans-serif`;
+                const textWidth = ctx.measureText(bubble.text).width;
+                const padding = 10 * scale;
+                const bubbleWidth = Math.min(300, textWidth + padding * 2);
+                const bubbleHeight = 30 * scale;
+                const bubbleX = screenX - bubbleWidth / 2;
+                const bubbleY = screenY - e.size * scale - bubbleHeight - 20 * scale;
+
+                // Bubble background
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.beginPath();
+                ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 8 * scale);
+                ctx.fill();
+
+                // Bubble border
+                ctx.strokeStyle = '#ffcc00';
+                ctx.lineWidth = 2 * scale;
+                ctx.stroke();
+
+                // Bubble tail (triangle pointing down)
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.beginPath();
+                ctx.moveTo(screenX - 8 * scale, bubbleY + bubbleHeight);
+                ctx.lineTo(screenX, bubbleY + bubbleHeight + 10 * scale);
+                ctx.lineTo(screenX + 8 * scale, bubbleY + bubbleHeight);
+                ctx.closePath();
+                ctx.fill();
+
+                // Text
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(bubble.text, screenX, bubbleY + bubbleHeight / 2);
+
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ==================== KILL STREAK SYSTEM ====================
+        let killStreakState = {
+            count: 0,
+            lastKillTime: 0,
+            streakTimeout: 3000 // 3 seconds to continue streak
+        };
+
+        const KILL_STREAK_TIERS = [
+            { count: 2, name: 'DOUBLE KILL', color: '#ffff00' },
+            { count: 3, name: 'TRIPLE KILL', color: '#ff8800' },
+            { count: 4, name: 'OVERKILL', color: '#ff4400' },
+            { count: 5, name: 'KILLTACULAR', color: '#ff00ff' },
+            { count: 6, name: 'KILLIONAIRE', color: '#00ffff' },
+            { count: 7, name: 'KILLPOCALYPSE', color: '#ff0000' },
+            { count: 10, name: 'UNSTOPPABLE', color: '#ffd700' }
+        ];
+
+        /**
+         * Records a kill and checks for kill streaks
+         */
+        function recordKill() {
+            const now = Date.now();
+
+            // Check if streak continues or resets
+            if (now - killStreakState.lastKillTime > killStreakState.streakTimeout) {
+                killStreakState.count = 0;
+            }
+
+            killStreakState.count++;
+            killStreakState.lastKillTime = now;
+
+            // Check for streak tier
+            const tier = KILL_STREAK_TIERS.slice().reverse().find(t => killStreakState.count >= t.count);
+            if (tier && killStreakState.count === tier.count) {
+                showKillStreakAnnouncement(tier);
+                playKillStreakSound(tier.count);
+            }
+        }
+
+        /**
+         * Shows kill streak announcement on screen
+         * @param {object} tier - The streak tier object
+         */
+        function showKillStreakAnnouncement(tier) {
+            // Remove any existing announcement
+            const existing = document.querySelector('.kill-streak-announcement');
+            if (existing) existing.remove();
+
+            const announcement = document.createElement('div');
+            announcement.className = 'kill-streak-announcement';
+            announcement.textContent = tier.name;
+            announcement.style.color = tier.color;
+            announcement.style.textShadow = `0 0 20px ${tier.color}, 0 0 40px ${tier.color}`;
+
+            document.getElementById('game-container').appendChild(announcement);
+
+            // Remove after animation
+            setTimeout(() => announcement.remove(), 1500);
+        }
+
+        /**
+         * Plays escalating kill streak sound
+         * @param {number} streakCount - Current streak count
+         */
+        function playKillStreakSound(streakCount) {
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            // Higher pitch and longer duration for higher streaks
+            const baseFreq = 400 + (streakCount * 100);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(baseFreq * 1.5, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(baseFreq * 2, audioCtx.currentTime + 0.2);
+
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // ==================== HIT MARKER SYSTEM ====================
+        /**
+         * Creates a hit marker at the crosshair position
+         * @param {boolean} isCrit - Whether this was a critical hit
+         */
+        function showHitMarker(isCrit = false) {
+            const marker = document.createElement('div');
+            marker.className = 'hit-marker' + (isCrit ? ' crit' : '');
+            marker.style.left = mousePos.x + 'px';
+            marker.style.top = mousePos.y + 'px';
+
+            document.getElementById('game-container').appendChild(marker);
+
+            // Play hit marker sound
+            playHitMarkerSound(isCrit);
+
+            // Remove after animation completes
+            setTimeout(() => {
+                marker.remove();
+            }, 200);
+        }
+
+        /**
+         * Plays the hit marker sound effect
+         * @param {boolean} isCrit - Whether this was a critical hit
+         */
+        function playHitMarkerSound(isCrit = false) {
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (isCrit) {
+                // Crit: Higher pitched, more satisfying ding
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1600, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } else {
+                // Normal: Quick tick sound
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
         // ==================== ENEMY TYPES ====================
         const ENEMY_TYPES = {
             GIGACHAD: {
@@ -981,6 +2356,34 @@
                 coins: 200,
                 traits: ['👑', '💀', '🔥'],
                 isBoss: true
+            },
+            GAMER_DINO: {
+                name: 'GAMER DINO',
+                emoji: '🦕🎮',
+                health: 100,
+                damage: 20,
+                speed: 2.5,
+                size: 70,
+                color: '#ff00ff', // Base magenta, will cycle RGB
+                points: 150,
+                coins: 12,
+                traits: ['🎮', '⌨️', '🖱️'],
+                isGamer: true,
+                deathMessages: ['GG', 'EZ', 'GET GOOD', 'NO RE', 'GIT GUD', 'L + RATIO']
+            },
+            SIGMA_DINO: {
+                name: 'SIGMA DINO',
+                emoji: '🦖👔',
+                health: 120,
+                damage: 0, // Doesn't attack - on that grind
+                speed: 1, // Walks slowly across screen
+                size: 75,
+                color: '#1a1a2e', // Dark sigma colors
+                points: 300, // High points for the challenge
+                coins: 36, // 3x normal coins (12 * 3)
+                traits: ['👔', '💼', '📈'],
+                isSigma: true,
+                deathMessages: ['GRINDSET INTERRUPTED', 'PASSIVE INCOME STOPPED', 'SIGMA RULE VIOLATED', 'BACK TO THE MATRIX']
             }
         };
         
@@ -1005,41 +2408,103 @@
                 this.x = x;
                 this.y = 0;
                 this.z = z;
-                
+
                 this.wobble = 0;
                 this.attackCooldown = 0;
                 this.hitFlash = 0;
                 this.invulnerable = false;
+                this.hitCount = 0; // Track hits for one-shot achievement
+                this.wasOneShot = true; // Assume one-shot until proven otherwise
+
+                // Gamer Dino specific properties
+                this.isGamer = template.isGamer || false;
+                this.deathMessages = template.deathMessages || null;
+                if (this.isGamer) {
+                    this.rgbPhase = Math.random() * Math.PI * 2; // Random starting phase for RGB cycle
+                    this.rangedCooldown = 300; // 5 seconds at 60fps
+                    this.shootCooldown = 0;
+                }
+
+                // Sigma Dino specific properties - walks across screen, doesn't attack
+                this.isSigma = template.isSigma || false;
+                if (this.isSigma) {
+                    // Sigma walks from one side to the other
+                    this.sigmaDirection = x > 0 ? -1 : 1; // Walk opposite to spawn side
+                    this.sigmaPhase = 0; // For subtle glow effect
+                    this.sigmaDialogueCooldown = 180; // Say something every 3 seconds
+                    this.hasEscaped = false; // Track if they escaped
+                }
+
+                // Trigger spawn dialogue (100% for boss/sigma, 50% for others)
+                if (this.isBoss || this.isSigma || Math.random() < 0.5) {
+                    // Small delay so enemy is visible first
+                    setTimeout(() => showEnemyDialogue(this, 'spawn'), 500);
+                }
             }
-            
+
             update() {
                 if (this.invulnerable) return;
-                
+
+                // Sigma Dino special movement - walks across screen, ignores player
+                if (this.isSigma) {
+                    // Walk horizontally across screen
+                    this.x += this.sigmaDirection * this.speed;
+                    // Slowly approach player's z position for visibility
+                    if (this.z < -200) {
+                        this.z += 0.5;
+                    }
+
+                    // Subtle golden glow effect
+                    this.sigmaPhase += 0.05;
+                    const glow = Math.sin(this.sigmaPhase) * 30 + 100;
+                    this.color = `rgb(${glow + 50}, ${glow + 30}, ${Math.floor(glow * 0.3)})`;
+
+                    // Occasional sigma dialogue
+                    this.sigmaDialogueCooldown--;
+                    if (this.sigmaDialogueCooldown <= 0) {
+                        showSigmaDialogue(this);
+                        this.sigmaDialogueCooldown = 240 + Math.random() * 120; // 4-6 seconds
+                    }
+
+                    // Check if escaped off screen
+                    if (Math.abs(this.x) > 600 && !this.hasEscaped) {
+                        this.hasEscaped = true;
+                        showSigmaEscapeText();
+                        // Remove from enemies array (handled in game loop)
+                        this.health = 0;
+                        return;
+                    }
+
+                    this.wobble += 0.05; // Slower wobble for sigma
+                    this.hitFlash = Math.max(0, this.hitFlash - 0.1);
+                    return; // Skip normal enemy behavior
+                }
+
                 const dx = player.x - this.x;
                 const dz = -this.z;
                 const dist = Math.sqrt(dx * dx + dz * dz);
-                
+
                 if (dist > 50) {
                     this.x += (dx / dist) * this.speed;
                     this.z += (dz / dist) * this.speed;
                 }
-                
+
                 // IMPORTANT: Prevent enemies from going behind the player
                 // Keep them in front where they can be shot (z must stay negative)
                 const minZ = -80; // Minimum distance in front of player
                 if (this.z > minZ) {
                     this.z = minZ;
                 }
-                
+
                 // Keep enemies within visible screen area (X bounds)
                 const maxX = 500;
                 this.x = Math.max(-maxX, Math.min(maxX, this.x));
-                
+
                 // Boss shooting behavior
                 if (this.isBoss && !this.invulnerable) {
                     if (!this.shootCooldown) this.shootCooldown = 0;
                     this.shootCooldown--;
-                    
+
                     if (this.shootCooldown <= 0) {
                         // Boss shoots a fireball at player
                         const bossDamage = 5; // Low damage fireball
@@ -1047,7 +2512,29 @@
                         this.shootCooldown = 90; // Shoot every 1.5 seconds
                     }
                 }
-                
+
+                // Gamer Dino RGB cycling and ranged attack
+                if (this.isGamer) {
+                    // Update RGB phase for color cycling
+                    this.rgbPhase += 0.1;
+
+                    // Calculate RGB glow color
+                    const r = Math.sin(this.rgbPhase) * 127 + 128;
+                    const g = Math.sin(this.rgbPhase + 2.094) * 127 + 128;
+                    const b = Math.sin(this.rgbPhase + 4.189) * 127 + 128;
+                    this.color = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+
+                    // Ranged attack every 5 seconds (300 frames)
+                    this.rangedCooldown--;
+                    if (this.rangedCooldown <= 0) {
+                        // "360 NO SCOPE" attack!
+                        showGamerAttackText(this.x, this.y, this.z);
+                        playSound('gamer_attack');
+                        enemyProjectiles.push(new GamerProjectile(this.x, this.y, this.z, 15));
+                        this.rangedCooldown = 300; // Reset to 5 seconds
+                    }
+                }
+
                 // Only attack when in front of player and close enough
                 const attackDist = Math.sqrt(dx * dx + (this.z * this.z));
                 if (attackDist < 120 && this.z < -50 && this.attackCooldown <= 0) {
@@ -1062,9 +2549,13 @@
             
             attack() {
                 gameState.health -= this.damage;
+                gameState.lastAttacker = this.name; // Track for death screen
+                achievementTracking.totalDamageTaken += this.damage; // Track for achievements
                 playSound('damage');
                 showDamageOverlay();
-                
+                shakeOnDamage(); // Screen shake on player damage
+                showEnemyDialogue(this, 'attack'); // Show attack dialogue
+
                 if (gameState.health <= 0) {
                     gameOver();
                 }
@@ -1073,22 +2564,30 @@
             
             takeDamage(amount) {
                 if (this.invulnerable) return false;
-                
+
+                // Track hits for one-shot achievement
+                this.hitCount++;
+                if (this.hitCount > 1) {
+                    this.wasOneShot = false;
+                }
+
                 // Crit check
                 let finalDamage = amount;
                 let isCrit = Math.random() < player.critChance;
                 if (isCrit) {
                     finalDamage *= player.critMultiplier;
+                    shakeOnCrit(); // Extra shake on critical hits
                 }
-                
+
                 this.health -= finalDamage;
                 this.hitFlash = 1;
                 playSound('hit');
-                
+                showHitMarker(isCrit); // Show hit marker at crosshair
+
                 for (let i = 0; i < 5; i++) {
                     particles.push(new Particle(this.x, this.y, this.z, this.color));
                 }
-                
+
                 // Floating damage
                 floatingTexts.push({
                     text: isCrit ? `CRIT ${Math.floor(finalDamage)}!` : `-${Math.floor(finalDamage)}`,
@@ -1119,10 +2618,39 @@
             }
             
             die() {
+                // Escaped Sigma doesn't give rewards (they walked away)
+                if (this.isSigma && this.hasEscaped) {
+                    return; // No rewards for escaped Sigmas
+                }
+
                 gameState.score += this.points;
                 gameState.coins += this.coins;
+                gameState.totalCoinsEarned += this.coins; // Track total for death screen
+                skinState.totalCoins += this.coins; // Track lifetime coins for skins
+                saveSkinState(); // Persist skin coins
                 gameState.kills++;
-                
+                recordKill(); // Track for kill streak announcements
+
+                // ==================== ACHIEVEMENT TRIGGERS ====================
+                // FIRST_BLOOD - First kill of the game
+                if (gameState.kills === 1) {
+                    unlockAchievement('FIRST_BLOOD');
+                }
+
+                // BOSS_SLAYER - Defeat your first boss
+                if (this.isBoss) {
+                    unlockAchievement('BOSS_SLAYER');
+                }
+
+                // BUILT_DIFFERENT - One-shot a Gigachad (enemy at full health)
+                if (this.type === 'GIGACHAD' && this.maxHealth && this.health <= 0) {
+                    // Check if this was a one-shot (enemy died from full health)
+                    // This is tracked by checking if they only took one hit
+                    if (this.wasOneShot) {
+                        unlockAchievement('BUILT_DIFFERENT');
+                    }
+                }
+
                 // Track kills for healing power
                 if (!gameState.healReady) {
                     gameState.healKills++;
@@ -1130,13 +2658,20 @@
                         gameState.healReady = true;
                     }
                 }
-                
+
                 playSound('kill');
-                
+
+                // Screen shake on kill - bigger for bosses
+                if (this.isBoss) {
+                    shakeOnBossDeath();
+                } else {
+                    shakeOnKill();
+                }
+
                 for (let i = 0; i < 20; i++) {
                     particles.push(new Particle(this.x, this.y, this.z, this.color));
                 }
-                
+
                 floatingTexts.push({
                     text: `+${this.points}`,
                     x: this.x,
@@ -1145,7 +2680,7 @@
                     life: 60,
                     color: '#ffcc00'
                 });
-                
+
                 floatingTexts.push({
                     text: `🪙+${this.coins}`,
                     x: this.x + 30,
@@ -1154,7 +2689,20 @@
                     life: 60,
                     color: '#ffd700'
                 });
-                
+
+                // Gamer Dino custom death messages
+                if (this.deathMessages && this.deathMessages.length > 0) {
+                    const deathMsg = this.deathMessages[Math.floor(Math.random() * this.deathMessages.length)];
+                    floatingTexts.push({
+                        text: deathMsg,
+                        x: this.x,
+                        y: this.y - 100,
+                        z: this.z,
+                        life: 90,
+                        color: '#00ff00'
+                    });
+                }
+
                 if (this.isBoss) {
                     document.getElementById('boss-health-container').style.display = 'none';
                     gameState.bossActive = false;
@@ -1238,31 +2786,58 @@
                 this.vy = vy;
                 this.vz = vz;
                 this.life = 100;
-                
+                this.rotation = 0; // For spinning projectiles
+
                 const weapon = WEAPONS[inventory.currentWeapon];
                 this.emoji = weapon.emoji;
                 this.damage = weapon.damage + player.damage + (inventory.upgrades.damage * UPGRADES.damage.perLevel);
                 this.color = weapon.color;
+                this.weaponType = inventory.currentWeapon; // Track weapon type for special effects
+                this.special = weapon.special || null;
             }
-            
+
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
                 this.z += this.vz;
                 this.vy += 0.05; // Reduced gravity for better accuracy
                 this.life--;
-                
+
+                // Spinning for moai
+                if (this.special === 'moai') {
+                    this.rotation += 0.15;
+                }
+
+                // Skull trail for doot cannon
+                if (this.special === 'doot' && this.life % 5 === 0) {
+                    spawnSkullTrail(this.x, this.y, this.z);
+                }
+
                 for (let i = enemies.length - 1; i >= 0; i--) {
                     const e = enemies[i];
                     const dx = this.x - e.x;
                     const dy = this.y - e.y;
                     const dz = this.z - e.z;
                     const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                    
+
                     // Larger hit detection for better feel
                     const hitRadius = 60 + (e.size / 3);
                     if (dist < hitRadius) {
+                        // Special effect for moai
+                        if (this.special === 'moai') {
+                            showYoAngelo(e.x, e.y - 50, e.z);
+                            playSound('moai');
+                        }
+
+                        // Check if this hit kills the enemy
+                        const willKill = e.health <= this.damage;
+
                         if (e.takeDamage(this.damage)) {
+                            // Doot special kill effect - show skeleton
+                            if (this.special === 'doot') {
+                                showSkeletonEffect(e.x, e.y, e.z);
+                                playSound('doot_kill');
+                            }
                             enemies.splice(i, 1);
                         }
                         this.life = 0;
@@ -1270,24 +2845,87 @@
                     }
                 }
             }
-            
+
             draw() {
                 const screenX = canvas.width / 2 + this.x * (400 / Math.max(100, -this.z));
                 const screenY = canvas.height / 2 + (this.y + 100) * (400 / Math.max(100, -this.z));
                 const scale = 400 / Math.max(100, -this.z);
-                
+
                 if (-this.z < 10) return;
-                
+
+                ctx.save();
                 ctx.shadowColor = this.color;
                 ctx.shadowBlur = 20;
                 ctx.font = `${30 * scale}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(this.emoji, screenX, screenY);
+
+                // Apply rotation for spinning projectiles
+                if (this.special === 'moai') {
+                    ctx.translate(screenX, screenY);
+                    ctx.rotate(this.rotation);
+                    ctx.fillText(this.emoji, 0, 0);
+                } else {
+                    ctx.fillText(this.emoji, screenX, screenY);
+                }
+
                 ctx.shadowBlur = 0;
+                ctx.restore();
             }
         }
-        
+
+        /**
+         * Shows "Yo, Angelo" text effect when moai hits
+         */
+        function showYoAngelo(x, y, z) {
+            floatingTexts.push({
+                text: 'Yo, Angelo 🗿',
+                x: x + (Math.random() - 0.5) * 30,
+                y: y,
+                z: z,
+                life: 60,
+                color: '#8b7355'
+            });
+        }
+
+        /**
+         * Spawns a skull trail particle for doot cannon
+         */
+        function spawnSkullTrail(x, y, z) {
+            floatingTexts.push({
+                text: '💀',
+                x: x + (Math.random() - 0.5) * 20,
+                y: y + (Math.random() - 0.5) * 20,
+                z: z,
+                life: 30,
+                color: '#ffffff'
+            });
+        }
+
+        /**
+         * Shows skeleton effect when doot cannon kills an enemy
+         */
+        function showSkeletonEffect(x, y, z) {
+            // Big skeleton emoji
+            floatingTexts.push({
+                text: '💀',
+                x: x,
+                y: y - 30,
+                z: z,
+                life: 60,
+                color: '#ffffff'
+            });
+            // Floating "DOOT" text
+            floatingTexts.push({
+                text: 'DOOT!',
+                x: x,
+                y: y - 60,
+                z: z,
+                life: 45,
+                color: '#daa520'
+            });
+        }
+
         // ==================== ENEMY PROJECTILE CLASS ====================
         let enemyProjectiles = [];
         
@@ -1317,9 +2955,12 @@
                     if (dx < 80) {
                         // Hit player
                         gameState.health -= this.damage;
+                        gameState.lastAttacker = 'Boss Fireball'; // Track for death screen
+                        achievementTracking.totalDamageTaken += this.damage; // Track for achievements
                         playSound('damage');
                         showDamageOverlay();
-                        
+                        shakeOnDamage(); // Screen shake when hit by fireball
+
                         if (gameState.health <= 0) {
                             gameOver();
                         }
@@ -1345,7 +2986,138 @@
                 ctx.shadowBlur = 0;
             }
         }
-        
+
+        // ==================== GAMER PROJECTILE CLASS ====================
+        // Slow-moving 🎯 projectile from Gamer Dino's "360 NO SCOPE" attack
+        class GamerProjectile {
+            constructor(x, y, z, damage) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+                this.vx = (Math.random() - 0.5) * 2; // Slight spread
+                this.vy = 0;
+                this.vz = 8; // Slower than boss fireball
+                this.damage = damage;
+                this.life = 180; // Longer life for slow projectile
+                this.emoji = '🎯';
+                this.color = '#ff00ff';
+                this.spin = 0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.z += this.vz;
+                this.spin += 0.15; // Spinning effect
+                this.life--;
+
+                // RGB color cycling for gamer projectile
+                const r = Math.sin(this.spin) * 127 + 128;
+                const g = Math.sin(this.spin + 2.094) * 127 + 128;
+                const b = Math.sin(this.spin + 4.189) * 127 + 128;
+                this.color = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+
+                // Check collision with player
+                if (this.z > -50) {
+                    const dx = Math.abs(this.x - player.x);
+                    if (dx < 80) {
+                        gameState.health -= this.damage;
+                        gameState.lastAttacker = '360 NO SCOPE'; // Gamer attack name
+                        achievementTracking.totalDamageTaken += this.damage;
+                        playSound('damage');
+                        showDamageOverlay();
+                        shakeOnDamage();
+
+                        if (gameState.health <= 0) {
+                            gameOver();
+                        }
+                        updateHUD();
+                        this.life = 0;
+                    }
+                }
+            }
+
+            draw() {
+                if (this.z > 0 || -this.z > 2000) return;
+
+                const screenX = canvas.width / 2 + this.x * (400 / Math.max(100, -this.z));
+                const screenY = canvas.height / 2 + (this.y + 100) * (400 / Math.max(100, -this.z));
+                const scale = 400 / Math.max(100, -this.z);
+
+                ctx.save();
+                ctx.translate(screenX, screenY);
+                ctx.rotate(this.spin);
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 30;
+                ctx.font = `${40 * scale}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.emoji, 0, 0);
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+        }
+
+        // Show "360 NO SCOPE" attack text above Gamer Dino
+        function showGamerAttackText(x, y, z) {
+            floatingTexts.push({
+                text: '360 NO SCOPE!',
+                x: x,
+                y: y - 80,
+                z: z,
+                life: 60,
+                color: '#ff00ff'
+            });
+        }
+
+        // Sigma Dino dialogue lines
+        const SIGMA_QUOTES = [
+            'On my grind...',
+            'Sigma Rule #1: Never chase',
+            'Sigma Rule #47: Walk away',
+            'Passive income only',
+            'I AM the high value target',
+            'Built for the grind',
+            'Money moves only',
+            'No time for fights',
+            'Self-improvement arc',
+            'I go where I want'
+        ];
+
+        // Show random sigma dialogue above enemy
+        function showSigmaDialogue(enemy) {
+            const quote = SIGMA_QUOTES[Math.floor(Math.random() * SIGMA_QUOTES.length)];
+            floatingTexts.push({
+                text: quote,
+                x: enemy.x,
+                y: enemy.y - 80,
+                z: enemy.z,
+                life: 90,
+                color: '#ffd700'
+            });
+        }
+
+        // Show taunt when Sigma escapes
+        function showSigmaEscapeText() {
+            const taunts = [
+                'Sigma escaped! Skill issue...',
+                'Sigma got away! Should\'ve grinded harder',
+                'The Sigma walks free. L.',
+                'Couldn\'t stop the grindset!'
+            ];
+            const taunt = taunts[Math.floor(Math.random() * taunts.length)];
+
+            // Show large center-screen taunt
+            floatingTexts.push({
+                text: taunt,
+                x: 0,
+                y: -100,
+                z: -300,
+                life: 120,
+                color: '#ff4444'
+            });
+        }
+
         // ==================== PARTICLE CLASS ====================
         class Particle {
             constructor(x, y, z, color) {
@@ -1440,9 +3212,10 @@
         function drawWeapon() {
             const bobOffset = Math.sin(Date.now() / 150) * 3;
             const weapon = WEAPONS[inventory.currentWeapon];
-            
-            // Draw aim line from weapon to crosshair
-            ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+            const skin = getCurrentSkin(); // Get current Santa skin
+
+            // Draw aim line from weapon to crosshair (use skin glow color)
+            ctx.strokeStyle = skin.glowColor + '50'; // 50 = ~30% opacity
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
             ctx.beginPath();
@@ -1450,15 +3223,19 @@
             ctx.lineTo(mousePos.x, mousePos.y);
             ctx.stroke();
             ctx.setLineDash([]);
-            
-            ctx.fillStyle = '#ff0000';
+
+            // Draw Santa's arms/sleeves with skin color
+            ctx.fillStyle = skin.color;
+            ctx.shadowColor = skin.glowColor;
+            ctx.shadowBlur = 10;
             ctx.beginPath();
             ctx.ellipse(canvas.width / 2 - 100, canvas.height - 100 + bobOffset, 40, 50, -0.3, 0, Math.PI * 2);
             ctx.fill();
-            
+
             ctx.beginPath();
             ctx.ellipse(canvas.width / 2 + 100, canvas.height - 100 + bobOffset, 40, 50, 0.3, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
             
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height - 80 + bobOffset);
@@ -1522,13 +3299,73 @@
         }
         
         // ==================== SHOP SYSTEM ====================
+        // ==================== SHOPKEEPER NPC SYSTEM ====================
+        const SHOPKEEPER_DIALOGUE = {
+            rich: [
+                "Ah, a person of wealth and taste! 💰",
+                "Your grindset is immaculate, my friend.",
+                "Now THIS is passive income energy!",
+                "I see the market has been good to you.",
+                "A fellow high-value individual!"
+            ],
+            broke: [
+                "Broke? Sounds like a skill issue...",
+                "No cap, you need to grind harder.",
+                "Have you tried having more money?",
+                "The sigma grindset is NOT strong here.",
+                "Maybe try dodging more? Just a thought."
+            ],
+            normal: [
+                "These prices are bussin' fr fr",
+                "Buy something or get out of my emporium",
+                "No cap, these weapons slap",
+                "Welcome to the grind, traveler",
+                "Everything here is certified fire 🔥",
+                "The moai approves of your presence 🗿",
+                "I was once like you... before the gains"
+            ],
+            purchase: [
+                "STONKS! 📈",
+                "A wise investment!",
+                "That one's fire, no cap",
+                "Based purchase",
+                "You understand the grind"
+            ]
+        };
+
+        function getShopkeeperDialogue() {
+            let category;
+            if (gameState.coins >= 2000) {
+                category = 'rich';
+            } else if (gameState.coins < 100) {
+                category = 'broke';
+            } else {
+                category = 'normal';
+            }
+            const lines = SHOPKEEPER_DIALOGUE[category];
+            return lines[Math.floor(Math.random() * lines.length)];
+        }
+
+        function updateShopkeeperDialogue(type = null) {
+            const dialogue = type === 'purchase'
+                ? SHOPKEEPER_DIALOGUE.purchase[Math.floor(Math.random() * SHOPKEEPER_DIALOGUE.purchase.length)]
+                : getShopkeeperDialogue();
+            document.getElementById('shopkeeper-dialogue').textContent = dialogue;
+        }
+
         function openShop() {
             if (!gameState.betweenWaves && gameState.running) return;
-            
+
+            // Reset shop spending for this visit (for BIG_SPENDER achievement)
+            achievementTracking.shopSpending = 0;
+
             gameState.paused = true;
             document.getElementById('shop-screen').style.display = 'flex';
             document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
-            
+
+            // Update shopkeeper dialogue based on coins
+            updateShopkeeperDialogue();
+
             renderShop();
         }
         
@@ -1572,15 +3409,21 @@
                         renderShop();
                     } else if (gameState.coins >= weapon.price) {
                         gameState.coins -= weapon.price;
+                        achievementTracking.shopSpending += weapon.price; // Track spending
+                        // BIG_SPENDER achievement - spend 1000+ in one shop visit
+                        if (achievementTracking.shopSpending >= 1000) {
+                            unlockAchievement('BIG_SPENDER');
+                        }
                         inventory.weapons[key] = true;
                         inventory.currentWeapon = key;
                         playSound('buy');
+                        updateShopkeeperDialogue('purchase'); // Shopkeeper reacts to purchase!
                         document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
                         updateHUD();
                         renderShop();
                     }
                 };
-                
+
                 weaponsList.appendChild(item);
             }
             
@@ -1603,15 +3446,21 @@
                 item.onclick = () => {
                     if (!maxed && gameState.coins >= price) {
                         gameState.coins -= price;
+                        achievementTracking.shopSpending += price; // Track spending
+                        // BIG_SPENDER achievement - spend 1000+ in one shop visit
+                        if (achievementTracking.shopSpending >= 1000) {
+                            unlockAchievement('BIG_SPENDER');
+                        }
                         inventory.upgrades[key]++;
                         playSound('buy');
+                        updateShopkeeperDialogue('purchase'); // Shopkeeper reacts to purchase!
                         applyUpgrades();
                         document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
                         updateHUD();
                         renderShop();
                     }
                 };
-                
+
                 upgradesList.appendChild(item);
             }
         }
@@ -1729,34 +3578,147 @@
         
         // ==================== GAME LOGIC ====================
         function spawnEnemy() {
-            const type = Math.random() > 0.4 ? 'BUFF_NERD' : 'GIGACHAD';
+            // Determine enemy type with special enemies appearing in later waves
+            let type;
+            const roll = Math.random();
+
+            // 8% chance for Sigma Dino (high value target, doesn't fight)
+            if (roll < 0.08) {
+                type = 'SIGMA_DINO';
+                // Sigma spawns from far left or right and walks across
+                const startSide = Math.random() > 0.5 ? 1 : -1;
+                const x = startSide * 500;
+                const z = -400 - Math.random() * 200;
+                enemies.push(new Enemy(type, x, z));
+                return;
+            } else if (gameState.wave >= 3 && roll < 0.30) {
+                // 22% chance for Gamer Dino in wave 3+
+                type = 'GAMER_DINO';
+            } else if (roll < 0.55) {
+                type = 'BUFF_NERD';
+            } else {
+                type = 'GIGACHAD';
+            }
+
             const x = (Math.random() - 0.5) * 800;
             const z = -800 - Math.random() * 500;
             enemies.push(new Enemy(type, x, z));
         }
-        
+
+        // ==================== BOSS INTRO CUTSCENE SYSTEM ====================
+        const BOSS_NAMES = {
+            5: { name: 'CHADOSAURUS', title: 'Never Skips Leg Day', emoji: '🦖💪' },
+            10: { name: 'PROFESSOR GAINS', title: 'PhD in Lifting', emoji: '🦖🎓' },
+            15: { name: 'THE RATIO KING', title: 'Undefeated in Arguments', emoji: '🦖👑' },
+            20: { name: 'ZYZZ-REX', title: 'Forever Mirin\'', emoji: '🦖✨' },
+            25: { name: 'FINAL FORM CHAD', title: 'We\'re All Gonna Make It', emoji: '🦖🔥' }
+        };
+
+        // Get boss info for current wave (cycles if beyond defined bosses)
+        function getBossInfo(wave) {
+            // Check for exact match first
+            if (BOSS_NAMES[wave]) {
+                return BOSS_NAMES[wave];
+            }
+            // For waves beyond 25, cycle through with increasing power titles
+            const baseWaves = [5, 10, 15, 20, 25];
+            const cycleIndex = Math.floor((wave - 1) / 5) % baseWaves.length;
+            const baseWave = baseWaves[cycleIndex];
+            const base = BOSS_NAMES[baseWave];
+            return {
+                name: base.name + ' MK' + Math.floor(wave / 25 + 1),
+                title: base.title + ' (Ascended)',
+                emoji: base.emoji
+            };
+        }
+
+        // Play boss intro cutscene
+        function playBossIntro(callback) {
+            const bossInfo = getBossInfo(gameState.wave);
+
+            // Pause the game during intro
+            gameState.paused = true;
+
+            // Get overlay elements
+            const overlay = document.getElementById('boss-intro-overlay');
+            const emoji = document.getElementById('boss-intro-emoji');
+            const name = document.getElementById('boss-intro-name');
+            const title = document.getElementById('boss-intro-title');
+            const flash = document.getElementById('boss-intro-flash');
+
+            // Reset classes
+            emoji.className = '';
+            name.className = '';
+            title.className = '';
+            flash.className = '';
+
+            // Set content
+            emoji.textContent = bossInfo.emoji;
+            name.textContent = bossInfo.name;
+            title.textContent = `"${bossInfo.title}"`;
+
+            // Start the sequence
+            overlay.classList.add('active');
+
+            // Timeline:
+            // 0ms - Start darkening
+            // 300ms - Boss emoji slides in
+            // 800ms - Name appears
+            // 1200ms - Title appears
+            // 2500ms - Flash
+            // 3000ms - End and start fight
+
+            setTimeout(() => {
+                emoji.classList.add('slide-in');
+            }, 300);
+
+            setTimeout(() => {
+                name.classList.add('show');
+            }, 800);
+
+            setTimeout(() => {
+                title.classList.add('show');
+            }, 1200);
+
+            setTimeout(() => {
+                flash.classList.add('flash');
+            }, 2500);
+
+            // End cutscene and spawn boss
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                gameState.paused = false;
+                if (callback) callback(bossInfo);
+            }, 3000);
+        }
+
         function spawnBoss() {
-            const boss = new Enemy('MINI_BOSS', 0, -1000);
-            boss.health = 500 + (gameState.wave * 50); // Reduced from 1000 + wave*100
-            boss.maxHealth = boss.health;
-            boss.shootCooldown = 0; // Add shooting cooldown for boss
-            enemies.push(boss);
-            
-            gameState.bossActive = true;
-            gameState.currentBoss = boss;
-            
-            document.getElementById('boss-health-container').style.display = 'block';
-            document.getElementById('boss-name').textContent = `👑 ${boss.name} - WAVE ${gameState.wave} 👑`;
-            document.getElementById('boss-health-bar').style.width = '100%';
-            
-            playSound('boss');
+            // Play intro cutscene first, then spawn boss
+            playBossIntro((bossInfo) => {
+                const boss = new Enemy('MINI_BOSS', 0, -1000);
+                boss.health = 500 + (gameState.wave * 50);
+                boss.maxHealth = boss.health;
+                boss.shootCooldown = 0;
+                boss.customName = bossInfo.name; // Store custom name
+                enemies.push(boss);
+
+                gameState.bossActive = true;
+                gameState.currentBoss = boss;
+
+                document.getElementById('boss-health-container').style.display = 'block';
+                document.getElementById('boss-name').textContent = `👑 ${bossInfo.name} 👑`;
+                document.getElementById('boss-health-bar').style.width = '100%';
+
+                playSound('boss');
+            });
         }
         
         function spawnWave() {
             gameState.waveInProgress = true;
-            
+            onWaveStart(); // Track for achievements
+
             const isBossWave = gameState.wave % 5 === 0;
-            
+
             showWaveAnnouncement(isBossWave);
             
             if (isBossWave) {
@@ -1788,10 +3750,20 @@
         function shoot() {
             if (!gameState.running || gameState.paused) return;
             if (player.fireCooldown > 0) return;
-            
-            playSound('shoot');
-            
+
             const weapon = WEAPONS[inventory.currentWeapon];
+
+            // MEME_LORD achievement - Use the Moai Cannon 🗿
+            if (weapon.special === 'moai') {
+                unlockAchievement('MEME_LORD');
+            }
+
+            // Play weapon-specific sounds
+            if (weapon.special === 'doot') {
+                playSound('doot'); // 🎺 Doot doot!
+            } else {
+                playSound('shoot');
+            }
             player.fireCooldown = weapon.fireRate - (inventory.upgrades.fireRate * UPGRADES.fireRate.perLevel);
             player.fireCooldown = Math.max(3, player.fireCooldown);
             
@@ -1919,9 +3891,14 @@
         
         function gameOver() {
             gameState.running = false;
+
+            // SKILL_ISSUE - Die on Wave 1
+            if (gameState.wave === 1) {
+                unlockAchievement('SKILL_ISSUE');
+            }
+
+            updateDeathScreen(); // Update death receipt with stats
             document.getElementById('game-over').style.display = 'flex';
-            document.getElementById('final-score').textContent = `Final Score: ${gameState.score.toLocaleString()}`;
-            document.getElementById('final-kills').textContent = `Dinos Defeated: ${gameState.kills}`;
         }
         
         function startGame() {
@@ -1945,9 +3922,23 @@
                 currentBoss: null,
                 healKills: 0,
                 healReady: false,
-                healKillsRequired: 10
+                healKillsRequired: 10,
+                // Death screen tracking
+                startTime: Date.now(),
+                lastAttacker: 'Unknown',
+                totalCoinsEarned: 0
             };
-            
+
+            // Reset kill streak
+            killStreakState.count = 0;
+            killStreakState.lastKillTime = 0;
+
+            // Reset dialogue bubbles
+            activeDialogueBubbles = [];
+
+            // Reset achievement tracking for new game
+            resetAchievementTracking();
+
             player = {
                 x: 0,
                 y: 0,
@@ -1967,7 +3958,9 @@
                     snowball: false,
                     candy_cane: false,
                     ornament: false,
-                    star: false
+                    star: false,
+                    moai: false,
+                    doot: false
                 },
                 upgrades: {
                     damage: 0,
@@ -1976,7 +3969,7 @@
                     critChance: 0
                 }
             };
-            
+
             enemies = [];
             projectiles = [];
             enemyProjectiles = [];
@@ -1992,9 +3985,10 @@
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground();
-            
+
             updateCrosshair();
-            
+            updateScreenShake(); // Update screen shake effect each frame
+
             if (gameState.running && !gameState.paused) {
                 // Fire cooldown
                 if (player.fireCooldown > 0) player.fireCooldown--;
@@ -2034,13 +4028,15 @@
                 }
                 
                 drawFloatingTexts();
-                
+                drawDialogueBubbles(); // Draw enemy speech bubbles
+
                 // Wave completion
                 if (enemies.length === 0 && gameState.waveInProgress) {
+                    onWaveComplete(); // Check for wave-related achievements
                     gameState.waveInProgress = false;
                     gameState.wave++;
                     gameState.betweenWaves = true;
-                    
+
                     // Clear any remaining enemy projectiles
                     enemyProjectiles = [];
                     
@@ -2107,11 +4103,13 @@
         
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', startGame);
+        document.getElementById('copy-receipt-btn').addEventListener('click', copyDeathReceipt);
         document.getElementById('continue-btn').addEventListener('click', closeShop);
         
         document.addEventListener('contextmenu', (e) => e.preventDefault());
-        
+
         // ==================== INIT ====================
+        initSkinSystem(); // Load skins from localStorage
         resizeCanvas();
         gameLoop();
     </script>
