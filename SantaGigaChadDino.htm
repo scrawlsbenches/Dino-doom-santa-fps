@@ -982,7 +982,8 @@
                 snowball: false,
                 candy_cane: false,
                 ornament: false,
-                star: false
+                star: false,
+                moai: false
             },
             upgrades: {
                 damage: 0,
@@ -1050,6 +1051,17 @@
                 color: '#ffff00',
                 price: 5000,
                 description: 'Ultimate guiding light'
+            },
+            moai: {
+                name: '🗿 Moai Cannon',
+                emoji: '🗿',
+                damage: 70,
+                fireRate: 25,
+                speed: 18,
+                color: '#8b7355',
+                price: 1500,
+                description: 'Yo, Angelo',
+                special: 'moai' // Special projectile behavior
             }
         };
         
@@ -1137,6 +1149,16 @@
                     gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.5);
+                    break;
+                case 'moai':
+                    // Deep stone impact sound - 🗿
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
                     break;
             }
         }
@@ -1919,30 +1941,44 @@
                 this.vy = vy;
                 this.vz = vz;
                 this.life = 100;
-                
+                this.rotation = 0; // For spinning projectiles
+
                 const weapon = WEAPONS[inventory.currentWeapon];
                 this.emoji = weapon.emoji;
                 this.damage = weapon.damage + player.damage + (inventory.upgrades.damage * UPGRADES.damage.perLevel);
                 this.color = weapon.color;
+                this.weaponType = inventory.currentWeapon; // Track weapon type for special effects
+                this.special = weapon.special || null;
             }
-            
+
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
                 this.z += this.vz;
                 this.vy += 0.05; // Reduced gravity for better accuracy
                 this.life--;
-                
+
+                // Spinning for moai
+                if (this.special === 'moai') {
+                    this.rotation += 0.15;
+                }
+
                 for (let i = enemies.length - 1; i >= 0; i--) {
                     const e = enemies[i];
                     const dx = this.x - e.x;
                     const dy = this.y - e.y;
                     const dz = this.z - e.z;
                     const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                    
+
                     // Larger hit detection for better feel
                     const hitRadius = 60 + (e.size / 3);
                     if (dist < hitRadius) {
+                        // Special effect for moai
+                        if (this.special === 'moai') {
+                            showYoAngelo(e.x, e.y - 50, e.z);
+                            playSound('moai');
+                        }
+
                         if (e.takeDamage(this.damage)) {
                             enemies.splice(i, 1);
                         }
@@ -1951,22 +1987,47 @@
                     }
                 }
             }
-            
+
             draw() {
                 const screenX = canvas.width / 2 + this.x * (400 / Math.max(100, -this.z));
                 const screenY = canvas.height / 2 + (this.y + 100) * (400 / Math.max(100, -this.z));
                 const scale = 400 / Math.max(100, -this.z);
-                
+
                 if (-this.z < 10) return;
-                
+
+                ctx.save();
                 ctx.shadowColor = this.color;
                 ctx.shadowBlur = 20;
                 ctx.font = `${30 * scale}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(this.emoji, screenX, screenY);
+
+                // Apply rotation for spinning projectiles
+                if (this.special === 'moai') {
+                    ctx.translate(screenX, screenY);
+                    ctx.rotate(this.rotation);
+                    ctx.fillText(this.emoji, 0, 0);
+                } else {
+                    ctx.fillText(this.emoji, screenX, screenY);
+                }
+
                 ctx.shadowBlur = 0;
+                ctx.restore();
             }
+        }
+
+        /**
+         * Shows "Yo, Angelo" text effect when moai hits
+         */
+        function showYoAngelo(x, y, z) {
+            floatingTexts.push({
+                text: 'Yo, Angelo 🗿',
+                x: x + (Math.random() - 0.5) * 30,
+                y: y,
+                z: z,
+                life: 60,
+                color: '#8b7355'
+            });
         }
         
         // ==================== ENEMY PROJECTILE CLASS ====================
@@ -2660,7 +2721,8 @@
                     snowball: false,
                     candy_cane: false,
                     ornament: false,
-                    star: false
+                    star: false,
+                    moai: false
                 },
                 upgrades: {
                     damage: 0,
@@ -2669,7 +2731,7 @@
                     critChance: 0
                 }
             };
-            
+
             enemies = [];
             projectiles = [];
             enemyProjectiles = [];
