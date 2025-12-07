@@ -243,6 +243,79 @@
             }
         }
 
+        /* Achievement Toasts */
+        #achievement-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            pointer-events: none;
+            z-index: 80;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .achievement-toast {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(50, 50, 50, 0.95));
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: achievementSlideIn 0.5s ease-out forwards;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .achievement-toast.hiding {
+            animation: achievementSlideOut 0.5s ease-in forwards;
+        }
+
+        .achievement-icon {
+            font-size: 32px;
+        }
+
+        .achievement-content {
+            flex: 1;
+        }
+
+        .achievement-title {
+            font-family: 'Bungee', cursive;
+            font-size: 14px;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+            margin-bottom: 4px;
+        }
+
+        .achievement-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #ffffff;
+        }
+
+        @keyframes achievementSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes achievementSlideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
         /* Kill feed */
         #kill-feed {
             position: absolute;
@@ -828,6 +901,7 @@
             </div>
             
             <div id="kill-feed"></div>
+            <div id="achievement-container"></div>
 
             <div id="boss-health-container">
                 <div id="boss-name">💀 MEGA BOSS 💀</div>
@@ -1193,6 +1267,18 @@
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.35);
                     break;
+                case 'achievement':
+                    // Triumphant achievement unlock sound 🏆
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2); // G5
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.3); // C6
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.5);
+                    break;
             }
         }
 
@@ -1366,6 +1452,142 @@
                 btn.textContent = '✓ COPIED!';
                 setTimeout(() => btn.textContent = '📋 SHARE YOUR L', 2000);
             });
+        }
+
+        // ==================== ACHIEVEMENT SYSTEM ====================
+        const ACHIEVEMENTS = {
+            FIRST_BLOOD: {
+                id: 'first_blood',
+                name: 'FIRST BLOOD',
+                description: 'First kill of the game',
+                icon: '🩸'
+            },
+            WAVE_SURVIVOR: {
+                id: 'wave_survivor',
+                name: 'WAVE SURVIVOR',
+                description: 'Complete a wave without damage',
+                icon: '🛡️'
+            },
+            BUILT_DIFFERENT: {
+                id: 'built_different',
+                name: 'BUILT DIFFERENT',
+                description: 'One-shot a Gigachad',
+                icon: '💪'
+            },
+            SKILL_ISSUE: {
+                id: 'skill_issue',
+                name: 'SKILL ISSUE',
+                description: 'Die on Wave 1',
+                icon: '💀'
+            },
+            EASY_MODE: {
+                id: 'easy_mode',
+                name: 'IS THIS EASY MODE?',
+                description: 'Reach Wave 10 without taking damage',
+                icon: '😎'
+            },
+            BIG_SPENDER: {
+                id: 'big_spender',
+                name: 'BIG SPENDER',
+                description: 'Spend 1000 coins in one shop visit',
+                icon: '💰'
+            },
+            BOSS_SLAYER: {
+                id: 'boss_slayer',
+                name: 'BOSS SLAYER',
+                description: 'Defeat your first boss',
+                icon: '👑'
+            },
+            MEME_LORD: {
+                id: 'meme_lord',
+                name: 'MEME LORD',
+                description: 'Use the Moai Cannon',
+                icon: '🗿'
+            }
+        };
+
+        let unlockedAchievements = new Set();
+        let achievementTracking = {
+            waveStartHealth: 100,
+            totalDamageTaken: 0,
+            shopSpending: 0
+        };
+
+        /**
+         * Unlocks an achievement and shows toast
+         * @param {string} achievementKey - Key from ACHIEVEMENTS object
+         */
+        function unlockAchievement(achievementKey) {
+            const achievement = ACHIEVEMENTS[achievementKey];
+            if (!achievement) return;
+
+            // Don't unlock twice
+            if (unlockedAchievements.has(achievement.id)) return;
+
+            unlockedAchievements.add(achievement.id);
+            showAchievementToast(achievement);
+            playSound('achievement');
+        }
+
+        /**
+         * Shows achievement toast notification
+         * @param {object} achievement - Achievement object
+         */
+        function showAchievementToast(achievement) {
+            const container = document.getElementById('achievement-container');
+
+            const toast = document.createElement('div');
+            toast.className = 'achievement-toast';
+            toast.innerHTML = `
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-content">
+                    <div class="achievement-title">🏆 ACHIEVEMENT UNLOCKED</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Start hiding after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                // Remove after animation
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        /**
+         * Resets achievement tracking for new game
+         */
+        function resetAchievementTracking() {
+            unlockedAchievements.clear();
+            achievementTracking = {
+                waveStartHealth: 100,
+                totalDamageTaken: 0,
+                shopSpending: 0
+            };
+        }
+
+        /**
+         * Called at start of each wave
+         */
+        function onWaveStart() {
+            achievementTracking.waveStartHealth = gameState.health;
+        }
+
+        /**
+         * Called when wave is completed
+         */
+        function onWaveComplete() {
+            // WAVE SURVIVOR - no damage taken this wave
+            if (gameState.health === achievementTracking.waveStartHealth) {
+                unlockAchievement('WAVE_SURVIVOR');
+            }
+
+            // IS THIS EASY MODE? - Reach wave 10 without ever taking damage
+            if (gameState.wave >= 10 && achievementTracking.totalDamageTaken === 0) {
+                unlockAchievement('EASY_MODE');
+            }
         }
 
         // ==================== ENEMY DIALOGUE SYSTEM ====================
@@ -1726,6 +1948,8 @@
                 this.attackCooldown = 0;
                 this.hitFlash = 0;
                 this.invulnerable = false;
+                this.hitCount = 0; // Track hits for one-shot achievement
+                this.wasOneShot = true; // Assume one-shot until proven otherwise
 
                 // Trigger spawn dialogue (100% for boss, 50% for others)
                 if (this.isBoss || Math.random() < 0.5) {
@@ -1785,6 +2009,7 @@
             attack() {
                 gameState.health -= this.damage;
                 gameState.lastAttacker = this.name; // Track for death screen
+                achievementTracking.totalDamageTaken += this.damage; // Track for achievements
                 playSound('damage');
                 showDamageOverlay();
                 shakeOnDamage(); // Screen shake on player damage
@@ -1798,7 +2023,13 @@
             
             takeDamage(amount) {
                 if (this.invulnerable) return false;
-                
+
+                // Track hits for one-shot achievement
+                this.hitCount++;
+                if (this.hitCount > 1) {
+                    this.wasOneShot = false;
+                }
+
                 // Crit check
                 let finalDamage = amount;
                 let isCrit = Math.random() < player.critChance;
@@ -1852,6 +2083,26 @@
                 gameState.kills++;
                 recordKill(); // Track for kill streak announcements
 
+                // ==================== ACHIEVEMENT TRIGGERS ====================
+                // FIRST_BLOOD - First kill of the game
+                if (gameState.kills === 1) {
+                    unlockAchievement('FIRST_BLOOD');
+                }
+
+                // BOSS_SLAYER - Defeat your first boss
+                if (this.isBoss) {
+                    unlockAchievement('BOSS_SLAYER');
+                }
+
+                // BUILT_DIFFERENT - One-shot a Gigachad (enemy at full health)
+                if (this.type === 'GIGACHAD' && this.maxHealth && this.health <= 0) {
+                    // Check if this was a one-shot (enemy died from full health)
+                    // This is tracked by checking if they only took one hit
+                    if (this.wasOneShot) {
+                        unlockAchievement('BUILT_DIFFERENT');
+                    }
+                }
+
                 // Track kills for healing power
                 if (!gameState.healReady) {
                     gameState.healKills++;
@@ -1859,7 +2110,7 @@
                         gameState.healReady = true;
                     }
                 }
-                
+
                 playSound('kill');
 
                 // Screen shake on kill - bigger for bosses
@@ -2144,6 +2395,7 @@
                         // Hit player
                         gameState.health -= this.damage;
                         gameState.lastAttacker = 'Boss Fireball'; // Track for death screen
+                        achievementTracking.totalDamageTaken += this.damage; // Track for achievements
                         playSound('damage');
                         showDamageOverlay();
                         shakeOnDamage(); // Screen shake when hit by fireball
@@ -2352,11 +2604,14 @@
         // ==================== SHOP SYSTEM ====================
         function openShop() {
             if (!gameState.betweenWaves && gameState.running) return;
-            
+
+            // Reset shop spending for this visit (for BIG_SPENDER achievement)
+            achievementTracking.shopSpending = 0;
+
             gameState.paused = true;
             document.getElementById('shop-screen').style.display = 'flex';
             document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
-            
+
             renderShop();
         }
         
@@ -2400,6 +2655,11 @@
                         renderShop();
                     } else if (gameState.coins >= weapon.price) {
                         gameState.coins -= weapon.price;
+                        achievementTracking.shopSpending += weapon.price; // Track spending
+                        // BIG_SPENDER achievement - spend 1000+ in one shop visit
+                        if (achievementTracking.shopSpending >= 1000) {
+                            unlockAchievement('BIG_SPENDER');
+                        }
                         inventory.weapons[key] = true;
                         inventory.currentWeapon = key;
                         playSound('buy');
@@ -2431,6 +2691,11 @@
                 item.onclick = () => {
                     if (!maxed && gameState.coins >= price) {
                         gameState.coins -= price;
+                        achievementTracking.shopSpending += price; // Track spending
+                        // BIG_SPENDER achievement - spend 1000+ in one shop visit
+                        if (achievementTracking.shopSpending >= 1000) {
+                            unlockAchievement('BIG_SPENDER');
+                        }
                         inventory.upgrades[key]++;
                         playSound('buy');
                         applyUpgrades();
@@ -2439,7 +2704,7 @@
                         renderShop();
                     }
                 };
-                
+
                 upgradesList.appendChild(item);
             }
         }
@@ -2582,9 +2847,10 @@
         
         function spawnWave() {
             gameState.waveInProgress = true;
-            
+            onWaveStart(); // Track for achievements
+
             const isBossWave = gameState.wave % 5 === 0;
-            
+
             showWaveAnnouncement(isBossWave);
             
             if (isBossWave) {
@@ -2618,6 +2884,11 @@
             if (player.fireCooldown > 0) return;
 
             const weapon = WEAPONS[inventory.currentWeapon];
+
+            // MEME_LORD achievement - Use the Moai Cannon 🗿
+            if (weapon.special === 'moai') {
+                unlockAchievement('MEME_LORD');
+            }
 
             // Play weapon-specific sounds
             if (weapon.special === 'doot') {
@@ -2752,6 +3023,12 @@
         
         function gameOver() {
             gameState.running = false;
+
+            // SKILL_ISSUE - Die on Wave 1
+            if (gameState.wave === 1) {
+                unlockAchievement('SKILL_ISSUE');
+            }
+
             updateDeathScreen(); // Update death receipt with stats
             document.getElementById('game-over').style.display = 'flex';
         }
@@ -2790,6 +3067,9 @@
 
             // Reset dialogue bubbles
             activeDialogueBubbles = [];
+
+            // Reset achievement tracking for new game
+            resetAchievementTracking();
 
             player = {
                 x: 0,
@@ -2884,10 +3164,11 @@
 
                 // Wave completion
                 if (enemies.length === 0 && gameState.waveInProgress) {
+                    onWaveComplete(); // Check for wave-related achievements
                     gameState.waveInProgress = false;
                     gameState.wave++;
                     gameState.betweenWaves = true;
-                    
+
                     // Clear any remaining enemy projectiles
                     enemyProjectiles = [];
                     
