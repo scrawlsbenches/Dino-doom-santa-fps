@@ -398,7 +398,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -406,25 +406,105 @@
             z-index: 100;
         }
 
-        #game-over h1 {
+        /* Death Receipt Styling */
+        #death-receipt {
+            background: #111;
+            border: 3px solid #ff3333;
+            border-radius: 15px;
+            padding: 30px 40px;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .receipt-header h1 {
             font-family: 'Bungee', cursive;
-            font-size: 80px;
-            color: #ff0000;
-            text-shadow: 0 0 50px #ff0000;
+            font-size: 32px;
+            color: #ff3333;
+            text-shadow: 0 0 20px #ff3333;
+            margin: 0 0 5px 0;
             animation: gameOverShake 0.5s ease-in-out infinite;
+        }
+
+        .receipt-subtitle {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #888;
+            letter-spacing: 2px;
+        }
+
+        .receipt-divider {
+            font-family: monospace;
+            color: #444;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+
+        .receipt-stats {
+            text-align: left;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #ccc;
+            margin: 8px 0;
+        }
+
+        .receipt-row span:last-child {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .receipt-rating {
+            margin: 20px 0;
+        }
+
+        .rating-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .rating-value {
+            font-family: 'Bungee', cursive;
+            font-size: 36px;
+            color: #ffd700;
+            text-shadow: 0 0 15px #ffd700;
+        }
+
+        .receipt-lastwords {
+            margin: 15px 0;
+        }
+
+        .lastwords-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .lastwords-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #ff6b6b;
+            font-style: italic;
+        }
+
+        .receipt-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
         }
 
         @keyframes gameOverShake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        #final-score {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 36px;
-            color: #00ff88;
-            margin: 30px 0;
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
         }
 
         /* Wave announcement */
@@ -821,12 +901,38 @@
             <div id="minigame-hits">HITS: 0 / DAMAGE: 0</div>
         </div>
         
-        <!-- Game Over Screen -->
+        <!-- Game Over Screen - Meme Receipt Style -->
         <div id="game-over">
-            <h1>💀 GAME OVER 💀</h1>
-            <div id="final-score">Final Score: 0</div>
-            <div id="final-kills" style="font-family: 'Press Start 2P'; color: #ff6b6b; margin-bottom: 30px;">Dinos Defeated: 0</div>
-            <button id="restart-btn" class="game-btn green">🔄 TRY AGAIN</button>
+            <div id="death-receipt">
+                <div class="receipt-header">
+                    <h1>💀 SKILL ISSUE DETECTED 💀</h1>
+                    <div class="receipt-subtitle">DINO DOOM - DEATH RECEIPT</div>
+                </div>
+                <div class="receipt-divider">═══════════════════════════════</div>
+                <div class="receipt-stats">
+                    <div class="receipt-row"><span>Waves Survived:</span><span id="stat-waves">0</span></div>
+                    <div class="receipt-row"><span>Dinos Eliminated:</span><span id="stat-kills">0</span></div>
+                    <div class="receipt-row"><span>Final Score:</span><span id="stat-score">0</span></div>
+                    <div class="receipt-row"><span>Coins Earned:</span><span id="stat-coins">0</span></div>
+                    <div class="receipt-row"><span>Time Survived:</span><span id="stat-time">0:00</span></div>
+                    <div class="receipt-row"><span>Cause of Death:</span><span id="stat-cause">Unknown</span></div>
+                </div>
+                <div class="receipt-divider">───────────────────────────────</div>
+                <div class="receipt-rating">
+                    <div class="rating-label">PERFORMANCE RATING:</div>
+                    <div id="stat-rating" class="rating-value">NPC</div>
+                </div>
+                <div class="receipt-divider">───────────────────────────────</div>
+                <div class="receipt-lastwords">
+                    <div class="lastwords-label">Last Words:</div>
+                    <div id="stat-lastwords" class="lastwords-text">"skill issue"</div>
+                </div>
+                <div class="receipt-divider">═══════════════════════════════</div>
+                <div class="receipt-buttons">
+                    <button id="copy-receipt-btn" class="game-btn" style="font-size: 16px; padding: 10px 20px;">📋 SHARE YOUR L</button>
+                    <button id="restart-btn" class="game-btn green">🔄 TRY AGAIN</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -850,7 +956,11 @@
             currentBoss: null,
             healKills: 0,
             healReady: false,
-            healKillsRequired: 10
+            healKillsRequired: 10,
+            // Death screen tracking
+            startTime: 0,
+            lastAttacker: 'Unknown',
+            totalCoinsEarned: 0
         };
         
         let player = {
@@ -1093,6 +1203,115 @@
         function shakeOnCrit() { screenShake(8, 200); }         // Critical hit
         function shakeOnBossSlam() { screenShake(25, 400); }    // Boss attack
         function shakeOnBossDeath() { screenShake(30, 500); }   // Boss defeated
+
+        // ==================== DEATH SCREEN SYSTEM ====================
+        const MEME_RATINGS = [
+            { minScore: 0, rating: 'Actual NPC', color: '#888888' },
+            { minScore: 1000, rating: 'Kinda Mid', color: '#888888' },
+            { minScore: 5000, rating: 'Certified Decent', color: '#00ff00' },
+            { minScore: 10000, rating: 'Built Different', color: '#00ffff' },
+            { minScore: 25000, rating: 'Sigma Energy', color: '#ff00ff' },
+            { minScore: 50000, rating: 'GIGACHAD', color: '#ffd700' }
+        ];
+
+        const LAST_WORDS = [
+            '"skill issue"',
+            '"I was lagging"',
+            '"my mouse died"',
+            '"not my fault"',
+            '"rigged game"',
+            '"built different (negatively)"',
+            '"I let them win"',
+            '"calculated L"',
+            '"gg ez... wait"',
+            '"I blame the dinosaurs"',
+            '"Santa needed a break"',
+            '"tactical defeat"',
+            '"we go next"',
+            '"ratio"',
+            '"at least I tried"'
+        ];
+
+        /**
+         * Gets meme rating based on score
+         */
+        function getMemeRating(score) {
+            let rating = MEME_RATINGS[0];
+            for (const r of MEME_RATINGS) {
+                if (score >= r.minScore) rating = r;
+            }
+            return rating;
+        }
+
+        /**
+         * Gets random last words
+         */
+        function getRandomLastWords() {
+            return LAST_WORDS[Math.floor(Math.random() * LAST_WORDS.length)];
+        }
+
+        /**
+         * Formats time as M:SS
+         */
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        /**
+         * Updates the death screen with current stats
+         */
+        function updateDeathScreen() {
+            const timeSurvived = Date.now() - gameState.startTime;
+            const rating = getMemeRating(gameState.score);
+
+            document.getElementById('stat-waves').textContent = gameState.wave;
+            document.getElementById('stat-kills').textContent = gameState.kills;
+            document.getElementById('stat-score').textContent = gameState.score.toLocaleString();
+            document.getElementById('stat-coins').textContent = gameState.totalCoinsEarned;
+            document.getElementById('stat-time').textContent = formatTime(timeSurvived);
+            document.getElementById('stat-cause').textContent = gameState.lastAttacker;
+
+            const ratingEl = document.getElementById('stat-rating');
+            ratingEl.textContent = rating.rating;
+            ratingEl.style.color = rating.color;
+            ratingEl.style.textShadow = `0 0 15px ${rating.color}`;
+
+            document.getElementById('stat-lastwords').textContent = getRandomLastWords();
+        }
+
+        /**
+         * Copies death receipt to clipboard for sharing
+         */
+        function copyDeathReceipt() {
+            const timeSurvived = Date.now() - gameState.startTime;
+            const rating = getMemeRating(gameState.score);
+
+            const receipt = `
+╔══════════════════════════════════╗
+║   💀 SKILL ISSUE DETECTED 💀      ║
+║      DINO DOOM - DEATH RECEIPT   ║
+╠══════════════════════════════════╣
+║ Waves Survived:    ${String(gameState.wave).padStart(14)} ║
+║ Dinos Eliminated:  ${String(gameState.kills).padStart(14)} ║
+║ Final Score:       ${String(gameState.score.toLocaleString()).padStart(14)} ║
+║ Coins Earned:      ${String(gameState.totalCoinsEarned).padStart(14)} ║
+║ Time Survived:     ${formatTime(timeSurvived).padStart(14)} ║
+║ Cause of Death:    ${gameState.lastAttacker.padStart(14)} ║
+╠══════════════════════════════════╣
+║ Rating: ${rating.rating.padEnd(24)} ║
+╚══════════════════════════════════╝
+🦖 DINO DOOM: Santa's Last Stand 🎅
+            `.trim();
+
+            navigator.clipboard.writeText(receipt).then(() => {
+                const btn = document.getElementById('copy-receipt-btn');
+                btn.textContent = '✓ COPIED!';
+                setTimeout(() => btn.textContent = '📋 SHARE YOUR L', 2000);
+            });
+        }
 
         // ==================== ENEMY DIALOGUE SYSTEM ====================
         const ENEMY_DIALOGUE = {
@@ -1510,6 +1729,7 @@
             
             attack() {
                 gameState.health -= this.damage;
+                gameState.lastAttacker = this.name; // Track for death screen
                 playSound('damage');
                 showDamageOverlay();
                 shakeOnDamage(); // Screen shake on player damage
@@ -1573,6 +1793,7 @@
             die() {
                 gameState.score += this.points;
                 gameState.coins += this.coins;
+                gameState.totalCoinsEarned += this.coins; // Track total for death screen
                 gameState.kills++;
                 recordKill(); // Track for kill streak announcements
 
@@ -1777,6 +1998,7 @@
                     if (dx < 80) {
                         // Hit player
                         gameState.health -= this.damage;
+                        gameState.lastAttacker = 'Boss Fireball'; // Track for death screen
                         playSound('damage');
                         showDamageOverlay();
                         shakeOnDamage(); // Screen shake when hit by fireball
@@ -2380,9 +2602,8 @@
         
         function gameOver() {
             gameState.running = false;
+            updateDeathScreen(); // Update death receipt with stats
             document.getElementById('game-over').style.display = 'flex';
-            document.getElementById('final-score').textContent = `Final Score: ${gameState.score.toLocaleString()}`;
-            document.getElementById('final-kills').textContent = `Dinos Defeated: ${gameState.kills}`;
         }
         
         function startGame() {
@@ -2406,7 +2627,11 @@
                 currentBoss: null,
                 healKills: 0,
                 healReady: false,
-                healKillsRequired: 10
+                healKillsRequired: 10,
+                // Death screen tracking
+                startTime: Date.now(),
+                lastAttacker: 'Unknown',
+                totalCoinsEarned: 0
             };
 
             // Reset kill streak
@@ -2577,6 +2802,7 @@
         
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', startGame);
+        document.getElementById('copy-receipt-btn').addEventListener('click', copyDeathReceipt);
         document.getElementById('continue-btn').addEventListener('click', closeShop);
         
         document.addEventListener('contextmenu', (e) => e.preventDefault());
