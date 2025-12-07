@@ -535,6 +535,88 @@
             margin-top: 10px;
         }
 
+        /* Santa Skin Selector */
+        #skin-selector {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+        }
+
+        #skin-selector h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        #skin-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .skin-option {
+            background: rgba(30, 30, 50, 0.9);
+            border: 3px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .skin-option:hover {
+            border-color: #ffd700;
+            transform: translateY(-3px);
+        }
+
+        .skin-option.selected {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+        }
+
+        .skin-option.locked {
+            opacity: 0.6;
+        }
+
+        .skin-option.locked:hover {
+            border-color: #ff4444;
+        }
+
+        .skin-emoji {
+            font-size: 50px;
+            margin-bottom: 8px;
+        }
+
+        .skin-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .skin-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            color: #ffd700;
+        }
+
+        .skin-price.owned {
+            color: #00ff00;
+        }
+
+        #skin-coins-display {
+            margin-top: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: #ffd700;
+        }
+
         .game-btn {
             font-family: 'Bungee', cursive;
             font-size: 32px;
@@ -1098,7 +1180,16 @@
                     <p style="color: #ffd700; font-size: 12px; margin-top: 5px;">EVERY 5 WAVES</p>
                 </div>
             </div>
-            
+
+            <!-- Santa Skin Selector -->
+            <div id="skin-selector">
+                <h3>🎅 SELECT YOUR SANTA 🎅</h3>
+                <div id="skin-options">
+                    <!-- Skins populated by JavaScript -->
+                </div>
+                <div id="skin-coins-display">🪙 <span id="skin-coins">0</span></div>
+            </div>
+
             <button id="start-btn" class="game-btn">🎮 START GAME 🎮</button>
             
             <div class="controls-info">
@@ -1241,7 +1332,144 @@
         let floatingTexts = [];
         let keys = {};
         let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        
+
+        // ==================== SANTA SKINS SYSTEM ====================
+        const SANTA_SKINS = {
+            default: {
+                name: 'Default Santa',
+                emoji: '🎅',
+                price: 0,
+                color: '#ff0000',
+                glowColor: '#ff4444',
+                description: 'Classic Santa'
+            },
+            drip: {
+                name: 'Drip Santa',
+                emoji: '🎅💎',
+                price: 500,
+                color: '#00ffff',
+                glowColor: '#00ffff',
+                description: 'Iced out'
+            },
+            tactical: {
+                name: 'Tactical Santa',
+                emoji: '🎅🎯',
+                price: 1000,
+                color: '#556b2f',
+                glowColor: '#6b8e23',
+                description: 'Operator mode'
+            },
+            gigachad: {
+                name: 'Gigachad Santa',
+                emoji: '🎅💪',
+                price: 2500,
+                color: '#ffd700',
+                glowColor: '#ffaa00',
+                description: 'Built different'
+            },
+            sigma: {
+                name: 'Sigma Santa',
+                emoji: '🎅👔',
+                price: 5000,
+                color: '#1a1a2e',
+                glowColor: '#4a4a6e',
+                description: 'On the grind'
+            }
+        };
+
+        // Skin state (persisted to localStorage)
+        let skinState = {
+            selected: 'default',
+            owned: ['default'],
+            totalCoins: 0 // Lifetime coins earned (for purchasing skins)
+        };
+
+        // Load skins from localStorage
+        function loadSkinState() {
+            const saved = localStorage.getItem('santaSkinState');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    skinState = { ...skinState, ...parsed };
+                } catch (e) {
+                    console.error('Failed to load skin state:', e);
+                }
+            }
+        }
+
+        // Save skins to localStorage
+        function saveSkinState() {
+            localStorage.setItem('santaSkinState', JSON.stringify(skinState));
+        }
+
+        // Get current skin
+        function getCurrentSkin() {
+            return SANTA_SKINS[skinState.selected] || SANTA_SKINS.default;
+        }
+
+        // Purchase a skin
+        function purchaseSkin(skinId) {
+            const skin = SANTA_SKINS[skinId];
+            if (!skin) return false;
+            if (skinState.owned.includes(skinId)) return false;
+            if (skinState.totalCoins < skin.price) return false;
+
+            skinState.totalCoins -= skin.price;
+            skinState.owned.push(skinId);
+            skinState.selected = skinId;
+            saveSkinState();
+            playSound('buy');
+            return true;
+        }
+
+        // Select a skin
+        function selectSkin(skinId) {
+            if (!skinState.owned.includes(skinId)) return false;
+            skinState.selected = skinId;
+            saveSkinState();
+            return true;
+        }
+
+        // Render skin selector on start screen
+        function renderSkinSelector() {
+            const container = document.getElementById('skin-options');
+            container.innerHTML = '';
+
+            for (const [id, skin] of Object.entries(SANTA_SKINS)) {
+                const owned = skinState.owned.includes(id);
+                const selected = skinState.selected === id;
+                const canAfford = skinState.totalCoins >= skin.price;
+
+                const option = document.createElement('div');
+                option.className = `skin-option ${selected ? 'selected' : ''} ${!owned ? 'locked' : ''}`;
+                option.innerHTML = `
+                    <div class="skin-emoji">${skin.emoji}</div>
+                    <div class="skin-name">${skin.name}</div>
+                    <div class="skin-price ${owned ? 'owned' : ''}">${owned ? '✓ OWNED' : `🪙 ${skin.price}`}</div>
+                `;
+
+                option.onclick = () => {
+                    if (owned) {
+                        selectSkin(id);
+                        renderSkinSelector();
+                    } else if (canAfford) {
+                        purchaseSkin(id);
+                        renderSkinSelector();
+                    }
+                };
+
+                container.appendChild(option);
+            }
+
+            document.getElementById('skin-coins').textContent = skinState.totalCoins;
+        }
+
+        // Initialize skin system
+        function initSkinSystem() {
+            loadSkinState();
+            renderSkinSelector();
+        }
+
         // ==================== WEAPONS ====================
         const WEAPONS = {
             present: {
@@ -2398,6 +2626,8 @@
                 gameState.score += this.points;
                 gameState.coins += this.coins;
                 gameState.totalCoinsEarned += this.coins; // Track total for death screen
+                skinState.totalCoins += this.coins; // Track lifetime coins for skins
+                saveSkinState(); // Persist skin coins
                 gameState.kills++;
                 recordKill(); // Track for kill streak announcements
 
@@ -2982,9 +3212,10 @@
         function drawWeapon() {
             const bobOffset = Math.sin(Date.now() / 150) * 3;
             const weapon = WEAPONS[inventory.currentWeapon];
-            
-            // Draw aim line from weapon to crosshair
-            ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+            const skin = getCurrentSkin(); // Get current Santa skin
+
+            // Draw aim line from weapon to crosshair (use skin glow color)
+            ctx.strokeStyle = skin.glowColor + '50'; // 50 = ~30% opacity
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
             ctx.beginPath();
@@ -2992,15 +3223,19 @@
             ctx.lineTo(mousePos.x, mousePos.y);
             ctx.stroke();
             ctx.setLineDash([]);
-            
-            ctx.fillStyle = '#ff0000';
+
+            // Draw Santa's arms/sleeves with skin color
+            ctx.fillStyle = skin.color;
+            ctx.shadowColor = skin.glowColor;
+            ctx.shadowBlur = 10;
             ctx.beginPath();
             ctx.ellipse(canvas.width / 2 - 100, canvas.height - 100 + bobOffset, 40, 50, -0.3, 0, Math.PI * 2);
             ctx.fill();
-            
+
             ctx.beginPath();
             ctx.ellipse(canvas.width / 2 + 100, canvas.height - 100 + bobOffset, 40, 50, 0.3, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
             
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height - 80 + bobOffset);
@@ -3872,8 +4107,9 @@
         document.getElementById('continue-btn').addEventListener('click', closeShop);
         
         document.addEventListener('contextmenu', (e) => e.preventDefault());
-        
+
         // ==================== INIT ====================
+        initSkinSystem(); // Load skins from localStorage
         resizeCanvas();
         gameLoop();
     </script>
