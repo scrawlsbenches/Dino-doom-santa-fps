@@ -4,184 +4,6 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 
 ---
 
-## 🔴 BUG FIXES (Critical/High Priority from Code Review)
-
-### BUG-001: Fix Race Condition in Boss Intro Cutscene
-**Estimate**: 1 hour
-**Priority**: P0 (Critical)
-**Source**: Code Review
-
-**Issue**: If the player dies during a boss intro cutscene (from lingering projectiles), the game enters an inconsistent state where `gameState.paused = false` is called after `gameOver()`.
-
-**Location**: `SantaGigaChadDino.htm:3636-3693`
-
-**Fix**:
-```javascript
-// In playBossIntro setTimeout callback (around line 3688)
-setTimeout(() => {
-    overlay.classList.remove('active');
-    if (gameState.running) {  // Add this check
-        gameState.paused = false;
-        if (callback) callback(bossInfo);
-    }
-}, 3000);
-```
-
-**Acceptance Criteria**:
-- [ ] Player dying during boss intro doesn't break game state
-- [ ] Boss intro correctly canceled if game ends
-
----
-
-### BUG-002: Add localStorage Error Handling
-**Estimate**: 1 hour
-**Priority**: P0 (Critical)
-**Source**: Code Review
-
-**Issue**: `loadSkinState()` doesn't handle storage access errors. In private browsing mode or when storage is full, `localStorage.getItem()` can throw.
-
-**Location**: `SantaGigaChadDino.htm:1388-1398`
-
-**Fix**:
-```javascript
-function loadSkinState() {
-    try {
-        const saved = localStorage.getItem('santaSkinState');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            skinState = { ...skinState, ...parsed };
-        }
-    } catch (e) {
-        console.error('Failed to access localStorage:', e);
-    }
-}
-
-function saveSkinState() {
-    try {
-        localStorage.setItem('santaSkinState', JSON.stringify(skinState));
-    } catch (e) {
-        console.error('Failed to save skin state:', e);
-    }
-}
-```
-
-**Acceptance Criteria**:
-- [ ] Game works in private browsing mode
-- [ ] Game handles storage quota errors gracefully
-- [ ] No uncaught exceptions from localStorage
-
----
-
-### BUG-003: Add Null Checks for DOM Elements
-**Estimate**: 1-2 hours
-**Priority**: P0 (Critical)
-**Source**: Code Review
-
-**Issue**: Multiple DOM element accesses assume elements always exist. If HTML is modified or elements fail to load, these will throw.
-
-**Locations**:
-- `SantaGigaChadDino.htm:2603`
-- `SantaGigaChadDino.htm:3708`
-- Various HUD update functions
-
-**Fix**: Add optional chaining or null checks:
-```javascript
-document.getElementById('boss-health-bar')?.style.width = ...
-// OR
-const healthBar = document.getElementById('boss-health-bar');
-if (healthBar) healthBar.style.width = ...
-```
-
-**Acceptance Criteria**:
-- [ ] No null reference errors in console
-- [ ] Game handles missing DOM elements gracefully
-
----
-
-### BUG-004: Fix Array Modification During Iteration
-**Estimate**: 2 hours
-**Priority**: P1 (High)
-**Source**: Code Review
-
-**Issue**: In `Projectile.update()`, the code iterates over `enemies` and splices items while the main game loop may also be iterating over it.
-
-**Location**: `SantaGigaChadDino.htm:2816-2846`
-
-**Fix**: Mark enemies for removal with a flag and clean up in a single pass:
-```javascript
-// In Projectile.update()
-if (e.takeDamage(this.damage)) {
-    e.markedForRemoval = true;  // Mark instead of immediate splice
-}
-
-// In game loop, after all updates:
-enemies = enemies.filter(e => !e.markedForRemoval);
-```
-
-**Acceptance Criteria**:
-- [ ] No array index errors during gameplay
-- [ ] All enemy deaths handled correctly
-- [ ] No "ghost" enemies remaining
-
----
-
-### BUG-005: Clear Timeouts on Game Restart
-**Estimate**: 1-2 hours
-**Priority**: P1 (High)
-**Source**: Code Review
-
-**Issue**: `setTimeout` callbacks in `showEnemyDialogue()` and Enemy constructor may fire after game restart, affecting the new game.
-
-**Locations**:
-- `SantaGigaChadDino.htm:2111-2114`
-- `SantaGigaChadDino.htm:2441-2442`
-
-**Fix**: Track timeout IDs and clear them on game restart:
-```javascript
-let activeTimeouts = [];
-
-// When creating timeouts:
-activeTimeouts.push(setTimeout(() => {...}, 2000));
-
-// In startGame():
-activeTimeouts.forEach(clearTimeout);
-activeTimeouts = [];
-```
-
-**Acceptance Criteria**:
-- [ ] No old dialogue appearing after restart
-- [ ] No old effects triggering in new game
-- [ ] Clean slate on game restart
-
----
-
-### BUG-006: Add Audio Context Resume Logic
-**Estimate**: 30 minutes
-**Priority**: P1 (High)
-**Source**: Code Review
-
-**Issue**: Audio context may be suspended due to browser autoplay policies. Modern browsers block audio until user interaction.
-
-**Location**: `SantaGigaChadDino.htm:1557-1562`
-
-**Fix**:
-```javascript
-function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new AudioCtx();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-}
-```
-
-**Acceptance Criteria**:
-- [ ] Audio works on first user interaction
-- [ ] No silent gameplay due to suspended context
-
----
-
 ## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
 
 ### REFACTOR-001: Extract Magic Numbers to Constants
@@ -513,34 +335,24 @@ function playSound(type) {
 
 | Priority | Count | Total Estimate |
 |----------|-------|----------------|
-| P0 (Critical Bugs) | 3 | 3-4 hours |
-| P1 (High Bugs) | 3 | 3.5-5.5 hours |
+| P0 (Critical Bugs) | 0 | ✅ Complete |
+| P1 (High Bugs) | 0 | ✅ Complete |
 | P2 (Medium/Refactor) | 4 | 5-7 hours |
 | P3 (Low/Features) | 8 | 21-29 hours |
-| **TOTAL** | **18** | **32.5-45.5 hours** |
+| **TOTAL** | **12** | **26-36 hours** |
 
 ---
 
 ## 🏃 SUGGESTED ORDER
 
-**Phase 1: Critical Bug Fixes**
-1. BUG-001 (Race Condition) - Prevents game state corruption
-2. BUG-002 (localStorage) - Ensures compatibility
-3. BUG-003 (Null Checks) - Prevents crashes
+**Phase 1: Code Quality**
+1. REFACTOR-001 (Magic Numbers) - Maintainability
+2. REFACTOR-002 (Duplicate Code) - DRY principle
+3. REFACTOR-003 (Object Pooling) - Performance
 
-**Phase 2: High Priority Bug Fixes**
-4. BUG-004 (Array Modification) - Core stability
-5. BUG-005 (Timeout Cleanup) - Clean restarts
-6. BUG-006 (Audio Context) - Better UX
-
-**Phase 3: Code Quality**
-7. REFACTOR-001 (Magic Numbers) - Maintainability
-8. REFACTOR-002 (Duplicate Code) - DRY principle
-9. REFACTOR-003 (Object Pooling) - Performance
-
-**Phase 4: Features**
-10. TASK-014 (Combo Counter) - Core gameplay
-11. Continue with stretch goals based on interest
+**Phase 2: Features**
+4. TASK-014 (Combo Counter) - Core gameplay
+5. Continue with stretch goals based on interest
 
 ---
 
@@ -548,6 +360,42 @@ function playSound(type) {
 
 <details>
 <summary>Click to expand completed tasks</summary>
+
+### BUG-001: Fix Race Condition in Boss Intro Cutscene ✅
+**Completed**: Commit `1549434`
+- Added gameState.running check before unpausing after cutscene
+- Player dying during boss intro no longer breaks game state
+- Boss intro correctly canceled if game ends
+
+### BUG-002: Add localStorage Error Handling ✅
+**Completed**: Commit `1549434`
+- Wrapped loadSkinState and saveSkinState in try-catch
+- Game works in private browsing mode
+- No uncaught exceptions from localStorage
+
+### BUG-003: Add Null Checks for DOM Elements ✅
+**Completed**: Commit `1549434`
+- Added null checks in playBossIntro, spawnBoss
+- Added null check for boss health bar updates
+- Game handles missing DOM elements gracefully
+
+### BUG-004: Fix Array Modification During Iteration ✅
+**Completed**: Commit `1549434`
+- Changed from immediate splice to markedForRemoval flag
+- Enemies filtered out in game loop after all updates
+- No array index errors during gameplay
+
+### BUG-005: Clear Timeouts on Game Restart ✅
+**Completed**: Commit `1549434`
+- Added activeTimeouts tracking array
+- All setTimeout calls now tracked
+- Timeouts cleared in startGame() for clean restart
+
+### BUG-006: Add Audio Context Resume Logic ✅
+**Completed**: Commit `1549434`
+- Added audioCtx.resume() call in initAudio
+- Audio works on first user interaction
+- No silent gameplay due to suspended context
 
 ### TASK-001: Hit Markers System ✅
 **Completed**: Commit `6528448`
@@ -644,4 +492,4 @@ function playSound(type) {
 
 ---
 
-*Let's squash these bugs first, then get this bread 🍞💪*
+*All bugs squashed! Time to get this bread 🍞💪*

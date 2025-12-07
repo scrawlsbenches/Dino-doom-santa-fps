@@ -1333,6 +1333,9 @@
         let keys = {};
         let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
+        // BUG-005: Track active timeouts for cleanup on game restart
+        let activeTimeouts = [];
+
         // ==================== SANTA SKINS SYSTEM ====================
         const SANTA_SKINS = {
             default: {
@@ -1386,20 +1389,26 @@
 
         // Load skins from localStorage
         function loadSkinState() {
-            const saved = localStorage.getItem('santaSkinState');
-            if (saved) {
-                try {
+            try {
+                const saved = localStorage.getItem('santaSkinState');
+                if (saved) {
                     const parsed = JSON.parse(saved);
                     skinState = { ...skinState, ...parsed };
-                } catch (e) {
-                    console.error('Failed to load skin state:', e);
                 }
+            } catch (e) {
+                // BUG-002: Handle storage access errors (private browsing, quota exceeded)
+                console.error('Failed to access localStorage:', e);
             }
         }
 
         // Save skins to localStorage
         function saveSkinState() {
-            localStorage.setItem('santaSkinState', JSON.stringify(skinState));
+            try {
+                localStorage.setItem('santaSkinState', JSON.stringify(skinState));
+            } catch (e) {
+                // BUG-002: Handle storage access errors
+                console.error('Failed to save skin state:', e);
+            }
         }
 
         // Get current skin
@@ -1558,7 +1567,13 @@
         let audioCtx;
         
         function initAudio() {
-            if (!audioCtx) audioCtx = new AudioCtx();
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+            // BUG-006: Resume suspended audio context (browser autoplay policy)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
         
         function playSound(type) {
@@ -2108,10 +2123,11 @@
             activeDialogueBubbles.push(bubble);
 
             // Auto-remove after timeout
-            setTimeout(() => {
+            // BUG-005: Track timeout for cleanup on game restart
+            activeTimeouts.push(setTimeout(() => {
                 const idx = activeDialogueBubbles.indexOf(bubble);
                 if (idx > -1) activeDialogueBubbles.splice(idx, 1);
-            }, 2000);
+            }, 2000));
         }
 
         /**
@@ -2438,7 +2454,8 @@
                 // Trigger spawn dialogue (100% for boss/sigma, 50% for others)
                 if (this.isBoss || this.isSigma || Math.random() < 0.5) {
                     // Small delay so enemy is visible first
-                    setTimeout(() => showEnemyDialogue(this, 'spawn'), 500);
+                    // BUG-005: Track timeout for cleanup on game restart
+                    activeTimeouts.push(setTimeout(() => showEnemyDialogue(this, 'spawn'), 500));
                 }
             }
 
@@ -2600,8 +2617,11 @@
                 
                 // Boss health bar update
                 if (this.isBoss) {
-                    document.getElementById('boss-health-bar').style.width = 
-                        `${Math.max(0, (this.health / this.maxHealth) * 100)}%`;
+                    // BUG-003: Add null check for DOM element
+                    const bossHealthBar = document.getElementById('boss-health-bar');
+                    if (bossHealthBar) {
+                        bossHealthBar.style.width = `${Math.max(0, (this.health / this.maxHealth) * 100)}%`;
+                    }
                     
                     // Trigger minigame at 50% health only (simpler for easier boss)
                     const healthPercent = this.health / this.maxHealth;
@@ -2838,7 +2858,8 @@
                                 showSkeletonEffect(e.x, e.y, e.z);
                                 playSound('doot_kill');
                             }
-                            enemies.splice(i, 1);
+                            // BUG-004: Mark for removal instead of immediate splice
+                            e.markedForRemoval = true;
                         }
                         this.life = 0;
                         break;
@@ -3636,21 +3657,27 @@
         function playBossIntro(callback) {
             const bossInfo = getBossInfo(gameState.wave);
 
-            // Pause the game during intro
-            gameState.paused = true;
-
-            // Get overlay elements
+            // BUG-003: Get overlay elements with null checks
             const overlay = document.getElementById('boss-intro-overlay');
             const emoji = document.getElementById('boss-intro-emoji');
             const name = document.getElementById('boss-intro-name');
             const title = document.getElementById('boss-intro-title');
             const flash = document.getElementById('boss-intro-flash');
 
+            // Skip intro if required elements are missing
+            if (!overlay || !emoji || !name || !title) {
+                if (callback) callback(bossInfo);
+                return;
+            }
+
+            // Pause the game during intro
+            gameState.paused = true;
+
             // Reset classes
             emoji.className = '';
             name.className = '';
             title.className = '';
-            flash.className = '';
+            if (flash) flash.className = '';
 
             // Set content
             emoji.textContent = bossInfo.emoji;
@@ -3668,28 +3695,31 @@
             // 2500ms - Flash
             // 3000ms - End and start fight
 
-            setTimeout(() => {
+            // BUG-005: Track all boss intro timeouts for cleanup on game restart
+            activeTimeouts.push(setTimeout(() => {
                 emoji.classList.add('slide-in');
-            }, 300);
+            }, 300));
 
-            setTimeout(() => {
+            activeTimeouts.push(setTimeout(() => {
                 name.classList.add('show');
-            }, 800);
+            }, 800));
 
-            setTimeout(() => {
+            activeTimeouts.push(setTimeout(() => {
                 title.classList.add('show');
-            }, 1200);
+            }, 1200));
 
-            setTimeout(() => {
-                flash.classList.add('flash');
-            }, 2500);
+            activeTimeouts.push(setTimeout(() => {
+                if (flash) flash.classList.add('flash');
+            }, 2500));
 
             // End cutscene and spawn boss
-            setTimeout(() => {
+            activeTimeouts.push(setTimeout(() => {
                 overlay.classList.remove('active');
-                gameState.paused = false;
-                if (callback) callback(bossInfo);
-            }, 3000);
+                if (gameState.running) {  // BUG-001: Check game still running before unpausing
+                    gameState.paused = false;
+                    if (callback) callback(bossInfo);
+                }
+            }, 3000));
         }
 
         function spawnBoss() {
@@ -3705,9 +3735,13 @@
                 gameState.bossActive = true;
                 gameState.currentBoss = boss;
 
-                document.getElementById('boss-health-container').style.display = 'block';
-                document.getElementById('boss-name').textContent = `👑 ${bossInfo.name} 👑`;
-                document.getElementById('boss-health-bar').style.width = '100%';
+                // BUG-003: Add null checks for DOM elements
+                const bossContainer = document.getElementById('boss-health-container');
+                const bossName = document.getElementById('boss-name');
+                const bossHealthBar = document.getElementById('boss-health-bar');
+                if (bossContainer) bossContainer.style.display = 'block';
+                if (bossName) bossName.textContent = `👑 ${bossInfo.name} 👑`;
+                if (bossHealthBar) bossHealthBar.style.width = '100%';
 
                 playSound('boss');
             });
@@ -3906,7 +3940,11 @@
             document.getElementById('game-over').style.display = 'none';
             document.getElementById('shop-screen').style.display = 'none';
             document.getElementById('boss-health-container').style.display = 'none';
-            
+
+            // BUG-005: Clear all tracked timeouts to prevent old callbacks from firing
+            activeTimeouts.forEach(clearTimeout);
+            activeTimeouts = [];
+
             gameState = {
                 running: true,
                 paused: false,
@@ -4017,7 +4055,10 @@
                     e.update();
                     e.draw();
                 });
-                
+
+                // BUG-004: Clean up enemies marked for removal (deferred removal for safe iteration)
+                enemies = enemies.filter(e => !e.markedForRemoval);
+
                 // Update particles
                 for (let i = particles.length - 1; i >= 0; i--) {
                     particles[i].update();
