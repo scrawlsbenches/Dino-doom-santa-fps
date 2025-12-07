@@ -1665,6 +1665,21 @@
                     "HEADSHOT!",
                     "SKILL DIFF!"
                 ]
+            },
+            SIGMA_DINO: {
+                spawn: [
+                    "No time for distractions 👔",
+                    "I walk my own path",
+                    "SIGMA RULE #1: Stay on the grind",
+                    "High value target passing through",
+                    "The grindset continues...",
+                    "No one can stop me"
+                ],
+                attack: [
+                    // Sigma doesn't attack, but just in case
+                    "I don't fight, I profit",
+                    "Violence is for betas"
+                ]
             }
         };
 
@@ -1960,6 +1975,20 @@
                 traits: ['🎮', '⌨️', '🖱️'],
                 isGamer: true,
                 deathMessages: ['GG', 'EZ', 'GET GOOD', 'NO RE', 'GIT GUD', 'L + RATIO']
+            },
+            SIGMA_DINO: {
+                name: 'SIGMA DINO',
+                emoji: '🦖👔',
+                health: 120,
+                damage: 0, // Doesn't attack - on that grind
+                speed: 1, // Walks slowly across screen
+                size: 75,
+                color: '#1a1a2e', // Dark sigma colors
+                points: 300, // High points for the challenge
+                coins: 36, // 3x normal coins (12 * 3)
+                traits: ['👔', '💼', '📈'],
+                isSigma: true,
+                deathMessages: ['GRINDSET INTERRUPTED', 'PASSIVE INCOME STOPPED', 'SIGMA RULE VIOLATED', 'BACK TO THE MATRIX']
             }
         };
         
@@ -2001,8 +2030,18 @@
                     this.shootCooldown = 0;
                 }
 
-                // Trigger spawn dialogue (100% for boss, 50% for others)
-                if (this.isBoss || Math.random() < 0.5) {
+                // Sigma Dino specific properties - walks across screen, doesn't attack
+                this.isSigma = template.isSigma || false;
+                if (this.isSigma) {
+                    // Sigma walks from one side to the other
+                    this.sigmaDirection = x > 0 ? -1 : 1; // Walk opposite to spawn side
+                    this.sigmaPhase = 0; // For subtle glow effect
+                    this.sigmaDialogueCooldown = 180; // Say something every 3 seconds
+                    this.hasEscaped = false; // Track if they escaped
+                }
+
+                // Trigger spawn dialogue (100% for boss/sigma, 50% for others)
+                if (this.isBoss || this.isSigma || Math.random() < 0.5) {
                     // Small delay so enemy is visible first
                     setTimeout(() => showEnemyDialogue(this, 'spawn'), 500);
                 }
@@ -2010,27 +2049,62 @@
 
             update() {
                 if (this.invulnerable) return;
-                
+
+                // Sigma Dino special movement - walks across screen, ignores player
+                if (this.isSigma) {
+                    // Walk horizontally across screen
+                    this.x += this.sigmaDirection * this.speed;
+                    // Slowly approach player's z position for visibility
+                    if (this.z < -200) {
+                        this.z += 0.5;
+                    }
+
+                    // Subtle golden glow effect
+                    this.sigmaPhase += 0.05;
+                    const glow = Math.sin(this.sigmaPhase) * 30 + 100;
+                    this.color = `rgb(${glow + 50}, ${glow + 30}, ${Math.floor(glow * 0.3)})`;
+
+                    // Occasional sigma dialogue
+                    this.sigmaDialogueCooldown--;
+                    if (this.sigmaDialogueCooldown <= 0) {
+                        showSigmaDialogue(this);
+                        this.sigmaDialogueCooldown = 240 + Math.random() * 120; // 4-6 seconds
+                    }
+
+                    // Check if escaped off screen
+                    if (Math.abs(this.x) > 600 && !this.hasEscaped) {
+                        this.hasEscaped = true;
+                        showSigmaEscapeText();
+                        // Remove from enemies array (handled in game loop)
+                        this.health = 0;
+                        return;
+                    }
+
+                    this.wobble += 0.05; // Slower wobble for sigma
+                    this.hitFlash = Math.max(0, this.hitFlash - 0.1);
+                    return; // Skip normal enemy behavior
+                }
+
                 const dx = player.x - this.x;
                 const dz = -this.z;
                 const dist = Math.sqrt(dx * dx + dz * dz);
-                
+
                 if (dist > 50) {
                     this.x += (dx / dist) * this.speed;
                     this.z += (dz / dist) * this.speed;
                 }
-                
+
                 // IMPORTANT: Prevent enemies from going behind the player
                 // Keep them in front where they can be shot (z must stay negative)
                 const minZ = -80; // Minimum distance in front of player
                 if (this.z > minZ) {
                     this.z = minZ;
                 }
-                
+
                 // Keep enemies within visible screen area (X bounds)
                 const maxX = 500;
                 this.x = Math.max(-maxX, Math.min(maxX, this.x));
-                
+
                 // Boss shooting behavior
                 if (this.isBoss && !this.invulnerable) {
                     if (!this.shootCooldown) this.shootCooldown = 0;
@@ -2149,6 +2223,11 @@
             }
             
             die() {
+                // Escaped Sigma doesn't give rewards (they walked away)
+                if (this.isSigma && this.hasEscaped) {
+                    return; // No rewards for escaped Sigmas
+                }
+
                 gameState.score += this.points;
                 gameState.coins += this.coins;
                 gameState.totalCoinsEarned += this.coins; // Track total for death screen
@@ -2594,6 +2673,54 @@
             });
         }
 
+        // Sigma Dino dialogue lines
+        const SIGMA_QUOTES = [
+            'On my grind...',
+            'Sigma Rule #1: Never chase',
+            'Sigma Rule #47: Walk away',
+            'Passive income only',
+            'I AM the high value target',
+            'Built for the grind',
+            'Money moves only',
+            'No time for fights',
+            'Self-improvement arc',
+            'I go where I want'
+        ];
+
+        // Show random sigma dialogue above enemy
+        function showSigmaDialogue(enemy) {
+            const quote = SIGMA_QUOTES[Math.floor(Math.random() * SIGMA_QUOTES.length)];
+            floatingTexts.push({
+                text: quote,
+                x: enemy.x,
+                y: enemy.y - 80,
+                z: enemy.z,
+                life: 90,
+                color: '#ffd700'
+            });
+        }
+
+        // Show taunt when Sigma escapes
+        function showSigmaEscapeText() {
+            const taunts = [
+                'Sigma escaped! Skill issue...',
+                'Sigma got away! Should\'ve grinded harder',
+                'The Sigma walks free. L.',
+                'Couldn\'t stop the grindset!'
+            ];
+            const taunt = taunts[Math.floor(Math.random() * taunts.length)];
+
+            // Show large center-screen taunt
+            floatingTexts.push({
+                text: taunt,
+                x: 0,
+                y: -100,
+                z: -300,
+                life: 120,
+                color: '#ff4444'
+            });
+        }
+
         // ==================== PARTICLE CLASS ====================
         class Particle {
             constructor(x, y, z, color) {
@@ -2990,14 +3117,23 @@
         
         // ==================== GAME LOGIC ====================
         function spawnEnemy() {
-            // Determine enemy type with Gamer Dino appearing in wave 3+
+            // Determine enemy type with special enemies appearing in later waves
             let type;
             const roll = Math.random();
 
-            if (gameState.wave >= 3 && roll < 0.25) {
-                // 25% chance for Gamer Dino in wave 3+
+            // 8% chance for Sigma Dino (high value target, doesn't fight)
+            if (roll < 0.08) {
+                type = 'SIGMA_DINO';
+                // Sigma spawns from far left or right and walks across
+                const startSide = Math.random() > 0.5 ? 1 : -1;
+                const x = startSide * 500;
+                const z = -400 - Math.random() * 200;
+                enemies.push(new Enemy(type, x, z));
+                return;
+            } else if (gameState.wave >= 3 && roll < 0.30) {
+                // 22% chance for Gamer Dino in wave 3+
                 type = 'GAMER_DINO';
-            } else if (roll < 0.6) {
+            } else if (roll < 0.55) {
                 type = 'BUFF_NERD';
             } else {
                 type = 'GIGACHAD';
