@@ -4,7 +4,7 @@
  * Run with: node --test tests/game.test.js
  */
 
-const { test, describe, beforeEach } = require('node:test');
+const { test, describe } = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
@@ -121,7 +121,7 @@ function createMockBrowserEnv() {
             innerHeight: 1080,
             addEventListener: () => {},
             removeEventListener: () => {},
-            requestAnimationFrame: (cb) => setTimeout(cb, 16),
+            requestAnimationFrame: () => 1, // Return dummy ID, don't actually schedule
             cancelAnimationFrame: () => {},
             AudioContext: function() { return mockAudioContext; },
             webkitAudioContext: function() { return mockAudioContext; },
@@ -200,15 +200,14 @@ function loadGame() {
     return fn.call(env);
 }
 
+// ==================== LOAD GAME ONCE ====================
+console.log('Loading game for tests...');
+const game = loadGame();
+console.log('Game loaded successfully!\n');
+
 // ==================== TESTS ====================
 
 describe('Game Configuration', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('WEAPONS should have all required weapons', () => {
         const requiredWeapons = ['present', 'snowball', 'candy_cane', 'ornament', 'star', 'moai', 'doot'];
         for (const weapon of requiredWeapons) {
@@ -237,12 +236,6 @@ describe('Game Configuration', () => {
 });
 
 describe('Enemy Types', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('ENEMY_TYPES should have all enemy types', () => {
         const requiredTypes = ['GIGACHAD', 'BUFF_NERD', 'MINI_BOSS', 'GAMER_DINO', 'SIGMA_DINO'];
         for (const type of requiredTypes) {
@@ -280,12 +273,6 @@ describe('Enemy Types', () => {
 });
 
 describe('Santa Skins System', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('SANTA_SKINS should have all skins', () => {
         const requiredSkins = ['default', 'drip', 'tactical', 'gigachad', 'sigma'];
         for (const skin of requiredSkins) {
@@ -327,12 +314,6 @@ describe('Santa Skins System', () => {
 });
 
 describe('Achievements', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('ACHIEVEMENTS should have all achievements', () => {
         const requiredAchievements = [
             'FIRST_BLOOD', 'WAVE_SURVIVOR', 'BUILT_DIFFERENT', 'SKILL_ISSUE',
@@ -354,12 +335,6 @@ describe('Achievements', () => {
 });
 
 describe('Kill Streak Tiers', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('KILL_STREAK_TIERS should have multiple tiers', () => {
         assert.ok(game.KILL_STREAK_TIERS.length >= 5, 'Should have at least 5 kill streak tiers');
     });
@@ -380,12 +355,6 @@ describe('Kill Streak Tiers', () => {
 });
 
 describe('Boss System', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('BOSS_NAMES should have bosses for waves 5, 10, 15, 20, 25', () => {
         const bossWaves = [5, 10, 15, 20, 25];
         for (const wave of bossWaves) {
@@ -402,8 +371,6 @@ describe('Boss System', () => {
     });
 
     test('getBossInfo should return correct boss for wave 5', () => {
-        // Temporarily set wave to 5
-        game.gameState.wave = 5;
         const bossInfo = game.getBossInfo(5);
         assert.strictEqual(bossInfo.name, 'CHADOSAURUS');
     });
@@ -416,12 +383,6 @@ describe('Boss System', () => {
 });
 
 describe('Shopkeeper Dialogue', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('SHOPKEEPER_DIALOGUE should have all categories', () => {
         const categories = ['rich', 'broke', 'normal', 'purchase'];
         for (const category of categories) {
@@ -433,12 +394,6 @@ describe('Shopkeeper Dialogue', () => {
 });
 
 describe('Enemy Dialogue', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('ENEMY_DIALOGUE should have dialogue for all enemy types', () => {
         const enemyTypes = ['GIGACHAD', 'BUFF_NERD', 'MINI_BOSS', 'GAMER_DINO', 'SIGMA_DINO'];
         for (const type of enemyTypes) {
@@ -457,12 +412,6 @@ describe('Enemy Dialogue', () => {
 });
 
 describe('Game State', () => {
-    let game;
-
-    beforeEach(() => {
-        game = loadGame();
-    });
-
     test('Initial game state should have correct defaults', () => {
         assert.strictEqual(game.gameState.running, false);
         assert.strictEqual(game.gameState.paused, false);
@@ -485,6 +434,3 @@ describe('Game State', () => {
         assert.strictEqual(game.inventory.weapons.present, true);
     });
 });
-
-// Run summary
-console.log('\n🎮 Dino Doom Santa FPS - Automated Tests\n');
