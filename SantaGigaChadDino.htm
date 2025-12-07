@@ -759,7 +759,40 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 28px;
             color: #ffd700;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* Shopkeeper */
+        #shopkeeper-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(135deg, rgba(40, 30, 60, 0.9), rgba(30, 20, 50, 0.9));
+            border: 2px solid #8b7355;
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(139, 115, 85, 0.3);
+        }
+
+        #shopkeeper-emoji {
+            font-size: 80px;
+            animation: shopkeeperBob 2s ease-in-out infinite;
+        }
+
+        @keyframes shopkeeperBob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        #shopkeeper-dialogue {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            line-height: 1.6;
+            max-width: 400px;
         }
 
         .shop-section {
@@ -1078,19 +1111,25 @@
         
         <!-- Shop Screen -->
         <div id="shop-screen">
-            <h1>🛒 SANTA'S WORKSHOP 🛒</h1>
+            <h1>💎 THE GRINDSET EMPORIUM 💎</h1>
             <div id="shop-coins">🪙 0</div>
-            
+
+            <!-- Shopkeeper -->
+            <div id="shopkeeper-container">
+                <div id="shopkeeper-emoji">🗿</div>
+                <div id="shopkeeper-dialogue">Welcome to the grind...</div>
+            </div>
+
             <div class="shop-section">
                 <h2>⚔️ WEAPONS</h2>
                 <div class="shop-items" id="weapons-list"></div>
             </div>
-            
+
             <div class="shop-section">
                 <h2>⬆️ UPGRADES</h2>
                 <div class="shop-items" id="upgrades-list"></div>
             </div>
-            
+
             <button id="continue-btn" class="game-btn green">CONTINUE ➡️</button>
         </div>
 
@@ -3025,6 +3064,60 @@
         }
         
         // ==================== SHOP SYSTEM ====================
+        // ==================== SHOPKEEPER NPC SYSTEM ====================
+        const SHOPKEEPER_DIALOGUE = {
+            rich: [
+                "Ah, a person of wealth and taste! 💰",
+                "Your grindset is immaculate, my friend.",
+                "Now THIS is passive income energy!",
+                "I see the market has been good to you.",
+                "A fellow high-value individual!"
+            ],
+            broke: [
+                "Broke? Sounds like a skill issue...",
+                "No cap, you need to grind harder.",
+                "Have you tried having more money?",
+                "The sigma grindset is NOT strong here.",
+                "Maybe try dodging more? Just a thought."
+            ],
+            normal: [
+                "These prices are bussin' fr fr",
+                "Buy something or get out of my emporium",
+                "No cap, these weapons slap",
+                "Welcome to the grind, traveler",
+                "Everything here is certified fire 🔥",
+                "The moai approves of your presence 🗿",
+                "I was once like you... before the gains"
+            ],
+            purchase: [
+                "STONKS! 📈",
+                "A wise investment!",
+                "That one's fire, no cap",
+                "Based purchase",
+                "You understand the grind"
+            ]
+        };
+
+        function getShopkeeperDialogue() {
+            let category;
+            if (gameState.coins >= 2000) {
+                category = 'rich';
+            } else if (gameState.coins < 100) {
+                category = 'broke';
+            } else {
+                category = 'normal';
+            }
+            const lines = SHOPKEEPER_DIALOGUE[category];
+            return lines[Math.floor(Math.random() * lines.length)];
+        }
+
+        function updateShopkeeperDialogue(type = null) {
+            const dialogue = type === 'purchase'
+                ? SHOPKEEPER_DIALOGUE.purchase[Math.floor(Math.random() * SHOPKEEPER_DIALOGUE.purchase.length)]
+                : getShopkeeperDialogue();
+            document.getElementById('shopkeeper-dialogue').textContent = dialogue;
+        }
+
         function openShop() {
             if (!gameState.betweenWaves && gameState.running) return;
 
@@ -3034,6 +3127,9 @@
             gameState.paused = true;
             document.getElementById('shop-screen').style.display = 'flex';
             document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
+
+            // Update shopkeeper dialogue based on coins
+            updateShopkeeperDialogue();
 
             renderShop();
         }
@@ -3086,12 +3182,13 @@
                         inventory.weapons[key] = true;
                         inventory.currentWeapon = key;
                         playSound('buy');
+                        updateShopkeeperDialogue('purchase'); // Shopkeeper reacts to purchase!
                         document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
                         updateHUD();
                         renderShop();
                     }
                 };
-                
+
                 weaponsList.appendChild(item);
             }
             
@@ -3121,6 +3218,7 @@
                         }
                         inventory.upgrades[key]++;
                         playSound('buy');
+                        updateShopkeeperDialogue('purchase'); // Shopkeeper reacts to purchase!
                         applyUpgrades();
                         document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
                         updateHUD();
