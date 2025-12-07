@@ -206,6 +206,43 @@
             }
         }
 
+        /* Kill Streak Announcements */
+        .kill-streak-announcement {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bungee', cursive;
+            font-size: 64px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 70;
+            animation: killStreakAnimate 1.5s ease-out forwards;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        @keyframes killStreakAnimate {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            15% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.3);
+            }
+            30% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
         /* Kill feed */
         #kill-feed {
             position: absolute;
@@ -1057,6 +1094,92 @@
         function shakeOnBossSlam() { screenShake(25, 400); }    // Boss attack
         function shakeOnBossDeath() { screenShake(30, 500); }   // Boss defeated
 
+        // ==================== KILL STREAK SYSTEM ====================
+        let killStreakState = {
+            count: 0,
+            lastKillTime: 0,
+            streakTimeout: 3000 // 3 seconds to continue streak
+        };
+
+        const KILL_STREAK_TIERS = [
+            { count: 2, name: 'DOUBLE KILL', color: '#ffff00' },
+            { count: 3, name: 'TRIPLE KILL', color: '#ff8800' },
+            { count: 4, name: 'OVERKILL', color: '#ff4400' },
+            { count: 5, name: 'KILLTACULAR', color: '#ff00ff' },
+            { count: 6, name: 'KILLIONAIRE', color: '#00ffff' },
+            { count: 7, name: 'KILLPOCALYPSE', color: '#ff0000' },
+            { count: 10, name: 'UNSTOPPABLE', color: '#ffd700' }
+        ];
+
+        /**
+         * Records a kill and checks for kill streaks
+         */
+        function recordKill() {
+            const now = Date.now();
+
+            // Check if streak continues or resets
+            if (now - killStreakState.lastKillTime > killStreakState.streakTimeout) {
+                killStreakState.count = 0;
+            }
+
+            killStreakState.count++;
+            killStreakState.lastKillTime = now;
+
+            // Check for streak tier
+            const tier = KILL_STREAK_TIERS.slice().reverse().find(t => killStreakState.count >= t.count);
+            if (tier && killStreakState.count === tier.count) {
+                showKillStreakAnnouncement(tier);
+                playKillStreakSound(tier.count);
+            }
+        }
+
+        /**
+         * Shows kill streak announcement on screen
+         * @param {object} tier - The streak tier object
+         */
+        function showKillStreakAnnouncement(tier) {
+            // Remove any existing announcement
+            const existing = document.querySelector('.kill-streak-announcement');
+            if (existing) existing.remove();
+
+            const announcement = document.createElement('div');
+            announcement.className = 'kill-streak-announcement';
+            announcement.textContent = tier.name;
+            announcement.style.color = tier.color;
+            announcement.style.textShadow = `0 0 20px ${tier.color}, 0 0 40px ${tier.color}`;
+
+            document.getElementById('game-container').appendChild(announcement);
+
+            // Remove after animation
+            setTimeout(() => announcement.remove(), 1500);
+        }
+
+        /**
+         * Plays escalating kill streak sound
+         * @param {number} streakCount - Current streak count
+         */
+        function playKillStreakSound(streakCount) {
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            // Higher pitch and longer duration for higher streaks
+            const baseFreq = 400 + (streakCount * 100);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(baseFreq * 1.5, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(baseFreq * 2, audioCtx.currentTime + 0.2);
+
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
         // ==================== HIT MARKER SYSTEM ====================
         /**
          * Creates a hit marker at the crosshair position
@@ -1293,7 +1416,8 @@
                 gameState.score += this.points;
                 gameState.coins += this.coins;
                 gameState.kills++;
-                
+                recordKill(); // Track for kill streak announcements
+
                 // Track kills for healing power
                 if (!gameState.healReady) {
                     gameState.healKills++;
@@ -2126,7 +2250,11 @@
                 healReady: false,
                 healKillsRequired: 10
             };
-            
+
+            // Reset kill streak
+            killStreakState.count = 0;
+            killStreakState.lastKillTime = 0;
+
             player = {
                 x: 0,
                 y: 0,
