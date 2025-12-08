@@ -15,7 +15,7 @@
     "syntax:check": "find js -name '*.js' -type f -exec node --check {} \\;",
     "ci": "npm run lint:strict && npm run test:coverage && npm run test:e2e",
     "precommit": "npm run lint:strict && npm run test",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "repository": {
     "type": "git",
