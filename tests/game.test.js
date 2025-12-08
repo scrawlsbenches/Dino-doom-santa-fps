@@ -1867,4 +1867,456 @@ describe('REFACTOR-005: Audio Error Handling', () => {
     });
 });
 
+// ==================== TASK-014: COMBO COUNTER SYSTEM TESTS ====================
+describe('TASK-014: Combo Counter System', () => {
+    describe('Combo Constants', () => {
+        test('GAME_CONFIG has combo system constants', () => {
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('COMBO_MULTIPLIER_PERCENT'),
+                'GAME_CONFIG should have COMBO_MULTIPLIER_PERCENT'
+            );
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('WOMBO_COMBO_THRESHOLD'),
+                'GAME_CONFIG should have WOMBO_COMBO_THRESHOLD'
+            );
+        });
+
+        test('Combo constants have correct values', () => {
+            assert.strictEqual(
+                gameData.GAME_CONFIG.COMBO_MULTIPLIER_PERCENT,
+                10,
+                'COMBO_MULTIPLIER_PERCENT should be 10'
+            );
+            assert.strictEqual(
+                gameData.GAME_CONFIG.WOMBO_COMBO_THRESHOLD,
+                10,
+                'WOMBO_COMBO_THRESHOLD should be 10'
+            );
+        });
+    });
+
+    describe('Combo State', () => {
+        test('State.js exports comboState', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('export const comboState = {'),
+                'state.js should export comboState object'
+            );
+        });
+
+        test('comboState has required properties', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('count: 0'),
+                'comboState should have count property initialized to 0'
+            );
+            assert.ok(
+                stateContent.includes('showWomboCombo: false'),
+                'comboState should have showWomboCombo property initialized to false'
+            );
+        });
+
+        test('State.js exports resetComboState function', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('export function resetComboState()'),
+                'state.js should export resetComboState function'
+            );
+        });
+
+        test('resetComboState resets combo count and showWomboCombo', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('comboState.count = 0'),
+                'resetComboState should reset count to 0'
+            );
+            assert.ok(
+                stateContent.includes('comboState.showWomboCombo = false'),
+                'resetComboState should reset showWomboCombo to false'
+            );
+        });
+    });
+
+    describe('Combo System Module', () => {
+        test('combo.js exists and has correct structure', () => {
+            const comboPath = path.join(__dirname, '..', 'js', 'systems', 'combo.js');
+            assert.ok(fs.existsSync(comboPath), 'combo.js should exist');
+
+            const comboContent = fs.readFileSync(comboPath, 'utf8');
+            assert.ok(
+                comboContent.includes('export function incrementCombo'),
+                'combo.js should export incrementCombo'
+            );
+            assert.ok(
+                comboContent.includes('export function breakCombo'),
+                'combo.js should export breakCombo'
+            );
+            assert.ok(
+                comboContent.includes('export function getComboMultiplier'),
+                'combo.js should export getComboMultiplier'
+            );
+            assert.ok(
+                comboContent.includes('export function getComboBonus'),
+                'combo.js should export getComboBonus'
+            );
+            assert.ok(
+                comboContent.includes('export function updateComboDisplay'),
+                'combo.js should export updateComboDisplay'
+            );
+            assert.ok(
+                comboContent.includes('export function getComboCount'),
+                'combo.js should export getComboCount'
+            );
+        });
+
+        test('incrementCombo increments combo count', () => {
+            const comboContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'combo.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                comboContent.includes('comboState.count++'),
+                'incrementCombo should increment comboState.count'
+            );
+        });
+
+        test('incrementCombo triggers WOMBO COMBO at threshold', () => {
+            const comboContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'combo.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                comboContent.includes('GAME_CONFIG.WOMBO_COMBO_THRESHOLD'),
+                'incrementCombo should check WOMBO_COMBO_THRESHOLD'
+            );
+            assert.ok(
+                comboContent.includes('showWomboComboAnnouncement'),
+                'incrementCombo should call showWomboComboAnnouncement'
+            );
+        });
+
+        test('breakCombo resets combo state', () => {
+            const comboContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'combo.js'),
+                'utf8'
+            );
+
+            const breakComboMatch = comboContent.match(/export function breakCombo[\s\S]*?^}/m);
+            if (breakComboMatch) {
+                assert.ok(
+                    breakComboMatch[0].includes('comboState.count = 0'),
+                    'breakCombo should reset count to 0'
+                );
+                assert.ok(
+                    breakComboMatch[0].includes('comboState.showWomboCombo = false'),
+                    'breakCombo should reset showWomboCombo'
+                );
+            }
+        });
+
+        test('getComboMultiplier returns correct multiplier', () => {
+            const comboContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'combo.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                comboContent.includes('COMBO_MULTIPLIER_PERCENT'),
+                'getComboMultiplier should use COMBO_MULTIPLIER_PERCENT'
+            );
+            assert.ok(
+                comboContent.includes('return 1 +'),
+                'getComboMultiplier should return 1 + bonus'
+            );
+        });
+
+        test('getComboBonus calculates bonus points', () => {
+            const comboContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'combo.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                comboContent.includes('getComboMultiplier()'),
+                'getComboBonus should call getComboMultiplier'
+            );
+            assert.ok(
+                comboContent.includes('Math.floor'),
+                'getComboBonus should floor the result'
+            );
+        });
+
+        test('showWomboComboAnnouncement creates announcement element', () => {
+            const comboContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'combo.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                comboContent.includes('WOMBO COMBO'),
+                'showWomboComboAnnouncement should include WOMBO COMBO text'
+            );
+            assert.ok(
+                comboContent.includes('wombo-combo-announcement'),
+                'showWomboComboAnnouncement should create element with class'
+            );
+        });
+    });
+
+    describe('Systems Index Export', () => {
+        test('index.js exports combo module', () => {
+            const indexContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'index.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                indexContent.includes("export * from './combo.js'"),
+                'systems/index.js should export combo module'
+            );
+        });
+    });
+
+    describe('Game Integration', () => {
+        test('game.js imports combo functions', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                gameContent.includes('incrementCombo'),
+                'game.js should import incrementCombo'
+            );
+            assert.ok(
+                gameContent.includes('breakCombo'),
+                'game.js should import breakCombo'
+            );
+            assert.ok(
+                gameContent.includes('getComboBonus'),
+                'game.js should import getComboBonus'
+            );
+            assert.ok(
+                gameContent.includes('updateComboDisplay'),
+                'game.js should import updateComboDisplay'
+            );
+        });
+
+        test('game.js imports resetComboState from state.js', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                gameContent.includes('resetComboState'),
+                'game.js should import resetComboState'
+            );
+        });
+
+        test('Enemy callbacks include combo functions', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            const callbacksMatch = gameContent.match(/function getEnemyCallbacks[\s\S]*?return {[\s\S]*?};/);
+            if (callbacksMatch) {
+                assert.ok(
+                    callbacksMatch[0].includes('incrementCombo'),
+                    'getEnemyCallbacks should include incrementCombo'
+                );
+                assert.ok(
+                    callbacksMatch[0].includes('breakCombo'),
+                    'getEnemyCallbacks should include breakCombo'
+                );
+                assert.ok(
+                    callbacksMatch[0].includes('getComboBonus'),
+                    'getEnemyCallbacks should include getComboBonus'
+                );
+            }
+        });
+
+        test('startGame resets combo state', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            const startGameMatch = gameContent.match(/export function startGame[\s\S]*?^}/m);
+            if (startGameMatch) {
+                assert.ok(
+                    startGameMatch[0].includes('resetComboState()'),
+                    'startGame should call resetComboState()'
+                );
+                assert.ok(
+                    startGameMatch[0].includes('updateComboDisplay()'),
+                    'startGame should call updateComboDisplay()'
+                );
+            }
+        });
+
+        test('Player projectile damage calls breakCombo', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            // Find enemy projectile collision section
+            assert.ok(
+                gameContent.includes('checkPlayerCollision(player)'),
+                'game.js should check player collision'
+            );
+            assert.ok(
+                gameContent.includes('breakCombo()'),
+                'game.js should call breakCombo when player takes damage'
+            );
+        });
+    });
+
+    describe('Enemy Integration', () => {
+        test('Enemy attack method calls breakCombo', () => {
+            const enemyContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Enemy.js'),
+                'utf8'
+            );
+
+            // Check that attack method exists and calls breakCombo
+            assert.ok(
+                enemyContent.includes('attack()'),
+                'Enemy should have attack method'
+            );
+            assert.ok(
+                enemyContent.includes('this.callbacks.breakCombo'),
+                'Enemy.attack() should call breakCombo callback'
+            );
+        });
+
+        test('Enemy die method calls incrementCombo', () => {
+            const enemyContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Enemy.js'),
+                'utf8'
+            );
+
+            // Check that die method exists and calls incrementCombo
+            assert.ok(
+                enemyContent.includes('die()'),
+                'Enemy should have die method'
+            );
+            assert.ok(
+                enemyContent.includes('this.callbacks.incrementCombo'),
+                'Enemy.die() should call incrementCombo callback'
+            );
+        });
+
+        test('Enemy die method applies combo bonus to score', () => {
+            const enemyContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Enemy.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                enemyContent.includes('this.callbacks.getComboBonus'),
+                'Enemy.die() should call getComboBonus callback'
+            );
+            assert.ok(
+                enemyContent.includes('this.points + comboBonus'),
+                'Enemy.die() should add combo bonus to score'
+            );
+        });
+
+        test('Enemy die method shows combo bonus in floating text', () => {
+            const enemyContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Enemy.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                enemyContent.includes('comboBonus > 0'),
+                'Enemy.die() should check if comboBonus exists'
+            );
+            assert.ok(
+                enemyContent.includes('comboText'),
+                'Enemy.die() should use comboText for floating text'
+            );
+        });
+    });
+
+    describe('HTML and CSS', () => {
+        test('index.html has combo counter element', () => {
+            const htmlContent = fs.readFileSync(
+                path.join(__dirname, '..', 'index.html'),
+                'utf8'
+            );
+
+            assert.ok(
+                htmlContent.includes('id="combo-counter"'),
+                'index.html should have combo-counter element'
+            );
+        });
+
+        test('CSS has combo counter styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('#combo-counter'),
+                'CSS should have #combo-counter styles'
+            );
+        });
+
+        test('CSS has wombo-combo class styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('.wombo-combo') || cssContent.includes('#combo-counter.wombo-combo'),
+                'CSS should have wombo-combo class styles'
+            );
+        });
+
+        test('CSS has combo animations', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('@keyframes comboPulse'),
+                'CSS should have comboPulse animation'
+            );
+            assert.ok(
+                cssContent.includes('@keyframes womboComboShake'),
+                'CSS should have womboComboShake animation'
+            );
+            assert.ok(
+                cssContent.includes('@keyframes womboComboAnim'),
+                'CSS should have womboComboAnim animation'
+            );
+        });
+    });
+});
+
 console.log('All tests completed!');
