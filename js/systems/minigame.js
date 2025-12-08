@@ -2,64 +2,118 @@
  * Dino Doom: Santa's Last Stand
  * Minigame System
  *
- * Boss vulnerability minigame mechanics.
+ * Boss vulnerability phase with shootable 3D weak points.
+ * UX-004: Replaced click-based minigame with FPS-consistent mechanics.
  */
 
 import { GAME_CONFIG } from '../constants.js';
-import { gameState, minigameState, floatingTexts } from '../state.js';
+import { gameState, minigameState, floatingTexts, weakPoints } from '../state.js';
 import { playSound } from './audio.js';
+import { WeakPoint } from '../classes/WeakPoint.js';
 
 /**
- * Starts the boss minigame
+ * Gets weak point spawn callbacks
+ * @param {Object} callbacks - Base callbacks object
+ * @returns {Object} Callbacks for weak point creation
  */
-export function startMinigame() {
+function getWeakPointCallbacks(callbacks) {
+    return {
+        playSound: callbacks?.playSound || playSound,
+        showHitMarker: callbacks?.showHitMarker
+    };
+}
+
+/**
+ * Spawns a weak point near the boss
+ * @param {Object} callbacks - Game callbacks
+ */
+function spawnWeakPoint(callbacks) {
+    if (!minigameState.active || !gameState.currentBoss) return;
+
+    const boss = gameState.currentBoss;
+
+    // Spawn weak points around the boss in 3D space
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 100 + Math.random() * 150;
+
+    const x = boss.x + Math.cos(angle) * distance;
+    const y = -30 - Math.random() * 80; // Above ground level
+    const z = boss.z - 50 - Math.random() * 100; // In front of boss
+
+    const weakPoint = new WeakPoint(x, y, z, getWeakPointCallbacks(callbacks));
+    weakPoints.push(weakPoint);
+}
+
+/**
+ * Starts the boss vulnerability phase (UX-004: No pause, shoot weak points)
+ * @param {Object} callbacks - Game callbacks for weak points
+ */
+export function startMinigame(callbacks) {
     if (minigameState.active) return;
 
     minigameState.active = true;
     minigameState.hits = 0;
     minigameState.timeLeft = GAME_CONFIG.MINIGAME_DURATION_SEC;
-    gameState.paused = true;
+
+    // UX-004: Don't pause the game - boss is stunned instead
+    // gameState.paused = true; // REMOVED
 
     if (gameState.currentBoss) {
-        gameState.currentBoss.invulnerable = true;
+        // Boss is stunned (can't attack) but NOT invulnerable
+        gameState.currentBoss.invulnerable = false;
+        gameState.currentBoss.stunned = true;
     }
 
-    document.getElementById('minigame-screen').style.display = 'flex';
-    document.getElementById('minigame-timer').textContent = minigameState.timeLeft;
-    document.getElementById('minigame-hits').textContent = 'HITS: 0 | DAMAGE: 0';
-
-    const area = document.getElementById('minigame-area');
-    area.innerHTML = '';
-
-    function spawnTarget() {
-        if (!minigameState.active) return;
-
-        const target = document.createElement('div');
-        target.className = 'minigame-target';
-        target.innerHTML = '🎯';
-        target.style.left = Math.random() * (600 - 60) + 'px';
-        target.style.top = Math.random() * (400 - 60) + 'px';
-
-        target.onclick = (e) => {
-            e.stopPropagation();
-            minigameState.hits++;
-            playSound('minigame_hit');
-            target.remove();
-            document.getElementById('minigame-hits').textContent =
-                `HITS: ${minigameState.hits} | DAMAGE: ${minigameState.hits * GAME_CONFIG.MINIGAME_DAMAGE_PER_HIT}`;
-        };
-
-        area.appendChild(target);
-
-        setTimeout(() => target.remove(), GAME_CONFIG.MINIGAME_TARGET_LIFETIME);
+    // Show HUD overlay instead of full-screen takeover
+    const minigameScreen = document.getElementById('minigame-screen');
+    if (minigameScreen) {
+        minigameScreen.style.display = 'flex';
+        minigameScreen.classList.add('hud-mode');
     }
 
-    minigameState.targetInterval = setInterval(spawnTarget, GAME_CONFIG.MINIGAME_TARGET_SPAWN_INTERVAL);
-    spawnTarget();
+    const timerEl = document.getElementById('minigame-timer');
+    if (timerEl) timerEl.textContent = minigameState.timeLeft;
 
+    const hitsEl = document.getElementById('minigame-hits');
+    if (hitsEl) hitsEl.textContent = 'HITS: 0 | DAMAGE: 0';
+
+    const instructionsEl = document.getElementById('minigame-instructions');
+    if (instructionsEl) {
+        instructionsEl.textContent = 'SHOOT THE WEAK POINTS!';
+    }
+
+    // Hide the minigame-area (no longer used)
+    const areaEl = document.getElementById('minigame-area');
+    if (areaEl) areaEl.style.display = 'none';
+
+    // Play vulnerability sound
+    playSound('boss');
+
+    // Floating text announcement
+    floatingTexts.push({
+        text: 'BOSS VULNERABLE!',
+        x: 0,
+        y: -150,
+        z: -300,
+        life: 90,
+        color: '#ff3333'
+    });
+
+    // Spawn weak points periodically
+    minigameState.targetInterval = setInterval(() => {
+        spawnWeakPoint(callbacks);
+    }, GAME_CONFIG.MINIGAME_TARGET_SPAWN_INTERVAL);
+
+    // Spawn initial weak points
+    for (let i = 0; i < 3; i++) {
+        spawnWeakPoint(callbacks);
+    }
+
+    // Countdown timer
     minigameState.interval = setInterval(() => {
         minigameState.timeLeft--;
-        document.getElementById('minigame-timer').textContent = minigameState.timeLeft;
+        const timerEl = document.getElementById('minigame-timer');
+        if (timerEl) timerEl.textContent = minigameState.timeLeft;
 
         if (minigameState.timeLeft <= 0) {
             endMinigame();
@@ -68,27 +122,39 @@ export function startMinigame() {
 }
 
 /**
- * Ends the minigame and applies damage to boss
+ * Ends the vulnerability phase and applies damage to boss
  */
 export function endMinigame() {
     clearInterval(minigameState.interval);
     clearInterval(minigameState.targetInterval);
     minigameState.active = false;
 
-    document.getElementById('minigame-screen').style.display = 'none';
-    document.getElementById('minigame-area').innerHTML = '';
+    // Hide HUD overlay
+    const minigameScreen = document.getElementById('minigame-screen');
+    if (minigameScreen) {
+        minigameScreen.style.display = 'none';
+        minigameScreen.classList.remove('hud-mode');
+    }
+
+    // Clear remaining weak points
+    weakPoints.length = 0;
 
     if (gameState.currentBoss) {
+        // Boss recovers from stun
+        gameState.currentBoss.stunned = false;
+
         const damage = minigameState.hits * GAME_CONFIG.MINIGAME_DAMAGE_PER_HIT;
-        gameState.currentBoss.invulnerable = false;
 
         if (damage > 0) {
             gameState.currentBoss.health -= damage;
-            document.getElementById('boss-health-bar').style.width =
-                `${Math.max(0, (gameState.currentBoss.health / gameState.currentBoss.maxHealth) * 100)}%`;
+            const bossHealthBar = document.getElementById('boss-health-bar');
+            if (bossHealthBar) {
+                bossHealthBar.style.width =
+                    `${Math.max(0, (gameState.currentBoss.health / gameState.currentBoss.maxHealth) * 100)}%`;
+            }
 
             floatingTexts.push({
-                text: `MINIGAME BONUS: -${damage}!`,
+                text: `WEAK POINT BONUS: -${damage}!`,
                 x: gameState.currentBoss.x,
                 y: -100,
                 z: gameState.currentBoss.z,
@@ -100,8 +166,29 @@ export function endMinigame() {
                 gameState.currentBoss.die();
                 gameState.currentBoss.markedForRemoval = true;
             }
+        } else {
+            // Player missed all weak points
+            floatingTexts.push({
+                text: 'BOSS RECOVERED!',
+                x: gameState.currentBoss.x,
+                y: -100,
+                z: gameState.currentBoss.z,
+                life: 90,
+                color: '#ffcc00'
+            });
         }
     }
 
-    gameState.paused = false;
+    // UX-004: No need to unpause (game never paused)
+    // gameState.paused = false; // REMOVED
+}
+
+/**
+ * Updates minigame HUD display (called externally)
+ */
+export function updateMinigameHUD() {
+    const hitsEl = document.getElementById('minigame-hits');
+    if (hitsEl) {
+        hitsEl.textContent = `HITS: ${minigameState.hits} | DAMAGE: ${minigameState.hits * GAME_CONFIG.MINIGAME_DAMAGE_PER_HIT}`;
+    }
 }

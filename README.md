@@ -104,7 +104,7 @@ Every 5 waves, a **MEGA BOSS** shows up with their own dramatic anime-style intr
 | 20 | **ZYZZ-REX** | "Forever Mirin'" |
 | 25 | **FINAL FORM CHAD** | "We're All Gonna Make It" |
 
-Bosses have **500+ HP**, shoot fireballs, and have a SPECIAL MINIGAME at 50% health where you have to click rapidly to finish them off!
+Bosses have **500+ HP**, shoot fireballs, and become **VULNERABLE at 50% health**! Shoot the glowing **🎯 WEAK POINTS** that appear around them to deal massive bonus damage - keep your FPS skills sharp!
 
 ---
 

@@ -88,6 +88,7 @@ export const projectiles = [];
 export const enemyProjectiles = [];
 export const particles = [];
 export const floatingTexts = [];
+export const weakPoints = []; // UX-004: Shootable weak points for boss minigame
 
 // ==================== PARTICLE POOL ====================
 export const particlePool = [];
@@ -243,6 +244,7 @@ export function clearEntities() {
     enemyProjectiles.length = 0;
     particles.length = 0;
     floatingTexts.length = 0;
+    weakPoints.length = 0;
 }
 
 /**
