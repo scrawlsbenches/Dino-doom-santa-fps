@@ -140,6 +140,38 @@ Get kills fast enough and the game will literally SCREAM at you:
 
 Each streak makes the announcement BIGGER and LOUDER. Your screen will shake. You will feel like a GOD.
 
+### MLG SOUND PACK (ALL SYNTHESIZED!)
+
+All sounds are generated with Web Audio API - no audio files needed:
+- **Triple Kill:** "OH BABY A TRIPLE" voice effect
+- **5+ Kill Streak:** "MOM GET THE CAMERA" excitement
+- **Boss Defeat:** Epic "WOW" sound
+- **Death:** Sad violin plays (you earned it)
+- **Airhorn:** On wave complete (because MLG)
+
+---
+
+## COMBO SYSTEM (WOMBO COMBO!)
+
+Keep killing without taking damage to build your **COMBO METER**:
+
+```
+1-4 kills   → Green glow      (warming up)
+5-9 kills   → Yellow glow     (getting spicy)
+10+ kills   → WOMBO COMBO!    (magenta madness, screen goes crazy)
+```
+
+**Score multiplier:** +10% per combo count! A 10-kill combo = 2x score on every kill!
+
+**Forgiving decay system:**
+- Taking damage DOESN'T reset your combo entirely!
+- Base decay: Lose 50% of combo on hit
+- At 10+ combo: Only lose 40%
+- At 20+ combo: Only lose 30%
+- Brief invulnerability (1s) prevents multi-hit combo breaks
+
+The higher your combo, the more forgiving it is. **SKILL IS REWARDED!**
+
 ---
 
 ## THE GRINDSET EMPORIUM (THE SHOP)
@@ -166,6 +198,20 @@ Between waves, press **R** to visit the mysterious **GRINDSET EMPORIUM** run by 
 | ⚡ **Fire Rate+** | Shoot faster | 5 |
 | ❤️ **Max Health+** | +20 HP per level | 10 |
 | 🎯 **Crit Chance+** | +5% crit per level | 5 |
+
+### PRESTIGE UPGRADES (INFINITE SCALING!)
+
+Maxed out all basic upgrades? **THE GRIND NEVER STOPS.** Prestige upgrades unlock and scale INFINITELY:
+
+| Upgrade | What it does | Starting Price |
+|---------|--------------|----------------|
+| 💪🔥 **Overkill** | +5% damage multiplier per level | 2000 |
+| ⚡🔥 **Bullet Hell** | +5% fire rate per level | 2500 |
+| ❤️🔥 **Titan Health** | +10% max HP per level | 2000 |
+| 🎯🔥 **Critical Mass** | +2% crit chance per level | 3000 |
+| 🪙✨ **Coin Magnet** | +10% coin drops per level | 1500 |
+
+Prices increase per level. True sigma grindset required.
 
 ---
 
@@ -197,6 +243,49 @@ Your coins persist between games, so keep grinding to unlock them all!
 | **BIG SPENDER** | Spend 1000 coins in one shop visit | 💰 |
 | **BOSS SLAYER** | Defeat your first boss | 👑 |
 | **MEME LORD** | Use the Moai Cannon | 🗿 |
+
+---
+
+## DEEP FRIED MODE (MAXIMUM CRISPINESS)
+
+Toggle **DEEP FRIED MODE** from the start screen for the ULTIMATE meme gaming experience:
+
+```
+🔥 EFFECTS INCLUDE:
+- Chromatic aberration (that RGB edge effect)
+- Oversaturated colors (300% saturation)
+- High contrast visuals
+- Lens flare emojis on kills (😂🔥💯)
+- General visual chaos
+```
+
+Your eyes WILL hurt. Your soul WILL thank you. Setting persists between sessions.
+
+**Also includes:**
+- Hit markers (white X on hit, gold X on crit!)
+- Screen shake on kills, crits, and boss attacks
+- Damage/heal screen flash overlays
+- Muzzle flash on weapon fire
+
+---
+
+## FAKE TWITCH CHAT (STREAM SIMULATOR)
+
+A fake Twitch chat overlay reacts to your gameplay in real-time:
+
+**On kills:**
+> "POG", "SHEEEESH", "CLEAN", "EZ Clap"
+
+**On death:**
+> "F", "LMAO", "skill issue", "L + ratio"
+
+**On boss spawn:**
+> "monkaS", "HERE WE GO", "OH NO NO NO"
+
+**On boss kill:**
+> "LETS GOOOO", "HE DID IT", "GIGACHAD"
+
+26 unique fake usernames with Twitch-style colors. You'll feel like you're streaming to millions (you're not, but the vibes are immaculate).
 
 ---
 
@@ -251,6 +340,11 @@ When you inevitably get destroyed by a dinosaur, you get a **DEATH RECEIPT** you
 | **Click / Space** | SHOOT THEM |
 | **E** | Heal (need 10 kills to charge) |
 | **R** | Open shop (between waves) |
+
+### Settings (Start Screen):
+- **Volume Slider** - Adjust master volume (all sounds synthesized live!)
+- **Deep Fried Mode Toggle** - Enable/disable visual chaos
+- **Skin Selector** - Pick your Santa drip
 
 ### 🎮 INSTANT PLAY (Recommended)
 
@@ -325,10 +419,13 @@ Dino-doom-santa-fps/
 │   │   ├── Particle.js
 │   │   └── ...
 │   └── systems/        # Game features
-│       ├── audio.js    # All sounds made with code (no files!)
+│       ├── audio.js    # MLG sound pack (synthesized, no files!)
 │       ├── achievements.js
 │       ├── shop.js     # THE GRINDSET EMPORIUM
 │       ├── boss.js     # Epic boss intros
+│       ├── combo.js    # WOMBO COMBO system
+│       ├── chat.js     # Fake Twitch chat
+│       ├── deepfried.js # Deep fried visual mode
 │       ├── death.js    # Your death receipt generator
 │       ├── killstreak.js
 │       └── ...

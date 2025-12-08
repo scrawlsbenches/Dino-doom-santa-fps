@@ -67,36 +67,9 @@ The clicking minigame at 50% boss HP completely breaks the FPS gameplay flow. Pl
 
 ---
 
-### UX-005: Missing Audio Volume Control
-**Estimate**: 2 hours
-**Priority**: P2 (Medium Impact)
-**Dependencies**: None
-
-**Problem**:
-No way to adjust game audio volume. The synthesized sounds can be harsh during extended play sessions, especially rapid-fire weapons or multi-kill announcements. Players can only mute entirely via browser tab, losing all audio feedback.
-
-**Symptoms**:
-- Players mute tab to avoid harsh sounds
-- Extended play causes audio fatigue
-- No granular control (can't lower SFX but keep music)
-- Accessibility issue for sound-sensitive players
-
-**Suggested Solutions**:
-- Add master volume slider on start screen
-- Add volume slider in shop/pause screen
-- Implement separate SFX/Music volume controls
-- Add quick mute toggle (M key)
-
-**Files to modify**:
-- `js/systems/audio.js` - Volume control functions
-- `js/state.js` - Volume state
-- `index.html` - Volume slider UI
-- `css/styles.css` - Slider styling
-
-**Acceptance Criteria**:
-- [ ] Volume slider accessible from start screen
-- [ ] Volume persists between sessions (localStorage)
-- [ ] All sounds respect volume setting
+### UX-005: Missing Audio Volume Control ✅ COMPLETE
+**Completed**: Implemented as part of TASK-015 (MLG Sound Pack)
+See archived section for implementation details.
 
 ---
 
@@ -257,10 +230,10 @@ See archived section for implementation details.
 | P1 (UX/Enjoyment - High) | 0 | ✅ Complete |
 | P2 (UX/Enjoyment - Medium) | 1 | 3-4 hours |
 | P3 (UX/Enjoyment - Low) | 1 | 2 hours |
-| P3 (Stretch Features) | 3 (1 done) | 10-15 hours |
-| **TOTAL** | **5** | **15-21 hours** |
+| P3 (Stretch Features) | 3 (1 done) | 9-11 hours |
+| **TOTAL** | **4** | **14-17 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-006, UX-007, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-005, UX-006, UX-007, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -280,7 +253,7 @@ All refactoring tasks completed!
 **Phase 4: Medium-Impact UX Fixes** (Mostly Complete)
 - UX-003 (Shop Visibility) ✅ - New player experience
 - UX-004 (Boss Minigame Flow) - Combat consistency
-- UX-005 (Volume Control) - Already implemented in TASK-015!
+- UX-005 (Volume Control) ✅ - Implemented in TASK-015
 - UX-010 (Sigma RNG) ✅ - Difficulty consistency
 
 **Phase 5: Low-Impact Polish & Stretch Goals** (Mostly Complete)
@@ -645,6 +618,21 @@ All refactoring tasks completed!
 - Integrated with game flow in `js/game.js`:
   - Shows indicator on wave completion (non-boss)
   - Hides before shop opens
+
+### UX-005: Missing Audio Volume Control ✅
+**Completed**: Implemented as part of TASK-015 (MLG Sound Pack)
+- Added volume control system in `js/systems/audio.js`:
+  - `masterVolume` variable for global volume control
+  - `getVolume()` and `setVolume()` functions
+  - All sound functions respect master volume setting
+- Added volume slider UI in `index.html`:
+  - Volume control on start screen
+  - Range slider (0-100%)
+- Added CSS styling in `css/styles.css`:
+  - Styled slider matching game theme
+- Added event listener in `js/main.js`:
+  - Slider updates volume in real-time
+- All synthesized sounds (shoot, hit, kill, etc.) respect volume setting
 
 ### UX-006: Healing Power Progress Unclear ✅
 **Completed**: Clearer healing status with audio feedback
