@@ -4,54 +4,9 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 
 ---
 
-## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
-
-All code quality tasks completed! See archived section below.
-
----
-
-## 🟡 REMAINING FEATURE TASKS
-
-All P2 feature tasks completed! Continuing with stretch goals.
-
----
-
-## 🔴 UX/ENJOYMENT ISSUES (Enjoyment Assessment Findings)
-
-These issues were identified during a comprehensive UX enjoyment assessment and impact player satisfaction and engagement.
-
-### UX-001: Late-Game Progression Cliff ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-002: Combo System Fragility ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-003: Shop Visibility/Discovery Problem ✅ COMPLETE
-See archived section for implementation details.
-
----
+## 🔴 REMAINING UX ISSUES
 
 ### UX-004: Boss Minigame Flow Disruption ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-005: Missing Audio Volume Control ✅ COMPLETE
-**Completed**: Implemented as part of TASK-015 (MLG Sound Pack)
-See archived section for implementation details.
-
----
-
-### UX-006: Healing Power Progress Unclear ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-007: Boss Health Bar Missing Phase Indicators ✅ COMPLETE
 See archived section for implementation details.
 
 ---
@@ -88,28 +43,7 @@ Death screen shows stats but doesn't provide actionable information. "Cause of D
 
 ---
 
-### UX-009: Weapon Switching Lacks Feedback ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-010: Sigma Dino RNG Creates Inconsistent Difficulty ✅ COMPLETE
-See archived section for implementation details.
-
----
-
 ## 🟢 STRETCH GOAL TASKS
-
----
-
-### TASK-017: Fake Twitch Chat ✅ COMPLETE
-**Estimate**: 3-4 hours
-**Priority**: P3
-**Dependencies**: None
-
-**Completed**: See archived section for implementation details.
-
----
 
 ### TASK-018: Easter Eggs Collection
 **Estimate**: 3-4 hours
@@ -718,4 +652,4 @@ All refactoring tasks completed!
 
 ---
 
-*All bugs squashed! Time to get this bread 🍞💪*
+*5 tasks remaining - All bugs squashed! Time to get this bread 🍞💪*
