@@ -216,6 +216,7 @@ export class Enemy {
         if (this.callbacks.showDamageOverlay) this.callbacks.showDamageOverlay();
         if (this.callbacks.shakeOnDamage) this.callbacks.shakeOnDamage();
         if (this.callbacks.showEnemyDialogue) this.callbacks.showEnemyDialogue(this, 'attack');
+        if (this.callbacks.breakCombo) this.callbacks.breakCombo();
 
         if (gameState.health <= 0 && this.callbacks.gameOver) {
             this.callbacks.gameOver();
@@ -299,7 +300,11 @@ export class Enemy {
             return;
         }
 
-        gameState.score += this.points;
+        // Increment combo and calculate bonus
+        if (this.callbacks.incrementCombo) this.callbacks.incrementCombo();
+        const comboBonus = this.callbacks.getComboBonus ? this.callbacks.getComboBonus(this.points) : 0;
+
+        gameState.score += this.points + comboBonus;
         gameState.coins += this.coins;
         gameState.totalCoinsEarned += this.coins;
         skinState.totalCoins += this.coins;
@@ -335,14 +340,15 @@ export class Enemy {
             particles.push(getParticle(this.x, this.y, this.z, this.color));
         }
 
-        // Score floating text
+        // Score floating text (with combo bonus)
+        const comboText = comboBonus > 0 ? `+${this.points + comboBonus} (🔥+${comboBonus})` : `+${this.points}`;
         floatingTexts.push({
-            text: `+${this.points}`,
+            text: comboText,
             x: this.x,
             y: this.y - 50,
             z: this.z,
             life: 60,
-            color: '#ffcc00'
+            color: comboBonus > 0 ? '#ff00ff' : '#ffcc00'
         });
 
         // Coin floating text

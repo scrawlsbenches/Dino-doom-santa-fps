@@ -9,6 +9,7 @@ export * from './audio.js';
 export * from './effects.js';
 export * from './achievements.js';
 export * from './killstreak.js';
+export * from './combo.js';
 export * from './dialogue.js';
 export * from './skins.js';
 export * from './shop.js';
