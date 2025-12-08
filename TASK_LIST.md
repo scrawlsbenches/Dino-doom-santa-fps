@@ -4,36 +4,7 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 
 ---
 
-## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
-
-All code quality tasks completed! See archived section below.
-
----
-
-## 🟡 REMAINING FEATURE TASKS
-
-All P2 feature tasks completed! Continuing with stretch goals.
-
----
-
-## 🔴 UX/ENJOYMENT ISSUES (Enjoyment Assessment Findings)
-
-These issues were identified during a comprehensive UX enjoyment assessment and impact player satisfaction and engagement.
-
-### UX-001: Late-Game Progression Cliff ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-002: Combo System Fragility ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-003: Shop Visibility/Discovery Problem ✅ COMPLETE
-See archived section for implementation details.
-
----
+## 🔴 REMAINING UX ISSUES
 
 ### UX-004: Boss Minigame Flow Disruption
 **Estimate**: 3-4 hours
@@ -64,22 +35,6 @@ The clicking minigame at 50% boss HP completely breaks the FPS gameplay flow. Pl
 - [ ] Boss vulnerability phase uses FPS-consistent mechanics
 - [ ] No jarring context switch during combat
 - [ ] Players understand mechanic before first encounter
-
----
-
-### UX-005: Missing Audio Volume Control ✅ COMPLETE
-**Completed**: Implemented as part of TASK-015 (MLG Sound Pack)
-See archived section for implementation details.
-
----
-
-### UX-006: Healing Power Progress Unclear ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-007: Boss Health Bar Missing Phase Indicators ✅ COMPLETE
-See archived section for implementation details.
 
 ---
 
@@ -115,28 +70,7 @@ Death screen shows stats but doesn't provide actionable information. "Cause of D
 
 ---
 
-### UX-009: Weapon Switching Lacks Feedback ✅ COMPLETE
-See archived section for implementation details.
-
----
-
-### UX-010: Sigma Dino RNG Creates Inconsistent Difficulty ✅ COMPLETE
-See archived section for implementation details.
-
----
-
 ## 🟢 STRETCH GOAL TASKS
-
----
-
-### TASK-017: Fake Twitch Chat ✅ COMPLETE
-**Estimate**: 3-4 hours
-**Priority**: P3
-**Dependencies**: None
-
-**Completed**: See archived section for implementation details.
-
----
 
 ### TASK-018: Easter Eggs Collection
 **Estimate**: 3-4 hours
@@ -224,45 +158,22 @@ See archived section for implementation details.
 
 ## 📊 TASK SUMMARY
 
-| Priority | Count | Total Estimate |
-|----------|-------|----------------|
-| P0 (Critical Bugs) | 0 | ✅ Complete |
-| P1 (UX/Enjoyment - High) | 0 | ✅ Complete |
-| P2 (UX/Enjoyment - Medium) | 1 | 3-4 hours |
-| P3 (UX/Enjoyment - Low) | 1 | 2 hours |
-| P3 (Stretch Features) | 3 (1 done) | 9-11 hours |
-| **TOTAL** | **4** | **14-17 hours** |
-
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-005, UX-006, UX-007, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
+| Priority | Count | Estimate |
+|----------|-------|----------|
+| P2 (UX - Medium) | 1 | 3-4 hours |
+| P3 (UX - Low) | 1 | 2 hours |
+| P3 (Stretch) | 3 | 9-11 hours |
+| **TOTAL** | **5** | **14-17 hours** |
 
 ---
 
 ## 🏃 SUGGESTED ORDER
 
-**Phase 1: Code Quality** ✅ COMPLETE
-All refactoring tasks completed!
-
-**Phase 2: Core Features** ✅ COMPLETE
-- TASK-014 (Combo Counter) ✅ - Core gameplay enhancement done!
-- TASK-016 (Deep Fried Mode) ✅ - Meme visual effects done!
-
-**Phase 3: High-Impact UX Fixes** ✅ COMPLETE
-- UX-001 (Late-Game Progression) ✅ - Prestige upgrades system added!
-- UX-002 (Combo System Fragility) ✅ - Combo decay system added!
-
-**Phase 4: Medium-Impact UX Fixes** (Mostly Complete)
-- UX-003 (Shop Visibility) ✅ - New player experience
-- UX-004 (Boss Minigame Flow) - Combat consistency
-- UX-005 (Volume Control) ✅ - Implemented in TASK-015
-- UX-010 (Sigma RNG) ✅ - Difficulty consistency
-
-**Phase 5: Low-Impact Polish & Stretch Goals** (Mostly Complete)
-- UX-006 (Healing Progress) ✅ - Clearer heal status
-- UX-007 (Boss Phase Indicators) ✅ - Phase threshold visibility
-- UX-008 (Death Screen Tips) - Pending
-- UX-009 (Weapon Feedback) ✅ - Equip sound and toast
-- TASK-017 (Fake Twitch Chat) ✅ - Chat overlay reacts to gameplay!
-- TASK-018 through TASK-020 (Fun features)
+1. **UX-004** (Boss Minigame Flow) - Combat consistency
+2. **UX-008** (Death Screen Tips) - Learning loop improvement
+3. **TASK-018** (Easter Eggs) - Fun hidden content
+4. **TASK-019** (Background Memes) - Visual flair
+5. **TASK-020** (Advanced Boss Phases) - Epic boss fights
 
 ---
 
@@ -702,4 +613,4 @@ All refactoring tasks completed!
 
 ---
 
-*All bugs squashed! Time to get this bread 🍞💪*
+*5 tasks remaining - All bugs squashed! Time to get this bread 🍞💪*
