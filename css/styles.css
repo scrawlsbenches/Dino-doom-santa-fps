@@ -1616,6 +1616,19 @@ body {
     margin-top: 10px;
 }
 
+/* ==================== 10. BACKGROUND MEMES (TASK-019) ==================== */
+
+#background-memes-toggle {
+    margin: 10px 0;
+    text-align: center;
+}
+
+#background-memes-btn.active {
+    background: linear-gradient(180deg, #6b5b95, #4a4063);
+    border-color: #9b89b3;
+    box-shadow: 0 0 20px rgba(107, 91, 149, 0.5);
+}
+
 /* Deep Fried Filter Effects */
 #game-container.deep-fried {
     filter: saturate(3) contrast(1.5) brightness(1.2);
