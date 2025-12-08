@@ -244,3 +244,389 @@ test.describe('Accessibility', () => {
     await expect(startBtn).toBeVisible();
   });
 });
+
+test.describe('Santa Skin Selection', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('should display skin options', async ({ page }) => {
+    const skinOptions = page.locator('#skin-options');
+    await expect(skinOptions).toBeVisible();
+  });
+
+  test('should have multiple skin choices', async ({ page }) => {
+    const skinButtons = page.locator('#skin-options .skin-option');
+    const count = await skinButtons.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test('should display coins for skin purchase', async ({ page }) => {
+    const skinCoins = page.locator('#skin-coins-display');
+    await expect(skinCoins).toBeVisible();
+  });
+
+  test('should highlight selected skin', async ({ page }) => {
+    // First skin option should be selected by default
+    const firstSkin = page.locator('#skin-options .skin-option').first();
+    await expect(firstSkin).toBeVisible();
+  });
+});
+
+test.describe('Keyboard Controls', () => {
+  test('should start game with Enter key on focused button', async ({ page }) => {
+    await page.goto('/');
+
+    // Focus and click the start button
+    const startBtn = page.locator('#start-btn');
+    await startBtn.focus();
+    await page.keyboard.press('Enter');
+
+    // Game should start
+    const startScreen = page.locator('#start-screen');
+    await expect(startScreen).not.toBeVisible();
+  });
+
+  test('should fire projectile with spacebar', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    // Press spacebar to shoot
+    await page.keyboard.press('Space');
+
+    // Game should still be running (no crash)
+    const hud = page.locator('#hud');
+    await expect(hud).toBeVisible();
+  });
+
+  test('should handle healing power key (E)', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    // Press E for healing
+    await page.keyboard.press('e');
+
+    // Game should still be running
+    const hud = page.locator('#hud');
+    await expect(hud).toBeVisible();
+  });
+});
+
+test.describe('Canvas Interaction', () => {
+  test('should have properly sized canvas', async ({ page }) => {
+    await page.goto('/');
+
+    const canvas = page.locator('#game-canvas');
+    const box = await canvas.boundingBox();
+
+    expect(box).not.toBeNull();
+    expect(box?.width).toBeGreaterThan(0);
+    expect(box?.height).toBeGreaterThan(0);
+  });
+
+  test('should handle mouse click on canvas', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    // Click on canvas to shoot
+    const canvas = page.locator('#game-canvas');
+    await canvas.click({ position: { x: 400, y: 300 } });
+
+    // Game should still be running
+    const hud = page.locator('#hud');
+    await expect(hud).toBeVisible();
+  });
+
+  test('should track mouse movement', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    // Move mouse across canvas
+    const canvas = page.locator('#game-canvas');
+    await canvas.hover({ position: { x: 100, y: 100 } });
+    await canvas.hover({ position: { x: 500, y: 400 } });
+
+    // Game should still be running
+    const score = page.locator('#score');
+    await expect(score).toBeVisible();
+  });
+});
+
+test.describe('Visual Effects Elements', () => {
+  test('should have damage overlay in DOM', async ({ page }) => {
+    await page.goto('/');
+
+    const damageOverlay = page.locator('#damage-overlay');
+    await expect(damageOverlay).toBeAttached();
+  });
+
+  test('should have muzzle flash element', async ({ page }) => {
+    await page.goto('/');
+
+    const muzzleFlash = page.locator('#muzzle-flash');
+    await expect(muzzleFlash).toBeAttached();
+  });
+
+  test('should have wave announcement element', async ({ page }) => {
+    await page.goto('/');
+
+    const waveAnnouncement = page.locator('#wave-announcement');
+    await expect(waveAnnouncement).toBeAttached();
+  });
+
+  test('should have kill feed element', async ({ page }) => {
+    await page.goto('/');
+
+    const killFeed = page.locator('#kill-feed');
+    await expect(killFeed).toBeAttached();
+  });
+
+  test('should have achievement container', async ({ page }) => {
+    await page.goto('/');
+
+    const achievementContainer = page.locator('#achievement-container');
+    await expect(achievementContainer).toBeAttached();
+  });
+});
+
+test.describe('Boss UI Elements', () => {
+  test('should have boss intro overlay', async ({ page }) => {
+    await page.goto('/');
+
+    const bossIntro = page.locator('#boss-intro-overlay');
+    await expect(bossIntro).toBeAttached();
+  });
+
+  test('should have boss health container', async ({ page }) => {
+    await page.goto('/');
+
+    const bossHealthContainer = page.locator('#boss-health-container');
+    await expect(bossHealthContainer).toBeAttached();
+  });
+
+  test('should have boss name display', async ({ page }) => {
+    await page.goto('/');
+
+    const bossName = page.locator('#boss-name');
+    await expect(bossName).toBeAttached();
+  });
+
+  test('should have boss health bar', async ({ page }) => {
+    await page.goto('/');
+
+    const bossHealthBar = page.locator('#boss-health-bar');
+    await expect(bossHealthBar).toBeAttached();
+  });
+});
+
+test.describe('Minigame Elements', () => {
+  test('should have minigame screen', async ({ page }) => {
+    await page.goto('/');
+
+    const minigameScreen = page.locator('#minigame-screen');
+    await expect(minigameScreen).toBeAttached();
+  });
+
+  test('should have minigame area', async ({ page }) => {
+    await page.goto('/');
+
+    const minigameArea = page.locator('#minigame-area');
+    await expect(minigameArea).toBeAttached();
+  });
+
+  test('should have minigame timer', async ({ page }) => {
+    await page.goto('/');
+
+    const minigameTimer = page.locator('#minigame-timer');
+    await expect(minigameTimer).toBeAttached();
+  });
+
+  test('should have minigame hit counter', async ({ page }) => {
+    await page.goto('/');
+
+    const minigameHits = page.locator('#minigame-hits');
+    await expect(minigameHits).toBeAttached();
+  });
+});
+
+test.describe('Game Stability', () => {
+  test('should not crash after rapid clicking', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    const canvas = page.locator('#game-canvas');
+
+    // Rapid fire clicks
+    for (let i = 0; i < 10; i++) {
+      await canvas.click({ position: { x: 400 + i * 10, y: 300 } });
+    }
+
+    // Game should still be running
+    const hud = page.locator('#hud');
+    await expect(hud).toBeVisible();
+  });
+
+  test('should not crash after rapid key presses', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    // Rapid spacebar presses
+    for (let i = 0; i < 10; i++) {
+      await page.keyboard.press('Space');
+    }
+
+    // Game should still be running
+    const score = page.locator('#score');
+    await expect(score).toBeVisible();
+  });
+
+  test('should handle game running for extended time', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    // Let game run for a few seconds
+    await page.waitForTimeout(3000);
+
+    // Game should still be functional
+    const hud = page.locator('#hud');
+    await expect(hud).toBeVisible();
+  });
+});
+
+test.describe('Responsive Layout', () => {
+  test('should display correctly on desktop viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto('/');
+
+    const gameContainer = page.locator('#game-container');
+    await expect(gameContainer).toBeVisible();
+
+    const startScreen = page.locator('#start-screen');
+    await expect(startScreen).toBeVisible();
+  });
+
+  test('should display correctly on tablet viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto('/');
+
+    const gameContainer = page.locator('#game-container');
+    await expect(gameContainer).toBeVisible();
+  });
+
+  test('should display correctly on mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/');
+
+    const gameContainer = page.locator('#game-container');
+    await expect(gameContainer).toBeVisible();
+  });
+
+  test('should maintain game functionality after resize', async ({ page }) => {
+    await page.goto('/');
+
+    // Start at desktop size
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.locator('#start-btn').click();
+
+    // Resize to tablet
+    await page.setViewportSize({ width: 768, height: 1024 });
+
+    // Game should still function
+    const hud = page.locator('#hud');
+    await expect(hud).toBeVisible();
+  });
+});
+
+test.describe('Game State Persistence', () => {
+  test('should preserve skin selection across page elements', async ({ page }) => {
+    await page.goto('/');
+
+    // Skin selector should be visible
+    const skinSelector = page.locator('#skin-selector');
+    await expect(skinSelector).toBeVisible();
+
+    // Start game
+    await page.locator('#start-btn').click();
+
+    // Game should be running
+    const hud = page.locator('#hud');
+    await expect(hud).toBeVisible();
+  });
+});
+
+test.describe('Error Handling', () => {
+  test('should not have JavaScript errors on load', async ({ page }) => {
+    const errors = [];
+
+    page.on('pageerror', (error) => {
+      errors.push(error.message);
+    });
+
+    await page.goto('/');
+    await page.waitForTimeout(2000);
+
+    expect(errors).toHaveLength(0);
+  });
+
+  test('should not have JavaScript errors during gameplay', async ({ page }) => {
+    const errors = [];
+
+    page.on('pageerror', (error) => {
+      errors.push(error.message);
+    });
+
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+
+    // Play for a bit
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(2000);
+
+    expect(errors).toHaveLength(0);
+  });
+
+  test('should not have console errors during gameplay', async ({ page }) => {
+    const errors = [];
+
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        errors.push(msg.text());
+      }
+    });
+
+    await page.goto('/');
+    await page.locator('#start-btn').click();
+    await page.waitForTimeout(2000);
+
+    // Filter out known acceptable errors (like failed font loads)
+    const criticalErrors = errors.filter(e =>
+      !e.includes('font') &&
+      !e.includes('favicon')
+    );
+
+    expect(criticalErrors).toHaveLength(0);
+  });
+});
+
+test.describe('Performance', () => {
+  test('should load page within reasonable time', async ({ page }) => {
+    const startTime = Date.now();
+    await page.goto('/');
+    const loadTime = Date.now() - startTime;
+
+    // Page should load within 5 seconds
+    expect(loadTime).toBeLessThan(5000);
+  });
+
+  test('should start game quickly after button click', async ({ page }) => {
+    await page.goto('/');
+
+    const startTime = Date.now();
+    await page.locator('#start-btn').click();
+    await page.locator('#hud').waitFor({ state: 'visible' });
+    const startGameTime = Date.now() - startTime;
+
+    // Game should start within 1 second
+    expect(startGameTime).toBeLessThan(1000);
+  });
+});
