@@ -1199,3 +1199,168 @@ body {
         opacity: 0;
     }
 }
+
+/* ==================== 9. DEEP FRIED MODE ==================== */
+
+/* Deep Fried Mode Toggle */
+#deep-fried-toggle {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.toggle-btn {
+    font-family: 'Bungee', cursive;
+    font-size: 20px;
+    padding: 15px 30px;
+    background: linear-gradient(180deg, #444, #222);
+    color: #fff;
+    border: 3px solid #666;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 0 auto;
+    pointer-events: auto;
+}
+
+.toggle-btn:hover {
+    border-color: #ffd700;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+}
+
+.toggle-btn.active {
+    background: linear-gradient(180deg, #ff6600, #cc3300);
+    border-color: #ff8800;
+    box-shadow: 0 0 30px rgba(255, 136, 0, 0.5);
+    animation: deepFriedPulse 0.5s ease-in-out infinite;
+}
+
+.toggle-emoji {
+    font-size: 32px;
+}
+
+.toggle-text {
+    text-shadow: 2px 2px 0 #000;
+}
+
+.toggle-desc {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #888;
+    margin-top: 10px;
+}
+
+/* Deep Fried Filter Effects */
+#game-container.deep-fried {
+    filter: saturate(3) contrast(1.5) brightness(1.2);
+}
+
+#game-container.deep-fried #game-canvas {
+    animation: chromaticAberration 0.1s infinite;
+}
+
+/* Chromatic Aberration Overlay */
+#chromatic-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0;
+    mix-blend-mode: screen;
+}
+
+#game-container.deep-fried #chromatic-overlay {
+    opacity: 0.15;
+    background: linear-gradient(90deg,
+        rgba(255, 0, 0, 0.3) 0%,
+        rgba(0, 255, 0, 0.3) 50%,
+        rgba(0, 0, 255, 0.3) 100%);
+    animation: chromaticShift 0.2s infinite;
+}
+
+/* Lens Flare Container */
+#lens-flare-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 55;
+    overflow: hidden;
+}
+
+.lens-flare {
+    position: absolute;
+    font-size: 48px;
+    pointer-events: none;
+    animation: lensFlareAnim 1s ease-out forwards;
+    text-shadow: 0 0 20px #fff, 0 0 40px #ff0;
+    filter: saturate(3) brightness(1.5);
+}
+
+/* Deep Fried Text Distortion */
+#game-container.deep-fried .stat-value,
+#game-container.deep-fried .stat-label,
+#game-container.deep-fried #weapon-name,
+#game-container.deep-fried #wave-display {
+    animation: textDistort 0.1s infinite;
+    text-shadow:
+        2px 0 #ff0000,
+        -2px 0 #00ff00,
+        0 2px #0000ff,
+        0 0 10px currentColor;
+}
+
+/* Deep Fried Animations */
+@keyframes deepFriedPulse {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(255, 136, 0, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(255, 136, 0, 0.8);
+    }
+}
+
+@keyframes chromaticAberration {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(1px, -1px); }
+    50% { transform: translate(-1px, 1px); }
+    75% { transform: translate(1px, 1px); }
+    100% { transform: translate(0, 0); }
+}
+
+@keyframes chromaticShift {
+    0% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    100% { transform: translateX(-2px); }
+}
+
+@keyframes textDistort {
+    0% { transform: skewX(0deg); }
+    25% { transform: skewX(1deg); }
+    50% { transform: skewX(-1deg); }
+    75% { transform: skewX(0.5deg); }
+    100% { transform: skewX(0deg); }
+}
+
+@keyframes lensFlareAnim {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2) rotate(360deg);
+    }
+}

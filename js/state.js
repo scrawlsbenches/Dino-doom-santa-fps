@@ -133,6 +133,12 @@ export const shakeState = {
     active: false
 };
 
+// ==================== DEEP FRIED MODE STATE ====================
+export const deepFriedState = {
+    enabled: false,
+    lensFlares: []  // Active lens flare emojis on screen
+};
+
 // ==================== STATE RESET FUNCTIONS ====================
 
 /**
@@ -307,6 +313,67 @@ export function saveSkinState() {
     } catch (e) {
         console.error('Failed to save skin state:', e);
     }
+}
+
+// ==================== DEEP FRIED MODE FUNCTIONS ====================
+
+/**
+ * Loads deep fried mode state from localStorage
+ */
+export function loadDeepFriedState() {
+    try {
+        const saved = localStorage.getItem('deepFriedMode');
+        if (saved !== null) {
+            deepFriedState.enabled = JSON.parse(saved);
+        }
+    } catch {
+        // Gracefully handle localStorage errors (e.g., private browsing)
+    }
+}
+
+/**
+ * Saves deep fried mode state to localStorage
+ */
+export function saveDeepFriedState() {
+    try {
+        localStorage.setItem('deepFriedMode', JSON.stringify(deepFriedState.enabled));
+    } catch {
+        // Gracefully handle localStorage errors
+    }
+}
+
+/**
+ * Toggles deep fried mode on/off
+ * @returns {boolean} The new state of deep fried mode
+ */
+export function toggleDeepFriedMode() {
+    deepFriedState.enabled = !deepFriedState.enabled;
+    saveDeepFriedState();
+    return deepFriedState.enabled;
+}
+
+/**
+ * Clears all lens flare emojis
+ */
+export function clearLensFlares() {
+    deepFriedState.lensFlares.length = 0;
+}
+
+/**
+ * Adds a lens flare emoji at the specified position
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ */
+export function addLensFlare(x, y) {
+    const emojis = ['💥', '✨', '🔥', '💯', '👌', '😂', '🅱️', '💀'];
+    deepFriedState.lensFlares.push({
+        x,
+        y,
+        emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        life: 60,  // 60 frames (~1 second)
+        scale: 1 + Math.random() * 0.5,
+        rotation: Math.random() * Math.PI * 2
+    });
 }
 
 // ==================== PARTICLE POOL FUNCTIONS ====================

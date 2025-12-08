@@ -9,6 +9,7 @@ import { updateMousePos, gameState } from './state.js';
 import { initSkinSystem } from './systems/skins.js';
 import { copyDeathReceipt } from './systems/death.js';
 import { setVolume } from './systems/audio.js';
+import { initDeepFriedSystem } from './systems/deepfried.js';
 import {
     initGame, startGame, shoot, useHealingPower,
     openShopWithCallbacks, closeShopWithCallbacks
@@ -24,6 +25,9 @@ function init() {
 
     // Initialize skin system (loads from localStorage)
     initSkinSystem();
+
+    // Initialize deep fried mode system (loads from localStorage)
+    initDeepFriedSystem();
 
     // Initialize game
     initGame(canvas);

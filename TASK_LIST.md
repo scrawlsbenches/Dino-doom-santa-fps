@@ -16,35 +16,329 @@ All P2 feature tasks completed! Continuing with stretch goals.
 
 ---
 
-## 🟢 STRETCH GOAL TASKS
+## 🔴 UX/ENJOYMENT ISSUES (Enjoyment Assessment Findings)
+
+These issues were identified during a comprehensive UX enjoyment assessment and impact player satisfaction and engagement.
+
+### UX-001: Late-Game Progression Cliff
+**Estimate**: 4-6 hours
+**Priority**: P1 (High Impact)
+**Dependencies**: None
+
+**Problem**:
+Player upgrades cap around wave 5-6 (all upgrades maxed), but enemy health scales infinitely (+10 HP/wave). After wave 10+, there's no meaningful progression—just longer fights with the same tools. Coins become worthless once upgrades are maxed.
+
+**Symptoms**:
+- Players feel "stuck" after wave 10
+- No reason to continue collecting coins
+- Gameplay becomes repetitive grind without reward
+- Time-to-kill increases without player power growth
+
+**Suggested Solutions**:
+- Add prestige upgrades (expensive, powerful, unlocked after maxing basics)
+- Add consumable items (temporary buffs purchasable each wave)
+- Add weapon upgrade tiers (upgrade individual weapons)
+- Implement scaling damage bonuses tied to wave number
+
+**Files to modify**:
+- `js/constants.js` - New upgrade tiers or consumables
+- `js/systems/shop.js` - New purchase categories
+- `js/state.js` - Track prestige/consumable state
+
+**Acceptance Criteria**:
+- [ ] Players have meaningful purchases available at wave 15+
+- [ ] Coin economy remains relevant throughout game
+- [ ] Power progression continues past initial upgrade caps
 
 ---
 
-### TASK-016: Deep Fried Mode
+### UX-002: Combo System Fragility
 **Estimate**: 2-3 hours
-**Priority**: P3
-**Dependencies**: None
+**Priority**: P1 (High Impact)
+**Dependencies**: TASK-014 ✅
 
-**Scope**:
-- Add toggle in start screen for "DEEP FRIED MODE"
-- When enabled:
-  - Apply CSS filters: saturate(3) contrast(1.5) brightness(1.2)
-  - Add chromatic aberration effect
-  - Random lens flare emojis appear on kills
-  - Text gets "deep fried" distortion
-- Performance consideration: can be toggled off
+**Problem**:
+Combo resets on ANY damage, even a single stray Gamer Dino projectile. Players can reach wave 10+ with 0 combo score bonus due to one unavoidable hit. This makes the combo system feel punishing rather than rewarding, and undermines its purpose as a skill indicator.
+
+**Symptoms**:
+- Players feel punished for minor mistakes
+- High-skill plays don't accumulate meaningful bonuses
+- "WOMBO COMBO" achievement feels impossible
+- Combo display rarely shows high numbers
+
+**Suggested Solutions**:
+- Add combo decay instead of instant reset (lose 50% on hit, not 100%)
+- Add "combo shield" that absorbs first hit without breaking combo
+- Reduce combo penalty based on current combo size (higher combos = more forgiving)
+- Add brief invulnerability after taking damage to prevent multi-hit combo breaks
 
 **Files to modify**:
-- `js/state.js` - Add deepFriedMode toggle
-- `js/ui.js` - Apply CSS filters to canvas
-- `css/styles.css` - Deep fried filter styles
-- `index.html` - Toggle button on start screen
+- `js/systems/combo.js` - Modify `breakCombo()` logic
+- `js/state.js` - Add combo shield state if needed
+- `js/constants.js` - Combo decay/shield parameters
 
 **Acceptance Criteria**:
-- [ ] Toggle on start screen
-- [ ] Visual effects apply correctly
-- [ ] Emojis appear on kills
-- [ ] Can be disabled for performance
+- [ ] Single hit doesn't completely destroy large combos
+- [ ] Players can maintain combos through reasonable gameplay
+- [ ] System still rewards damage avoidance
+
+---
+
+### UX-003: Shop Visibility/Discovery Problem
+**Estimate**: 2 hours
+**Priority**: P2 (Medium Impact)
+**Dependencies**: None
+
+**Problem**:
+The R key to open shop only works "between waves," but there's no visual indicator when the shop becomes available. First-time players often don't realize the shop exists until several waves in, missing critical upgrade opportunities.
+
+**Symptoms**:
+- New players don't upgrade early, making game harder
+- "Press R for Shop" text in controls often overlooked
+- No audio/visual cue when shop becomes available
+- Players die with unspent coins
+
+**Suggested Solutions**:
+- Add pulsing "SHOP AVAILABLE [R]" indicator after wave completion
+- Play a "cha-ching" sound when shop unlocks
+- Auto-open shop after first wave (tutorial behavior)
+- Add floating coin animation pointing to shop prompt
+
+**Files to modify**:
+- `js/ui.js` - Shop availability indicator
+- `js/systems/audio.js` - Shop available sound
+- `css/styles.css` - Pulsing indicator animation
+- `index.html` - Shop indicator element
+
+**Acceptance Criteria**:
+- [ ] Clear visual indicator when shop is available
+- [ ] First-time players discover shop within waves 1-2
+- [ ] Indicator doesn't obstruct gameplay
+
+---
+
+### UX-004: Boss Minigame Flow Disruption
+**Estimate**: 3-4 hours
+**Priority**: P2 (Medium Impact)
+**Dependencies**: None
+
+**Problem**:
+The clicking minigame at 50% boss HP completely breaks the FPS gameplay flow. Players go from "aim and shoot at moving target" to "click stationary spawning circles." This jarring transition interrupts combat momentum and feels like a different game.
+
+**Symptoms**:
+- Momentum loss during boss fights
+- Players confused by sudden mechanic change
+- Minigame skill doesn't transfer from main gameplay
+- Boss fights feel inconsistent
+
+**Suggested Solutions**:
+- Replace minigame with "weak point" shooting (aim at glowing spots on boss)
+- Make minigame optional with time-limited vulnerability window
+- Keep minigame but make targets appear in 3D space (shoot them like enemies)
+- Add minigame tutorial/warning before first boss
+
+**Files to modify**:
+- `js/systems/boss.js` - Minigame mechanics
+- `js/ui.js` - Weak point rendering if applicable
+- `index.html` - Minigame area modifications
+
+**Acceptance Criteria**:
+- [ ] Boss vulnerability phase uses FPS-consistent mechanics
+- [ ] No jarring context switch during combat
+- [ ] Players understand mechanic before first encounter
+
+---
+
+### UX-005: Missing Audio Volume Control
+**Estimate**: 2 hours
+**Priority**: P2 (Medium Impact)
+**Dependencies**: None
+
+**Problem**:
+No way to adjust game audio volume. The synthesized sounds can be harsh during extended play sessions, especially rapid-fire weapons or multi-kill announcements. Players can only mute entirely via browser tab, losing all audio feedback.
+
+**Symptoms**:
+- Players mute tab to avoid harsh sounds
+- Extended play causes audio fatigue
+- No granular control (can't lower SFX but keep music)
+- Accessibility issue for sound-sensitive players
+
+**Suggested Solutions**:
+- Add master volume slider on start screen
+- Add volume slider in shop/pause screen
+- Implement separate SFX/Music volume controls
+- Add quick mute toggle (M key)
+
+**Files to modify**:
+- `js/systems/audio.js` - Volume control functions
+- `js/state.js` - Volume state
+- `index.html` - Volume slider UI
+- `css/styles.css` - Slider styling
+
+**Acceptance Criteria**:
+- [ ] Volume slider accessible from start screen
+- [ ] Volume persists between sessions (localStorage)
+- [ ] All sounds respect volume setting
+
+---
+
+### UX-006: Healing Power Progress Unclear
+**Estimate**: 1-2 hours
+**Priority**: P3 (Low Impact)
+**Dependencies**: None
+
+**Problem**:
+The healing power UI shows "X / 10 kills" but players must mentally calculate how many more kills are needed. During intense combat, this cognitive load is distracting. The bar also doesn't show when heal is ready to use vs. charging.
+
+**Symptoms**:
+- Players forget they have heal available
+- Mental math during combat
+- No "ready!" indicator when charged
+- Unclear if heal is on cooldown after use
+
+**Suggested Solutions**:
+- Add "X more kills" text instead of "X / 10"
+- Add pulsing glow when heal is ready
+- Play sound when heal becomes available
+- Change bar color when ready (green → gold)
+
+**Files to modify**:
+- `js/ui.js` - Heal bar display logic
+- `js/systems/audio.js` - Ready sound
+- `css/styles.css` - Ready state styling
+
+**Acceptance Criteria**:
+- [ ] Clear visual distinction between charging and ready states
+- [ ] Players know immediately when heal is available
+- [ ] Audio cue for heal ready
+
+---
+
+### UX-007: Boss Health Bar Missing Phase Indicators
+**Estimate**: 1 hour
+**Priority**: P3 (Low Impact)
+**Dependencies**: None
+
+**Problem**:
+Boss health bar doesn't show the 50% threshold where the minigame triggers. Players are surprised by the sudden phase transition and can't strategize around it.
+
+**Symptoms**:
+- Unexpected minigame interruption
+- Can't plan burst damage timing
+- No sense of "phases" during boss fight
+- Reduced tactical depth
+
+**Suggested Solutions**:
+- Add tick mark at 50% on boss health bar
+- Add phase labels (Phase 1 / Phase 2)
+- Change health bar color at phase thresholds
+- Add "VULNERABLE SOON" warning at 60% HP
+
+**Files to modify**:
+- `js/ui.js` - Boss health bar rendering
+- `css/styles.css` - Phase indicator styling
+
+**Acceptance Criteria**:
+- [ ] 50% threshold clearly visible on health bar
+- [ ] Players can anticipate phase transition
+
+---
+
+### UX-008: Death Screen Lacks Actionable Feedback
+**Estimate**: 2 hours
+**Priority**: P3 (Low Impact)
+**Dependencies**: None
+
+**Problem**:
+Death screen shows stats but doesn't provide actionable information. "Cause of Death" shows enemy type but not useful context. No tips or suggestions for improvement. Players don't learn what to do differently.
+
+**Symptoms**:
+- Players repeat same mistakes
+- No learning loop from deaths
+- "Skill issue" meme is funny but unhelpful
+- Missed coaching opportunity
+
+**Suggested Solutions**:
+- Add "Tip:" section with context-aware advice
+- Show which enemy type dealt most damage that run
+- Add "You died X times to [enemy]" tracking
+- Include wave-specific tips (e.g., "Try upgrading fire rate for Gamer Dinos")
+
+**Files to modify**:
+- `js/systems/death.js` - Death analysis logic
+- `js/state.js` - Track damage sources
+- `index.html` - Tip display element
+
+**Acceptance Criteria**:
+- [ ] Death screen includes helpful tip
+- [ ] Tips are contextual to how player died
+- [ ] Players feel they learned something
+
+---
+
+### UX-009: Weapon Switching Lacks Feedback
+**Estimate**: 1 hour
+**Priority**: P3 (Low Impact)
+**Dependencies**: None
+
+**Problem**:
+Equipping a weapon in the shop just changes the stat display. No equip sound, no animation, no confirmation. Players sometimes aren't sure if the weapon changed, especially with similar-looking options.
+
+**Symptoms**:
+- Uncertain if weapon equipped
+- Weapons feel interchangeable visually
+- No satisfaction from purchase
+- Missed "new toy" feeling
+
+**Suggested Solutions**:
+- Add equip sound effect (weapon-specific)
+- Add brief weapon glow/pulse animation
+- Show "EQUIPPED!" toast notification
+- Preview weapon appearance before purchase
+
+**Files to modify**:
+- `js/systems/shop.js` - Equip feedback
+- `js/systems/audio.js` - Equip sounds
+- `css/styles.css` - Equip animation
+
+**Acceptance Criteria**:
+- [ ] Clear audio/visual feedback on weapon equip
+- [ ] Players feel satisfaction when switching weapons
+
+---
+
+### UX-010: Sigma Dino RNG Creates Inconsistent Difficulty
+**Estimate**: 3 hours
+**Priority**: P2 (Medium Impact)
+**Dependencies**: None
+
+**Problem**:
+Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This creates lottery-dependent difficulty where some waves are trivially easy (multiple Sigmas) while others are brutal (all aggressive enemies). Player skill matters less than spawn RNG.
+
+**Symptoms**:
+- Inconsistent wave difficulty
+- "Free" waves reduce challenge satisfaction
+- High coin variance affects progression pacing
+- Some runs feel "lucky" rather than skilled
+
+**Suggested Solutions**:
+- Cap Sigma spawns per wave (max 1)
+- Make Sigma spawn on fixed schedule (every 4th wave guaranteed)
+- Reduce Sigma coin reward to match other enemies
+- Add Sigma "escape timer" pressure (faster escape = fewer coins)
+
+**Files to modify**:
+- `js/game.js` - Spawn logic modification
+- `js/constants.js` - Sigma spawn parameters
+
+**Acceptance Criteria**:
+- [ ] Sigma spawns feel special but not game-breaking
+- [ ] Wave difficulty more consistent
+- [ ] Skilled play still rewarded
+
+---
+
+## 🟢 STRETCH GOAL TASKS
 
 ---
 
@@ -167,12 +461,13 @@ All P2 feature tasks completed! Continuing with stretch goals.
 | Priority | Count | Total Estimate |
 |----------|-------|----------------|
 | P0 (Critical Bugs) | 0 | ✅ Complete |
-| P1 (High Bugs) | 0 | ✅ Complete |
-| P2 (Medium/Refactor) | 0 | ✅ Complete |
-| P3 (Low/Features) | 5 | 14-18 hours |
-| **TOTAL** | **5** | **14-18 hours** |
+| P1 (UX/Enjoyment - High) | 2 | 6-9 hours |
+| P2 (UX/Enjoyment - Medium) | 4 | 10-12 hours |
+| P3 (UX/Enjoyment - Low) | 4 | 5-7 hours |
+| P3 (Stretch Features) | 4 | 14-19 hours |
+| **TOTAL** | **14** | **35-47 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, and TASK-015 completed and archived.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, and TASK-016 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -183,9 +478,21 @@ All refactoring tasks completed!
 
 **Phase 2: Core Features** ✅ COMPLETE
 - TASK-014 (Combo Counter) ✅ - Core gameplay enhancement done!
+- TASK-016 (Deep Fried Mode) ✅ - Meme visual effects done!
 
-**Phase 3: Stretch Goals**
-Continue with remaining stretch goals based on interest (TASK-015 through TASK-020).
+**Phase 3: High-Impact UX Fixes** (RECOMMENDED NEXT)
+- UX-001 (Late-Game Progression) - Critical for retention
+- UX-002 (Combo System Fragility) - Core mechanic improvement
+
+**Phase 4: Medium-Impact UX Fixes**
+- UX-003 (Shop Visibility) - New player experience
+- UX-004 (Boss Minigame Flow) - Combat consistency
+- UX-005 (Volume Control) - Accessibility/QoL
+- UX-010 (Sigma RNG) - Difficulty consistency
+
+**Phase 5: Low-Impact Polish & Stretch Goals**
+- UX-006 through UX-009 (Minor polish)
+- TASK-015, TASK-017 through TASK-020 (Fun features)
 
 ---
 
@@ -417,6 +724,23 @@ Continue with remaining stretch goals based on interest (TASK-015 through TASK-0
   - `js/systems/killstreak.js` - triple kill and 5+ streak sounds
   - `js/systems/achievements.js` - airhorn on wave complete, WOW on boss defeat
   - `js/game.js` - sad violin on death
+
+### TASK-016: Deep Fried Mode ✅
+**Completed**: Meme visual effects
+- Added `deepFriedState` to `js/state.js` for tracking mode enabled state
+- Created new `js/systems/deepfried.js` with deep fried mode logic:
+  - `initDeepFriedSystem()` - initializes toggle button and loads saved state
+  - `toggleDeepFriedMode()` - toggles mode and saves to localStorage
+  - `applyDeepFriedEffect()` - adds/removes CSS class on game container
+  - `spawnLensFlare()` - spawns emoji lens flares at screen position
+  - `createLensFlareSpawner()` - creates canvas-bound spawner for world coordinates
+- Added toggle button to start screen in `index.html`
+- Added chromatic aberration and lens flare container elements
+- Added CSS animations: deepFriedPulse, chromaticAberration, chromaticShift, textDistort, lensFlareAnim
+- CSS filters: saturate(3), contrast(1.5), brightness(1.2) when enabled
+- Lens flare emojis spawn on enemy kills
+- State persists in localStorage
+- Can be disabled for performance
 
 </details>
 

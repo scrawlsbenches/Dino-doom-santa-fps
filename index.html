@@ -10,6 +10,8 @@
 <body>
     <div id="game-container">
         <canvas id="game-canvas"></canvas>
+        <div id="chromatic-overlay"></div>
+        <div id="lens-flare-container"></div>
 
         <div id="hud">
             <div class="hud-corner top-left">
@@ -118,11 +120,20 @@
                 <div id="skin-coins-display">🪙 <span id="skin-coins">0</span></div>
             </div>
 
-            <!-- Volume Slider -->
+<!-- Volume Slider -->
             <div id="volume-control">
                 <label for="volume-slider">🔊 VOLUME</label>
                 <input type="range" id="volume-slider" min="0" max="100" value="100">
                 <span id="volume-value">100%</span>
+            </div>
+
+            <!-- Deep Fried Mode Toggle -->
+            <div id="deep-fried-toggle">
+                <button id="deep-fried-btn" class="toggle-btn">
+                    <span class="toggle-emoji">🍟</span>
+                    <span class="toggle-text">DEEP FRIED MODE: OFF</span>
+                </button>
+                <p class="toggle-desc">Maximum meme saturation for true gamers</p>
             </div>
 
             <button id="start-btn" class="game-btn">🎮 START GAME 🎮</button>
