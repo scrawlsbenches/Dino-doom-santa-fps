@@ -30,7 +30,8 @@ import {
     spawnBoss, showBossTutorial, shouldShowBossTutorial, resetBossTutorial,
     startMinigame,
     createLensFlareSpawner,
-    onChatKill, onChatDeath, onChatBossKill, clearChat, initChatSystem
+    onChatKill, onChatDeath, onChatBossKill, clearChat, initChatSystem,
+    triggerPhaseTransition, clearPhaseEffects
 } from './systems/index.js';
 import {
     updateHUD, updateCrosshair, addKillFeed,
@@ -70,7 +71,11 @@ function getEnemyCallbacks() {
         checkAchievements: checkKillAchievements,
         spawnLensFlare: lensFlareSpawner,
         onChatKill,
-        onChatBossKill
+        onChatBossKill,
+        // TASK-020: Boss phase transition callback
+        triggerPhaseTransition: (boss, newPhase) => triggerPhaseTransition(boss, newPhase, playSound),
+        // TASK-020: Clear phase effects on boss death
+        clearPhaseEffects
     };
 }
 
