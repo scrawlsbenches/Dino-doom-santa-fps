@@ -392,6 +392,13 @@ export class Enemy {
         if (this.callbacks.spawnLensFlare) {
             this.callbacks.spawnLensFlare(this.x, this.z);
         }
+
+        // Twitch chat reactions
+        if (this.isBoss && this.callbacks.onChatBossKill) {
+            this.callbacks.onChatBossKill();
+        } else if (this.callbacks.onChatKill) {
+            this.callbacks.onChatKill();
+        }
     }
 
     /**

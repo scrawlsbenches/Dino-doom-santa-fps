@@ -95,7 +95,10 @@ export function loadConstants() {
             ENEMY_DIALOGUE,
             SIGMA_QUOTES,
             SHOPKEEPER_DIALOGUE,
-            SIGMA_ESCAPE_TAUNTS
+            SIGMA_ESCAPE_TAUNTS,
+            TWITCH_CHAT_CONFIG,
+            TWITCH_CHAT_USERNAMES,
+            TWITCH_CHAT_MESSAGES
         };
     `);
     return fn();

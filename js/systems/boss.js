@@ -9,6 +9,7 @@ import { BOSS_NAMES, GAME_CONFIG } from '../constants.js';
 import { gameState, trackTimeout, enemies } from '../state.js';
 import { Enemy } from '../classes/Enemy.js';
 import { playSound } from './audio.js';
+import { onChatBossSpawn } from './chat.js';
 
 /**
  * Gets boss info for current wave
@@ -112,5 +113,8 @@ export function spawnBoss(callbacks) {
         if (bossHealthBar) bossHealthBar.style.width = '100%';
 
         playSound('boss');
+
+        // Twitch chat reaction to boss spawn
+        onChatBossSpawn();
     }, callbacks);
 }

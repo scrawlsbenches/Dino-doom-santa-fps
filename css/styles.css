@@ -1417,3 +1417,106 @@ body {
         transform: translate(-50%, -50%) scale(2) rotate(360deg);
     }
 }
+
+/* ==================== 10. FAKE TWITCH CHAT ==================== */
+
+#twitch-chat-container {
+    position: absolute;
+    bottom: 180px;
+    right: 20px;
+    width: 280px;
+    max-height: 250px;
+    background: rgba(24, 24, 27, 0.85);
+    border: 2px solid #9147ff;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    z-index: 65;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(145, 71, 255, 0.3);
+}
+
+#twitch-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(90deg, #9147ff, #772ce8);
+    border-bottom: 1px solid #9147ff;
+}
+
+.twitch-icon {
+    font-size: 16px;
+}
+
+.twitch-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #fff;
+    flex: 1;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.twitch-viewers {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    color: #efeff1;
+}
+
+#twitch-chat {
+    flex: 1;
+    overflow-y: hidden;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.twitch-chat-message {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    color: #efeff1;
+    padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    animation: chatMessageSlide 0.3s ease-out;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.twitch-chat-message.fading {
+    animation: chatMessageFade 0.5s ease-out forwards;
+}
+
+.twitch-chat-username {
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.twitch-chat-text {
+    color: #fff;
+}
+
+/* Chat Animations */
+@keyframes chatMessageSlide {
+    0% {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes chatMessageFade {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}

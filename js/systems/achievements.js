@@ -8,6 +8,7 @@
 import { ACHIEVEMENTS, GAME_CONFIG } from '../constants.js';
 import { unlockedAchievements, achievementTracking, gameState } from '../state.js';
 import { playSound, playAirhorn, playWowSound } from './audio.js';
+import { onChatWaveComplete } from './chat.js';
 
 /**
  * Unlocks an achievement and shows toast
@@ -62,6 +63,9 @@ export function onWaveStart() {
 export function onWaveComplete() {
     // MLG Sound Pack - Airhorn on wave complete
     playAirhorn();
+
+    // Twitch chat reaction to wave complete
+    onChatWaveComplete();
 
     // WAVE SURVIVOR - no damage taken this wave
     if (gameState.health === achievementTracking.waveStartHealth) {

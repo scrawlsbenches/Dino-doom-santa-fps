@@ -315,33 +315,12 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 
 ---
 
-### TASK-017: Fake Twitch Chat
+### TASK-017: Fake Twitch Chat ✅ COMPLETE
 **Estimate**: 3-4 hours
 **Priority**: P3
 **Dependencies**: None
 
-**Scope**:
-- Add scrolling chat overlay in corner
-- Fake "viewers" react to gameplay:
-  - Kill: "POG", "NICE", "CLEAN"
-  - Death: "F", "RIP", "NOOO"
-  - Boss spawn: "monkaS", "HERE WE GO", "BOSS TIME"
-  - Wave clear: "GGEZ", "TOO EASY", "LETS GO"
-- Random usernames: "xX_DinoSlayer_Xx", "GigaChadFan69", etc.
-- Messages scroll up and fade
-
-**Files to modify**:
-- `js/constants.js` - Chat messages and usernames
-- `js/systems/chat.js` (new) - Chat system logic
-- `js/ui.js` - Render chat overlay
-- `css/styles.css` - Chat styling
-- `index.html` - Chat container element
-
-**Acceptance Criteria**:
-- [ ] Chat visible during gameplay
-- [ ] Messages react to events
-- [ ] Variety of usernames and messages
-- [ ] Smooth scrolling animation
+**Completed**: See archived section for implementation details.
 
 ---
 
@@ -437,10 +416,10 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 | P1 (UX/Enjoyment - High) | 1 | 2-3 hours |
 | P2 (UX/Enjoyment - Medium) | 4 | 10-12 hours |
 | P3 (UX/Enjoyment - Low) | 4 | 5-7 hours |
-| P3 (Stretch Features) | 4 | 14-19 hours |
-| **TOTAL** | **13** | **31-41 hours** |
+| P3 (Stretch Features) | 3 (1 done) | 10-15 hours |
+| **TOTAL** | **12** | **27-37 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, and UX-001 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, and UX-001 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -465,7 +444,8 @@ All refactoring tasks completed!
 
 **Phase 5: Low-Impact Polish & Stretch Goals**
 - UX-006 through UX-009 (Minor polish)
-- TASK-015, TASK-017 through TASK-020 (Fun features)
+- TASK-017 (Fake Twitch Chat) ✅ - Chat overlay reacts to gameplay!
+- TASK-018 through TASK-020 (Fun features)
 
 ---
 
@@ -714,6 +694,38 @@ All refactoring tasks completed!
 - Lens flare emojis spawn on enemy kills
 - State persists in localStorage
 - Can be disabled for performance
+
+### TASK-017: Fake Twitch Chat ✅
+**Completed**: Fake Twitch chat overlay feature
+- Added `TWITCH_CHAT_CONFIG`, `TWITCH_CHAT_USERNAMES`, `TWITCH_CHAT_MESSAGES` to `js/constants.js`
+  - Config for max messages (8), duration (5s), fade duration (0.5s)
+  - 26 unique Twitch-style usernames
+  - Event messages for: kill, death, bossSpawn, waveComplete, bossKill
+- Created new `js/systems/chat.js` with chat system logic:
+  - `addChatMessage()` - adds message to chat overlay
+  - `triggerChatEvent()` - triggers random messages for event type
+  - `onChatKill()` - 30% chance to trigger kill messages
+  - `onChatDeath()` - multiple death reaction messages
+  - `onChatBossSpawn()` - boss spawn excitement messages
+  - `onChatWaveComplete()` - wave clear celebration messages
+  - `onChatBossKill()` - big celebration for boss kills
+  - `clearChat()` / `initChatSystem()` - chat reset on game start
+  - `setChatEnabled()` / `isChatEnabled()` - toggle functionality
+- Added chat container to `index.html`:
+  - Purple-themed header with "LIVE CHAT" title
+  - Fake viewer count display
+  - Messages container with scrolling support
+- Added CSS styling in `css/styles.css`:
+  - Twitch-purple theme (#9147ff)
+  - Slide-in animation for new messages
+  - Fade-out animation for old messages
+  - Semi-transparent background for visibility
+- Integrated chat with game events:
+  - `js/game.js` - imports chat functions, clears on start, triggers on death
+  - `js/classes/Enemy.js` - triggers kill/boss kill chat on enemy death
+  - `js/systems/achievements.js` - triggers wave complete chat
+  - `js/systems/boss.js` - triggers boss spawn chat
+- Added unit tests in `tests/systems.test.js` and `tests/constants.test.js`
 
 ### UX-001: Late-Game Progression Cliff ✅
 **Completed**: Prestige upgrades system for late-game progression

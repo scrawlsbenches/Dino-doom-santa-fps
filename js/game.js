@@ -28,7 +28,8 @@ import {
     openShop, closeShop,
     spawnBoss,
     startMinigame,
-    createLensFlareSpawner
+    createLensFlareSpawner,
+    onChatKill, onChatDeath, onChatBossKill, clearChat, initChatSystem
 } from './systems/index.js';
 import {
     updateHUD, updateCrosshair, addKillFeed,
@@ -65,7 +66,9 @@ function getEnemyCallbacks() {
         startMinigame,
         gameOver,
         checkAchievements: checkKillAchievements,
-        spawnLensFlare: lensFlareSpawner
+        spawnLensFlare: lensFlareSpawner,
+        onChatKill,
+        onChatBossKill
     };
 }
 
@@ -189,6 +192,9 @@ export function gameOver() {
     // MLG Sound Pack - Sad violin on death
     playSadViolin();
 
+    // Trigger chat death reactions
+    onChatDeath();
+
     checkDeathAchievements();
     updateDeathScreen();
     document.getElementById('game-over').style.display = 'flex';
@@ -214,6 +220,10 @@ export function startGame() {
     resetAchievementTracking();
     resetMinigameState();
     updateComboDisplay();
+
+    // Initialize chat system
+    initChatSystem();
+    clearChat();
 
     updateHUD();
     spawnWave();
