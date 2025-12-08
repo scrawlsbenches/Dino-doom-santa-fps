@@ -252,7 +252,21 @@ When you inevitably get destroyed by a dinosaur, you get a **DEATH RECEIPT** you
 | **E** | Heal (need 10 kills to charge) |
 | **R** | Open shop (between waves) |
 
-### Quick Start:
+### 🎮 INSTANT PLAY (Recommended)
+
+**Just want to play RIGHT NOW?** We got you:
+
+```
+dist/dino-doom.html  ← 72KB, EVERYTHING in ONE file
+```
+
+1. Download `dist/dino-doom.html`
+2. Double-click it
+3. That's it. No install. No server. No cap.
+
+Share it on Discord. Put it on a USB. Email it to your friends. It just works.
+
+### Quick Start (Dev version):
 1. Open `index.html` in your browser
 2. Pick your Santa drip
 3. Click **START GAME**
@@ -294,7 +308,9 @@ npx serve .
 
 ```
 Dino-doom-santa-fps/
-├── index.html          # The arena
+├── dist/
+│   └── dino-doom.html  # 🎮 THE PORTABLE VERSION (72KB, everything included!)
+├── index.html          # The arena (dev version)
 ├── css/
 │   └── styles.css      # Drip configuration
 ├── js/
@@ -316,13 +332,17 @@ Dino-doom-santa-fps/
 │       ├── death.js    # Your death receipt generator
 │       ├── killstreak.js
 │       └── ...
+├── scripts/
+│   └── build-single.js # Bundles everything into one HTML file
 └── tests/
     └── game.test.js    # 130 tests (we're professionals here)
 ```
 
-### Run Tests:
+### Commands:
 ```bash
-npm test
+npm test              # Run 130 unit tests
+npm run build         # Rebuild the portable dist/dino-doom.html
+npm run lint          # Check code quality
 ```
 
 **130 tests** across **38 test suites**. Yes, we test our memes.
