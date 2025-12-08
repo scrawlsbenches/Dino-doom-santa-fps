@@ -2581,3 +2581,346 @@ body {
         font-size: 11px;
     }
 }
+
+/* ==================== 12. EASTER EGGS ==================== */
+
+/* Santa Hat Easter Egg Element */
+#santa-hat-easter {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 60px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s, filter 0.3s;
+    z-index: 100;
+    filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+}
+
+#santa-hat-easter:hover {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes dripUnlock {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+    }
+    25% {
+        transform: scale(1.5);
+        filter: drop-shadow(0 0 30px rgba(0, 255, 255, 1)) hue-rotate(90deg);
+    }
+    50% {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 20px rgba(255, 0, 255, 1)) hue-rotate(180deg);
+    }
+    75% {
+        transform: scale(1.4);
+        filter: drop-shadow(0 0 25px rgba(0, 255, 255, 1)) hue-rotate(270deg);
+    }
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.8));
+    }
+}
+
+/* Easter Egg Toast */
+.easter-egg-toast {
+    display: flex;
+    gap: 15px;
+    background: linear-gradient(135deg, #6b1d5c 0%, #3d0f3d 100%);
+    border: 3px solid #ff69b4;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    animation: easterEggSlide 0.5s ease-out, easterEggGlow 1s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
+}
+
+.easter-egg-toast.hiding {
+    animation: achievementFade 0.5s ease-out forwards;
+}
+
+.easter-egg-icon {
+    font-size: 40px;
+    display: flex;
+    align-items: center;
+    animation: easterEggIconSpin 1s ease-in-out infinite;
+}
+
+.easter-egg-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.easter-egg-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #ff69b4;
+    text-shadow: 0 0 10px #ff69b4;
+    margin-bottom: 5px;
+}
+
+.easter-egg-name {
+    font-family: 'Bungee', cursive;
+    font-size: 18px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+}
+
+.easter-egg-effect {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    color: #ffb6c1;
+    margin-top: 5px;
+}
+
+@keyframes easterEggSlide {
+    0% {
+        transform: translateX(100px) scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes easterEggGlow {
+    0%, 100% {
+        box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 50px rgba(255, 105, 180, 0.8), 0 0 80px rgba(255, 105, 180, 0.3);
+    }
+}
+
+@keyframes easterEggIconSpin {
+    0%, 100% {
+        transform: rotate(-5deg) scale(1);
+    }
+    50% {
+        transform: rotate(5deg) scale(1.1);
+    }
+}
+
+/* MORBIN Announcement */
+.morbin-announcement {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: none;
+    animation: morbinEntry 0.5s ease-out;
+}
+
+.morbin-announcement.fade-out {
+    animation: morbinExit 0.5s ease-out forwards;
+}
+
+.morbin-text {
+    font-family: 'Bungee', cursive;
+    font-size: 72px;
+    color: #8b0000;
+    text-shadow:
+        4px 4px 0 #000,
+        -2px -2px 0 #500,
+        0 0 30px #800,
+        0 0 60px #600;
+    animation: morbinPulse 0.3s ease-in-out infinite;
+}
+
+@keyframes morbinEntry {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(-20deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes morbinExit {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes morbinPulse {
+    0%, 100% {
+        text-shadow:
+            4px 4px 0 #000,
+            -2px -2px 0 #500,
+            0 0 30px #800,
+            0 0 60px #600;
+    }
+    50% {
+        text-shadow:
+            4px 4px 0 #000,
+            -2px -2px 0 #500,
+            0 0 50px #a00,
+            0 0 100px #800;
+    }
+}
+
+/* Nice. Announcement (Wave 69) */
+.nice-announcement {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: none;
+    animation: niceEntry 0.3s ease-out;
+}
+
+.nice-announcement.fade-out {
+    animation: niceExit 0.5s ease-out forwards;
+}
+
+.nice-text {
+    font-family: 'Bungee', cursive;
+    font-size: 96px;
+    color: #ff69b4;
+    text-shadow:
+        4px 4px 0 #000,
+        0 0 20px #ff69b4,
+        0 0 40px #ff1493;
+    animation: niceWiggle 0.5s ease-in-out infinite;
+}
+
+@keyframes niceEntry {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes niceExit {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+}
+
+@keyframes niceWiggle {
+    0%, 100% {
+        transform: rotate(-2deg);
+    }
+    50% {
+        transform: rotate(2deg);
+    }
+}
+
+/* Dank Announcement (Wave 420) */
+.dank-flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 255, 0, 0.5);
+    z-index: 999;
+    pointer-events: none;
+    animation: dankFlash 3s ease-out forwards;
+}
+
+.dank-announcement {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: none;
+    text-align: center;
+    animation: dankEntry 0.5s ease-out;
+}
+
+.dank-announcement.fade-out {
+    animation: dankExit 0.5s ease-out forwards;
+}
+
+.dank-text {
+    font-family: 'Bungee', cursive;
+    font-size: 120px;
+    color: #00ff00;
+    text-shadow:
+        4px 4px 0 #000,
+        0 0 30px #0f0,
+        0 0 60px #0a0,
+        0 0 90px #080;
+    animation: dankPulse 0.2s ease-in-out infinite;
+}
+
+.dank-subtext {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: #90EE90;
+    text-shadow: 0 0 10px #0f0;
+    margin-top: 20px;
+}
+
+@keyframes dankFlash {
+    0% {
+        background: rgba(0, 255, 0, 0.8);
+    }
+    20% {
+        background: rgba(0, 255, 0, 0.3);
+    }
+    40% {
+        background: rgba(0, 255, 0, 0.5);
+    }
+    100% {
+        background: rgba(0, 255, 0, 0);
+    }
+}
+
+@keyframes dankEntry {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes dankExit {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0;
+    }
+}
+
+@keyframes dankPulse {
+    0%, 100% {
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        filter: hue-rotate(30deg);
+    }
+}

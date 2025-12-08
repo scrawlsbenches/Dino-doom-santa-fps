@@ -175,3 +175,68 @@ describe('Chat System', () => {
         assert.ok(chatContent.includes('chatState.enabled'), 'Should track enabled state');
     });
 });
+
+describe('Easter Egg System', () => {
+    test('Easter egg system file exists and has correct structure', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('export function initEasterEggSystem'), 'Should export initEasterEggSystem');
+        assert.ok(easterEggContent.includes('export function handleKonamiCode'), 'Should export handleKonamiCode');
+        assert.ok(easterEggContent.includes('export function handleMorbinCode'), 'Should export handleMorbinCode');
+        assert.ok(easterEggContent.includes('export function checkWaveEasterEggs'), 'Should export checkWaveEasterEggs');
+        assert.ok(easterEggContent.includes('export function applyEasterEggEffectsToEnemy'), 'Should export applyEasterEggEffectsToEnemy');
+    });
+
+    test('Easter egg system uses easter egg constants', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('EASTER_EGG_CONFIG'), 'Should use EASTER_EGG_CONFIG');
+        assert.ok(easterEggContent.includes('EASTER_EGGS'), 'Should use EASTER_EGGS');
+        assert.ok(easterEggContent.includes('SECRET_ACHIEVEMENTS'), 'Should use SECRET_ACHIEVEMENTS');
+    });
+
+    test('Easter egg system handles Konami code', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('konamiProgress'), 'Should track Konami code progress');
+        assert.ok(easterEggContent.includes('KONAMI_CODE'), 'Should reference KONAMI_CODE constant');
+    });
+
+    test('Easter egg system handles MORBIN code', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('morbinProgress'), 'Should track MORBIN code progress');
+        assert.ok(easterEggContent.includes('MORBIN_CODE'), 'Should reference MORBIN_CODE constant');
+        assert.ok(easterEggContent.includes('batMode'), 'Should have bat mode effect');
+    });
+
+    test('Easter egg system handles wave-based easter eggs', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('NICE_WAVE'), 'Should check for NICE_WAVE (69)');
+        assert.ok(easterEggContent.includes('DANK_WAVE'), 'Should check for DANK_WAVE (420)');
+        assert.ok(easterEggContent.includes('Nice.'), 'Should show Nice. for wave 69');
+    });
+
+    test('Easter egg system handles hat click easter egg', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('hatClickCount'), 'Should track hat clicks');
+        assert.ok(easterEggContent.includes('HAT_CLICKS_REQUIRED'), 'Should reference HAT_CLICKS_REQUIRED');
+        assert.ok(easterEggContent.includes('dripModeUnlocked'), 'Should unlock drip mode');
+    });
+
+    test('Easter egg system applies effects to enemies', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('shrinkEnemies'), 'Should have shrink enemies effect');
+        assert.ok(easterEggContent.includes('SHRINK_SCALE'), 'Should use SHRINK_SCALE constant');
+    });
+
+    test('Easter egg system tracks discovered eggs', () => {
+        const easterEggContent = readFile('js/systems/eastereggs.js');
+
+        assert.ok(easterEggContent.includes('discoverEasterEgg'), 'Should have discoverEasterEgg function');
+        assert.ok(easterEggContent.includes('isEasterEggDiscovered'), 'Should have isEasterEggDiscovered function');
+    });
+});
