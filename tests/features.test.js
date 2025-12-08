@@ -282,6 +282,66 @@ describe('TASK-014: Combo Counter System', () => {
                 'WOMBO_COMBO_THRESHOLD should be 10'
             );
         });
+
+        test('GAME_CONFIG has combo decay constants (UX-002)', () => {
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('COMBO_DECAY_BASE_PERCENT'),
+                'GAME_CONFIG should have COMBO_DECAY_BASE_PERCENT'
+            );
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('COMBO_DECAY_HIGH_PERCENT'),
+                'GAME_CONFIG should have COMBO_DECAY_HIGH_PERCENT'
+            );
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('COMBO_DECAY_VERY_HIGH_PERCENT'),
+                'GAME_CONFIG should have COMBO_DECAY_VERY_HIGH_PERCENT'
+            );
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('COMBO_HIGH_THRESHOLD'),
+                'GAME_CONFIG should have COMBO_HIGH_THRESHOLD'
+            );
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('COMBO_VERY_HIGH_THRESHOLD'),
+                'GAME_CONFIG should have COMBO_VERY_HIGH_THRESHOLD'
+            );
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty('COMBO_DAMAGE_COOLDOWN_MS'),
+                'GAME_CONFIG should have COMBO_DAMAGE_COOLDOWN_MS'
+            );
+        });
+
+        test('Combo decay constants have correct values (UX-002)', () => {
+            assert.strictEqual(
+                gameData.GAME_CONFIG.COMBO_DECAY_BASE_PERCENT,
+                50,
+                'COMBO_DECAY_BASE_PERCENT should be 50'
+            );
+            assert.strictEqual(
+                gameData.GAME_CONFIG.COMBO_DECAY_HIGH_PERCENT,
+                40,
+                'COMBO_DECAY_HIGH_PERCENT should be 40'
+            );
+            assert.strictEqual(
+                gameData.GAME_CONFIG.COMBO_DECAY_VERY_HIGH_PERCENT,
+                30,
+                'COMBO_DECAY_VERY_HIGH_PERCENT should be 30'
+            );
+            assert.strictEqual(
+                gameData.GAME_CONFIG.COMBO_HIGH_THRESHOLD,
+                10,
+                'COMBO_HIGH_THRESHOLD should be 10'
+            );
+            assert.strictEqual(
+                gameData.GAME_CONFIG.COMBO_VERY_HIGH_THRESHOLD,
+                20,
+                'COMBO_VERY_HIGH_THRESHOLD should be 20'
+            );
+            assert.strictEqual(
+                gameData.GAME_CONFIG.COMBO_DAMAGE_COOLDOWN_MS,
+                1000,
+                'COMBO_DAMAGE_COOLDOWN_MS should be 1000'
+            );
+        });
     });
 
     describe('Combo State', () => {
@@ -305,6 +365,10 @@ describe('TASK-014: Combo Counter System', () => {
                 stateContent.includes('showWomboCombo: false'),
                 'comboState should have showWomboCombo property initialized to false'
             );
+            assert.ok(
+                stateContent.includes('lastDamageTime: 0'),
+                'comboState should have lastDamageTime property initialized to 0 (UX-002)'
+            );
         });
 
         test('State.js exports resetComboState function', () => {
@@ -326,6 +390,10 @@ describe('TASK-014: Combo Counter System', () => {
             assert.ok(
                 stateContent.includes('comboState.showWomboCombo = false'),
                 'resetComboState should reset showWomboCombo to false'
+            );
+            assert.ok(
+                stateContent.includes('comboState.lastDamageTime = 0'),
+                'resetComboState should reset lastDamageTime to 0 (UX-002)'
             );
         });
     });
@@ -383,18 +451,26 @@ describe('TASK-014: Combo Counter System', () => {
             );
         });
 
-        test('breakCombo resets combo state', () => {
+        test('breakCombo decays combo instead of full reset (UX-002)', () => {
             const comboContent = readFile('js/systems/combo.js');
 
             const breakComboMatch = comboContent.match(/export function breakCombo[\s\S]*?^}/m);
             if (breakComboMatch) {
                 assert.ok(
-                    breakComboMatch[0].includes('comboState.count = 0'),
-                    'breakCombo should reset count to 0'
+                    breakComboMatch[0].includes('getComboDecayPercent'),
+                    'breakCombo should call getComboDecayPercent to get decay amount'
+                );
+                assert.ok(
+                    breakComboMatch[0].includes('comboState.count - comboLost'),
+                    'breakCombo should subtract decay amount instead of full reset'
+                );
+                assert.ok(
+                    breakComboMatch[0].includes('Math.max(0,'),
+                    'breakCombo should not go below 0'
                 );
                 assert.ok(
                     breakComboMatch[0].includes('comboState.showWomboCombo = false'),
-                    'breakCombo should reset showWomboCombo'
+                    'breakCombo should reset showWomboCombo when below threshold'
                 );
             }
         });
@@ -436,6 +512,88 @@ describe('TASK-014: Combo Counter System', () => {
                 comboContent.includes('wombo-combo-announcement'),
                 'showWomboComboAnnouncement should create element with class'
             );
+        });
+
+        test('combo.js exports getComboDecayPercent (UX-002)', () => {
+            const comboContent = readFile('js/systems/combo.js');
+
+            assert.ok(
+                comboContent.includes('export function getComboDecayPercent'),
+                'combo.js should export getComboDecayPercent'
+            );
+        });
+
+        test('combo.js exports isComboProtected (UX-002)', () => {
+            const comboContent = readFile('js/systems/combo.js');
+
+            assert.ok(
+                comboContent.includes('export function isComboProtected'),
+                'combo.js should export isComboProtected'
+            );
+        });
+
+        test('getComboDecayPercent returns different values based on combo level (UX-002)', () => {
+            const comboContent = readFile('js/systems/combo.js');
+
+            const funcMatch = comboContent.match(/export function getComboDecayPercent[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('COMBO_VERY_HIGH_THRESHOLD'),
+                    'getComboDecayPercent should check very high threshold'
+                );
+                assert.ok(
+                    funcMatch[0].includes('COMBO_HIGH_THRESHOLD'),
+                    'getComboDecayPercent should check high threshold'
+                );
+                assert.ok(
+                    funcMatch[0].includes('COMBO_DECAY_BASE_PERCENT'),
+                    'getComboDecayPercent should return base decay percent'
+                );
+                assert.ok(
+                    funcMatch[0].includes('COMBO_DECAY_HIGH_PERCENT'),
+                    'getComboDecayPercent should return high decay percent'
+                );
+                assert.ok(
+                    funcMatch[0].includes('COMBO_DECAY_VERY_HIGH_PERCENT'),
+                    'getComboDecayPercent should return very high decay percent'
+                );
+            }
+        });
+
+        test('isComboProtected checks damage cooldown (UX-002)', () => {
+            const comboContent = readFile('js/systems/combo.js');
+
+            const funcMatch = comboContent.match(/export function isComboProtected[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('Date.now()'),
+                    'isComboProtected should use Date.now()'
+                );
+                assert.ok(
+                    funcMatch[0].includes('comboState.lastDamageTime'),
+                    'isComboProtected should check lastDamageTime'
+                );
+                assert.ok(
+                    funcMatch[0].includes('COMBO_DAMAGE_COOLDOWN_MS'),
+                    'isComboProtected should use COMBO_DAMAGE_COOLDOWN_MS constant'
+                );
+            }
+        });
+
+        test('breakCombo checks isComboProtected and updates lastDamageTime (UX-002)', () => {
+            const comboContent = readFile('js/systems/combo.js');
+
+            const funcMatch = comboContent.match(/export function breakCombo[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('isComboProtected()'),
+                    'breakCombo should check isComboProtected'
+                );
+                assert.ok(
+                    funcMatch[0].includes('comboState.lastDamageTime = Date.now()'),
+                    'breakCombo should update lastDamageTime'
+                );
+            }
         });
     });
 

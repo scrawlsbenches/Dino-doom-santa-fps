@@ -84,7 +84,15 @@ export const GAME_CONFIG = {
 
     // Combo system
     COMBO_MULTIPLIER_PERCENT: 10,
-    WOMBO_COMBO_THRESHOLD: 10
+    WOMBO_COMBO_THRESHOLD: 10,
+
+    // Combo decay system (UX-002)
+    COMBO_DECAY_BASE_PERCENT: 50,       // Base: lose 50% of combo on hit
+    COMBO_DECAY_HIGH_PERCENT: 40,       // At 10+ combo: lose only 40%
+    COMBO_DECAY_VERY_HIGH_PERCENT: 30,  // At 20+ combo: lose only 30%
+    COMBO_HIGH_THRESHOLD: 10,           // Threshold for reduced decay
+    COMBO_VERY_HIGH_THRESHOLD: 20,      // Threshold for even more reduced decay
+    COMBO_DAMAGE_COOLDOWN_MS: 1000      // Brief invulnerability (1s) to prevent multi-hit combo breaks
 };
 
 // ==================== WEAPONS ====================

@@ -107,7 +107,8 @@ export const killStreakState = {
 // ==================== COMBO STATE ====================
 export const comboState = {
     count: 0,
-    showWomboCombo: false
+    showWomboCombo: false,
+    lastDamageTime: 0  // Tracks last time combo took damage for cooldown
 };
 
 // ==================== DIALOGUE BUBBLES ====================
@@ -261,6 +262,7 @@ export function resetKillStreak() {
 export function resetComboState() {
     comboState.count = 0;
     comboState.showWomboCombo = false;
+    comboState.lastDamageTime = 0;
 }
 
 /**

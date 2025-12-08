@@ -32,14 +32,56 @@ export function incrementCombo() {
 }
 
 /**
- * Resets the combo counter when player takes damage
+ * Gets the decay percentage based on current combo level
+ * Higher combos are more forgiving
+ * @returns {number} Decay percentage (0-100)
+ */
+export function getComboDecayPercent() {
+    if (comboState.count >= GAME_CONFIG.COMBO_VERY_HIGH_THRESHOLD) {
+        return GAME_CONFIG.COMBO_DECAY_VERY_HIGH_PERCENT;
+    } else if (comboState.count >= GAME_CONFIG.COMBO_HIGH_THRESHOLD) {
+        return GAME_CONFIG.COMBO_DECAY_HIGH_PERCENT;
+    }
+    return GAME_CONFIG.COMBO_DECAY_BASE_PERCENT;
+}
+
+/**
+ * Checks if combo is protected by damage cooldown
+ * Prevents rapid multi-hit combo breaks
+ * @returns {boolean} True if combo is protected
+ */
+export function isComboProtected() {
+    const now = Date.now();
+    return (now - comboState.lastDamageTime) < GAME_CONFIG.COMBO_DAMAGE_COOLDOWN_MS;
+}
+
+/**
+ * Applies decay to combo when player takes damage
+ * Instead of full reset, reduces combo by a percentage
+ * Higher combos decay more slowly
  */
 export function breakCombo() {
-    if (comboState.count > 0) {
-        comboState.count = 0;
-        comboState.showWomboCombo = false;
-        updateComboDisplay();
+    if (comboState.count <= 0) return;
+
+    // Check damage cooldown - if recently hit, ignore this damage for combo
+    if (isComboProtected()) {
+        return;
     }
+
+    // Update last damage time for cooldown
+    comboState.lastDamageTime = Date.now();
+
+    // Calculate decay based on current combo level
+    const decayPercent = getComboDecayPercent();
+    const comboLost = Math.ceil(comboState.count * decayPercent / 100);
+    comboState.count = Math.max(0, comboState.count - comboLost);
+
+    // Reset WOMBO COMBO flag if below threshold
+    if (comboState.count < GAME_CONFIG.WOMBO_COMBO_THRESHOLD) {
+        comboState.showWomboCombo = false;
+    }
+
+    updateComboDisplay();
 }
 
 /**
