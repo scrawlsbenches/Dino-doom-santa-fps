@@ -40,9 +40,9 @@ export class Particle {
      * Draws the particle on canvas
      * @param {CanvasRenderingContext2D} ctx - Canvas context
      * @param {HTMLCanvasElement} canvas - Canvas element
-     * @param {Object} player - Player object for relative positioning
+     * @param {Object} _player - Player object for relative positioning (unused)
      */
-    draw(ctx, canvas, player) {
+    draw(ctx, canvas, _player) {
         const screenX = canvas.width / 2 + this.x * (400 / Math.max(100, -this.z));
         const screenY = canvas.height / 2 + (this.y + 100) * (400 / Math.max(100, -this.z));
         const scale = 400 / Math.max(100, -this.z);

@@ -9,7 +9,7 @@
 import { GAME_CONFIG } from './constants.js';
 
 // ==================== GAME STATE ====================
-export let gameState = {
+export const gameState = {
     running: false,
     paused: false,
     score: 0,
@@ -32,7 +32,7 @@ export let gameState = {
 };
 
 // ==================== PLAYER STATE ====================
-export let player = {
+export const player = {
     x: 0,
     y: 0,
     angle: 0,
@@ -45,7 +45,7 @@ export let player = {
 };
 
 // ==================== INVENTORY ====================
-export let inventory = {
+export const inventory = {
     currentWeapon: 'present',
     weapons: {
         present: true,
@@ -65,40 +65,40 @@ export let inventory = {
 };
 
 // ==================== ENTITY ARRAYS ====================
-export let enemies = [];
-export let projectiles = [];
-export let enemyProjectiles = [];
-export let particles = [];
-export let floatingTexts = [];
+export const enemies = [];
+export const projectiles = [];
+export const enemyProjectiles = [];
+export const particles = [];
+export const floatingTexts = [];
 
 // ==================== INPUT STATE ====================
-export let keys = {};
-export let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+export const keys = {};
+export const mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
 // ==================== TIMEOUT TRACKING ====================
 // Track active timeouts for cleanup on game restart
-export let activeTimeouts = [];
+export const activeTimeouts = [];
 
 // ==================== KILL STREAK STATE ====================
-export let killStreakState = {
+export const killStreakState = {
     count: 0,
     lastKillTime: 0,
     streakTimeout: GAME_CONFIG.KILL_STREAK_TIMEOUT_MS
 };
 
 // ==================== DIALOGUE BUBBLES ====================
-export let activeDialogueBubbles = [];
+export const activeDialogueBubbles = [];
 
 // ==================== ACHIEVEMENT TRACKING ====================
-export let unlockedAchievements = new Set();
-export let achievementTracking = {
+export const unlockedAchievements = new Set();
+export const achievementTracking = {
     waveStartHealth: GAME_CONFIG.PLAYER_BASE_HEALTH,
     totalDamageTaken: 0,
     shopSpending: 0
 };
 
 // ==================== MINIGAME STATE ====================
-export let minigameState = {
+export const minigameState = {
     active: false,
     hits: 0,
     timeLeft: GAME_CONFIG.MINIGAME_DURATION_SEC,
@@ -107,14 +107,14 @@ export let minigameState = {
 };
 
 // ==================== SKIN STATE ====================
-export let skinState = {
+export const skinState = {
     selected: 'default',
     owned: ['default'],
     totalCoins: 0
 };
 
 // ==================== SCREEN SHAKE STATE ====================
-export let shakeState = {
+export const shakeState = {
     intensity: 0,
     duration: 0,
     startTime: 0,

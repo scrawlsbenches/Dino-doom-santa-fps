@@ -5,7 +5,7 @@
  * Tracks multi-kills and shows announcements.
  */
 
-import { KILL_STREAK_TIERS, GAME_CONFIG } from '../constants.js';
+import { KILL_STREAK_TIERS } from '../constants.js';
 import { killStreakState } from '../state.js';
 import { playKillStreakSound } from './audio.js';
 

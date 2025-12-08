@@ -5,7 +5,7 @@
  * HUD updates, rendering, and UI interactions.
  */
 
-import { WEAPONS, UPGRADES, GAME_CONFIG } from './constants.js';
+import { WEAPONS, GAME_CONFIG } from './constants.js';
 import {
     gameState, player, inventory, mousePos,
     floatingTexts, minigameState

@@ -1,19 +1,44 @@
 {
   "name": "dino-doom-santa-fps",
   "version": "1.0.0",
-  "description": "",
+  "description": "DINO DOOM: Santa's Last Stand - A browser-based FPS game",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "node --test tests/game.test.js"
+    "test": "node --test tests/game.test.js",
+    "test:coverage": "c8 --reporter=text --reporter=html --reporter=lcov node --test tests/game.test.js",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test && npm run test:e2e",
+    "lint": "eslint .",
+    "lint:strict": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "syntax:check": "find js -name '*.js' -type f -exec node --check {} \\;",
+    "ci": "npm run lint:strict && npm run test:coverage && npm run test:e2e",
+    "precommit": "npm run lint:strict && npm run test",
+    "prepare": "husky || true"
   },
   "repository": {
     "type": "git",
     "url": "http://local_proxy@127.0.0.1:49757/git/scrawlsbenches/Dino-doom-santa-fps"
   },
-  "keywords": [],
+  "keywords": [
+    "game",
+    "fps",
+    "browser-game",
+    "javascript"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.57.0"
+    "@playwright/test": "^1.57.0",
+    "c8": "^10.1.2",
+    "eslint": "^9.16.0",
+    "husky": "^9.1.7",
+    "serve": "^14.2.4"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --max-warnings 0"
+    ]
   }
 }
