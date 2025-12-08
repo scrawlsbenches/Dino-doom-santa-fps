@@ -20,6 +20,7 @@ export const gameState = {
     health: GAME_CONFIG.PLAYER_BASE_HEALTH,
     maxHealth: GAME_CONFIG.PLAYER_BASE_HEALTH,
     waveInProgress: false,
+    waveSpawningComplete: false,
     betweenWaves: false,
     bossActive: false,
     currentBoss: null,
@@ -169,6 +170,7 @@ export function resetGameState() {
     gameState.health = GAME_CONFIG.PLAYER_BASE_HEALTH;
     gameState.maxHealth = GAME_CONFIG.PLAYER_BASE_HEALTH;
     gameState.waveInProgress = false;
+    gameState.waveSpawningComplete = false;
     gameState.betweenWaves = false;
     gameState.bossActive = false;
     gameState.currentBoss = null;

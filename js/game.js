@@ -122,6 +122,7 @@ export function spawnEnemy() {
 export function spawnWave() {
     gameState.waveInProgress = true;
     gameState.sigmaSpawnedThisWave = 0; // UX-010: Reset sigma counter
+    gameState.waveSpawningComplete = false;
     onWaveStart();
 
     const isBossWave = gameState.wave % GAME_CONFIG.BOSS_WAVE_INTERVAL === 0;
@@ -129,11 +130,20 @@ export function spawnWave() {
     showWaveAnnouncement(gameState.wave, isBossWave);
 
     if (isBossWave) {
-        setTimeout(() => spawnBoss(getEnemyCallbacks()), 1000);
+        setTimeout(() => {
+            spawnBoss(getEnemyCallbacks());
+            gameState.waveSpawningComplete = true;
+        }, 1000);
     } else {
         const enemyCount = GAME_CONFIG.ENEMIES_BASE_COUNT + gameState.wave * GAME_CONFIG.ENEMIES_PER_WAVE;
         for (let i = 0; i < enemyCount; i++) {
-            setTimeout(() => spawnEnemy(), i * GAME_CONFIG.ENEMY_SPAWN_DELAY_MS);
+            setTimeout(() => {
+                spawnEnemy();
+                // Mark spawning complete after last enemy spawns
+                if (i === enemyCount - 1) {
+                    gameState.waveSpawningComplete = true;
+                }
+            }, i * GAME_CONFIG.ENEMY_SPAWN_DELAY_MS);
         }
     }
 }
@@ -354,8 +364,8 @@ function gameLoop() {
         drawFloatingTexts(ctx, canvas);
         drawDialogueBubbles(ctx, canvas, player);
 
-        // Wave completion
-        if (enemies.length === 0 && gameState.waveInProgress) {
+        // Wave completion - only complete if all enemies spawned and killed
+        if (enemies.length === 0 && gameState.waveInProgress && gameState.waveSpawningComplete) {
             onWaveComplete();
             gameState.waveInProgress = false;
             gameState.wave++;
