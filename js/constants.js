@@ -63,6 +63,18 @@ export const GAME_CONFIG = {
     // Kill streak timeout
     KILL_STREAK_TIMEOUT_MS: 3000,
 
+    // Perspective and rendering
+    PERSPECTIVE_SCALE: 400,
+    PERSPECTIVE_MIN_Z: 100,
+
+    // Spawn positions
+    SIGMA_SPAWN_X: 500,
+    SIGMA_SPAWN_Z_BASE: -400,
+    SIGMA_SPAWN_Z_RANGE: 200,
+    ENEMY_SPAWN_X_RANGE: 800,
+    ENEMY_SPAWN_Z_BASE: -800,
+    ENEMY_SPAWN_Z_RANGE: 500,
+
     // UI
     DIALOGUE_BUBBLE_MAX: 2,
     DIALOGUE_BUBBLE_DURATION: 2000,

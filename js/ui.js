@@ -12,6 +12,9 @@ import {
 } from './state.js';
 import { getCurrentSkin } from './systems/skins.js';
 
+// Shorthand for perspective calculations
+const { PERSPECTIVE_SCALE, PERSPECTIVE_MIN_Z } = GAME_CONFIG;
+
 // ==================== HUD UPDATES ====================
 
 /**
@@ -140,7 +143,7 @@ export function drawBackground(ctx, canvas) {
     ctx.strokeStyle = '#333355';
     ctx.lineWidth = 1;
     for (let z = 100; z < 2000; z += 100) {
-        const y = canvas.height * 0.65 + (400 / z) * 300;
+        const y = canvas.height * 0.65 + (PERSPECTIVE_SCALE / z) * 300;
         ctx.globalAlpha = 1 - z / 2000;
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -215,8 +218,8 @@ export function drawFloatingTexts(ctx, canvas) {
         ft.y -= 2;
         ft.life--;
 
-        const screenX = canvas.width / 2 + ft.x * (400 / Math.max(100, -ft.z));
-        const screenY = canvas.height / 2 + ft.y * (400 / Math.max(100, -ft.z));
+        const screenX = canvas.width / 2 + ft.x * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -ft.z));
+        const screenY = canvas.height / 2 + ft.y * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -ft.z));
 
         ctx.globalAlpha = ft.life / 60;
         ctx.font = 'bold 24px Bungee';

@@ -5,7 +5,7 @@
  * Initializes the game and sets up event listeners.
  */
 
-import { updateMousePos, setKeyState, gameState } from './state.js';
+import { updateMousePos, gameState } from './state.js';
 import { initSkinSystem } from './systems/skins.js';
 import { copyDeathReceipt } from './systems/death.js';
 import {
@@ -37,8 +37,6 @@ function init() {
 function setupEventListeners() {
     // Keyboard events
     document.addEventListener('keydown', (e) => {
-        setKeyState(e.key, true);
-
         if (e.key === ' ' || e.code === 'Space') {
             e.preventDefault();
             shoot();
@@ -51,10 +49,6 @@ function setupEventListeners() {
         if ((e.key === 'r' || e.key === 'R') && gameState.betweenWaves) {
             openShopWithCallbacks();
         }
-    });
-
-    document.addEventListener('keyup', (e) => {
-        setKeyState(e.key, false);
     });
 
     // Mouse events

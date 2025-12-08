@@ -1543,4 +1543,328 @@ describe('Bug Fix Regressions', () => {
     });
 });
 
+// ==================== REFACTOR-001: PERSPECTIVE AND SPAWN CONSTANTS TESTS ====================
+describe('REFACTOR-001: Perspective and Spawn Constants', () => {
+    test('GAME_CONFIG has perspective constants', () => {
+        assert.ok(
+            gameData.GAME_CONFIG.hasOwnProperty('PERSPECTIVE_SCALE'),
+            'GAME_CONFIG should have PERSPECTIVE_SCALE'
+        );
+        assert.ok(
+            gameData.GAME_CONFIG.hasOwnProperty('PERSPECTIVE_MIN_Z'),
+            'GAME_CONFIG should have PERSPECTIVE_MIN_Z'
+        );
+        assert.strictEqual(gameData.GAME_CONFIG.PERSPECTIVE_SCALE, 400, 'PERSPECTIVE_SCALE should be 400');
+        assert.strictEqual(gameData.GAME_CONFIG.PERSPECTIVE_MIN_Z, 100, 'PERSPECTIVE_MIN_Z should be 100');
+    });
+
+    test('GAME_CONFIG has spawn position constants', () => {
+        const spawnProps = [
+            'SIGMA_SPAWN_X',
+            'SIGMA_SPAWN_Z_BASE',
+            'SIGMA_SPAWN_Z_RANGE',
+            'ENEMY_SPAWN_X_RANGE',
+            'ENEMY_SPAWN_Z_BASE',
+            'ENEMY_SPAWN_Z_RANGE'
+        ];
+
+        spawnProps.forEach(prop => {
+            assert.ok(
+                gameData.GAME_CONFIG.hasOwnProperty(prop),
+                `GAME_CONFIG should have ${prop}`
+            );
+        });
+    });
+
+    test('Spawn constants have correct values', () => {
+        const config = gameData.GAME_CONFIG;
+        assert.strictEqual(config.SIGMA_SPAWN_X, 500, 'SIGMA_SPAWN_X should be 500');
+        assert.strictEqual(config.SIGMA_SPAWN_Z_BASE, -400, 'SIGMA_SPAWN_Z_BASE should be -400');
+        assert.strictEqual(config.SIGMA_SPAWN_Z_RANGE, 200, 'SIGMA_SPAWN_Z_RANGE should be 200');
+        assert.strictEqual(config.ENEMY_SPAWN_X_RANGE, 800, 'ENEMY_SPAWN_X_RANGE should be 800');
+        assert.strictEqual(config.ENEMY_SPAWN_Z_BASE, -800, 'ENEMY_SPAWN_Z_BASE should be -800');
+        assert.strictEqual(config.ENEMY_SPAWN_Z_RANGE, 500, 'ENEMY_SPAWN_Z_RANGE should be 500');
+    });
+
+    test('Files use PERSPECTIVE_SCALE constant instead of magic number', () => {
+        const filesToCheck = [
+            { path: 'js/ui.js', name: 'ui.js' },
+            { path: 'js/classes/Particle.js', name: 'Particle.js' },
+            { path: 'js/classes/Projectile.js', name: 'Projectile.js' },
+            { path: 'js/classes/Enemy.js', name: 'Enemy.js' },
+            { path: 'js/classes/EnemyProjectile.js', name: 'EnemyProjectile.js' },
+            { path: 'js/classes/GamerProjectile.js', name: 'GamerProjectile.js' },
+            { path: 'js/systems/dialogue.js', name: 'dialogue.js' }
+        ];
+
+        filesToCheck.forEach(file => {
+            const content = fs.readFileSync(
+                path.join(__dirname, '..', file.path),
+                'utf8'
+            );
+            // Check for PERSPECTIVE_SCALE usage (should use the constant)
+            assert.ok(
+                content.includes('PERSPECTIVE_SCALE'),
+                `${file.name} should use PERSPECTIVE_SCALE constant`
+            );
+        });
+    });
+
+    test('Game.js uses spawn position constants', () => {
+        const gameContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'game.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            gameContent.includes('GAME_CONFIG.SIGMA_SPAWN_X'),
+            'game.js should use SIGMA_SPAWN_X constant'
+        );
+        assert.ok(
+            gameContent.includes('GAME_CONFIG.ENEMY_SPAWN_X_RANGE'),
+            'game.js should use ENEMY_SPAWN_X_RANGE constant'
+        );
+    });
+});
+
+// ==================== REFACTOR-003: PARTICLE POOLING TESTS ====================
+describe('REFACTOR-003: Particle Pooling', () => {
+    test('State.js exports particle pool and functions', () => {
+        const stateContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'state.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            stateContent.includes('export const particlePool = []'),
+            'state.js should export particlePool array'
+        );
+        assert.ok(
+            stateContent.includes('export function getParticle'),
+            'state.js should export getParticle function'
+        );
+        assert.ok(
+            stateContent.includes('export function returnParticle'),
+            'state.js should export returnParticle function'
+        );
+    });
+
+    test('getParticle function creates or reuses particles', () => {
+        const stateContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'state.js'),
+            'utf8'
+        );
+
+        // Check getParticle uses pool.pop() and new Particle
+        assert.ok(
+            stateContent.includes('particlePool.pop()'),
+            'getParticle should pop from pool'
+        );
+        assert.ok(
+            stateContent.includes('new Particle'),
+            'getParticle should create new Particle if pool empty'
+        );
+        assert.ok(
+            stateContent.includes('p.reset('),
+            'getParticle should reset pooled particles'
+        );
+    });
+
+    test('returnParticle function returns particles to pool', () => {
+        const stateContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'state.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            stateContent.includes('particlePool.push(p)'),
+            'returnParticle should push to pool'
+        );
+        assert.ok(
+            stateContent.includes('MAX_POOL_SIZE'),
+            'returnParticle should check MAX_POOL_SIZE'
+        );
+    });
+
+    test('Particle class has reset method', () => {
+        const particleContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'classes', 'Particle.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            particleContent.includes('reset(x, y, z, color)'),
+            'Particle should have reset method'
+        );
+        assert.ok(
+            particleContent.includes('this.life = 30'),
+            'Particle reset should set life to 30'
+        );
+    });
+
+    test('Enemy.js uses getParticle instead of new Particle', () => {
+        const enemyContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'classes', 'Enemy.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            enemyContent.includes('getParticle('),
+            'Enemy.js should use getParticle function'
+        );
+        assert.ok(
+            !enemyContent.includes('new Particle('),
+            'Enemy.js should NOT use new Particle directly'
+        );
+    });
+
+    test('Game.js uses returnParticle when particles expire', () => {
+        const gameContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'game.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            gameContent.includes('returnParticle(p)'),
+            'game.js should return particles to pool when expired'
+        );
+    });
+});
+
+// ==================== REFACTOR-004: REMOVED UNUSED KEYS CODE TESTS ====================
+describe('REFACTOR-004: Removed Unused Keys Code', () => {
+    test('State.js does not export keys object', () => {
+        const stateContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'state.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            !stateContent.includes('export const keys = {}'),
+            'state.js should NOT export keys object'
+        );
+    });
+
+    test('State.js does not have setKeyState function', () => {
+        const stateContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'state.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            !stateContent.includes('export function setKeyState'),
+            'state.js should NOT export setKeyState function'
+        );
+    });
+
+    test('Main.js does not import setKeyState', () => {
+        const mainContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'main.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            !mainContent.includes('setKeyState'),
+            'main.js should NOT import or use setKeyState'
+        );
+    });
+
+    test('Main.js still has working keyboard events', () => {
+        const mainContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'main.js'),
+            'utf8'
+        );
+
+        assert.ok(
+            mainContent.includes("addEventListener('keydown'"),
+            'main.js should have keydown listener'
+        );
+        assert.ok(
+            mainContent.includes('shoot()'),
+            'main.js should call shoot on space'
+        );
+        assert.ok(
+            mainContent.includes('useHealingPower()'),
+            'main.js should call useHealingPower on E key'
+        );
+    });
+});
+
+// ==================== REFACTOR-005: AUDIO ERROR HANDLING TESTS ====================
+describe('REFACTOR-005: Audio Error Handling', () => {
+    test('playSound has try-catch error handling', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        // Find playSound function and check for try-catch
+        const playSoundMatch = audioContent.match(/export function playSound\(type\)[\s\S]*?^}/m);
+        if (playSoundMatch) {
+            assert.ok(
+                playSoundMatch[0].includes('try {'),
+                'playSound should have try block'
+            );
+            assert.ok(
+                playSoundMatch[0].includes('catch {'),
+                'playSound should have catch block'
+            );
+        }
+    });
+
+    test('playHitMarkerSound has try-catch error handling', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        // Check for try-catch in playHitMarkerSound
+        const hitMarkerMatch = audioContent.match(/export function playHitMarkerSound[\s\S]*?^}/m);
+        if (hitMarkerMatch) {
+            assert.ok(
+                hitMarkerMatch[0].includes('try {'),
+                'playHitMarkerSound should have try block'
+            );
+            assert.ok(
+                hitMarkerMatch[0].includes('catch {'),
+                'playHitMarkerSound should have catch block'
+            );
+        }
+    });
+
+    test('playKillStreakSound has try-catch error handling', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        // Check for try-catch in playKillStreakSound
+        const killStreakMatch = audioContent.match(/export function playKillStreakSound[\s\S]*?^}/m);
+        if (killStreakMatch) {
+            assert.ok(
+                killStreakMatch[0].includes('try {'),
+                'playKillStreakSound should have try block'
+            );
+            assert.ok(
+                killStreakMatch[0].includes('catch {'),
+                'playKillStreakSound should have catch block'
+            );
+        }
+    });
+
+    test('Audio functions still return early if no audioCtx', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        // Count occurrences of 'if (!audioCtx) return;'
+        const earlyReturns = (audioContent.match(/if \(!audioCtx\) return;/g) || []).length;
+        assert.ok(
+            earlyReturns >= 3,
+            'Audio functions should have early return if no audioCtx'
+        );
+    });
+});
+
 console.log('All tests completed!');

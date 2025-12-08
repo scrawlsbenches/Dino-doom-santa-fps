@@ -8,6 +8,8 @@
 import { ENEMY_DIALOGUE, SIGMA_QUOTES, SIGMA_ESCAPE_TAUNTS, GAME_CONFIG } from '../constants.js';
 import { activeDialogueBubbles, floatingTexts, trackTimeout } from '../state.js';
 
+const { PERSPECTIVE_SCALE, PERSPECTIVE_MIN_Z } = GAME_CONFIG;
+
 /**
  * Shows a dialogue bubble above an enemy
  * @param {Object} enemy - The enemy object
@@ -103,9 +105,9 @@ export function drawDialogueBubbles(ctx, canvas, player) {
             continue;
         }
 
-        const screenX = canvas.width / 2 + (e.x - player.x) * (400 / Math.max(100, -e.z));
-        const screenY = canvas.height / 2 + 100 * (400 / Math.max(100, -e.z));
-        const scale = 400 / Math.max(100, -e.z);
+        const screenX = canvas.width / 2 + (e.x - player.x) * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -e.z));
+        const screenY = canvas.height / 2 + 100 * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -e.z));
+        const scale = PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -e.z);
 
         if (-e.z < 50 || -e.z > 2000) continue;
 

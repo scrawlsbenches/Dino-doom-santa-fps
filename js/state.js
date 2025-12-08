@@ -7,6 +7,7 @@
  */
 
 import { GAME_CONFIG } from './constants.js';
+import { Particle } from './classes/Particle.js';
 
 // ==================== GAME STATE ====================
 export const gameState = {
@@ -73,8 +74,11 @@ export const enemyProjectiles = [];
 export const particles = [];
 export const floatingTexts = [];
 
+// ==================== PARTICLE POOL ====================
+export const particlePool = [];
+const MAX_POOL_SIZE = 200;
+
 // ==================== INPUT STATE ====================
-export const keys = {};
 export const mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
 // ==================== TIMEOUT TRACKING ====================
@@ -256,15 +260,6 @@ export function updateMousePos(x, y) {
 }
 
 /**
- * Sets a key state
- * @param {string} key - The key
- * @param {boolean} pressed - Whether pressed
- */
-export function setKeyState(key, pressed) {
-    keys[key] = pressed;
-}
-
-/**
  * Adds a timeout to the tracking array
  * @param {number} timeoutId - The timeout ID
  */
@@ -297,5 +292,35 @@ export function saveSkinState() {
         localStorage.setItem('santaSkinState', JSON.stringify(skinState));
     } catch (e) {
         console.error('Failed to save skin state:', e);
+    }
+}
+
+// ==================== PARTICLE POOL FUNCTIONS ====================
+
+/**
+ * Gets a particle from the pool or creates a new one
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} z - Z position (depth)
+ * @param {string} color - Particle color
+ * @returns {Particle} A particle instance
+ */
+export function getParticle(x, y, z, color) {
+    let p = particlePool.pop();
+    if (!p) {
+        p = new Particle(x, y, z, color);
+    } else {
+        p.reset(x, y, z, color);
+    }
+    return p;
+}
+
+/**
+ * Returns a particle to the pool for reuse
+ * @param {Particle} p - The particle to return
+ */
+export function returnParticle(p) {
+    if (particlePool.length < MAX_POOL_SIZE) {
+        particlePool.push(p);
     }
 }

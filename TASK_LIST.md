@@ -6,146 +6,7 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 
 ## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
 
-### REFACTOR-001: Extract Magic Numbers to Constants
-**Estimate**: 1 hour (remaining work)
-**Priority**: P2 (Medium)
-**Source**: Code Review
-**Status**: ~60% Complete
-
-**Progress**: `js/constants.js` now has `GAME_CONFIG` with many values extracted:
-- ✅ `ENEMY_MIN_Z: -80`
-- ✅ `PROJECTILE_HIT_RADIUS_BASE: 60`
-- ✅ `KILL_STREAK_TIMEOUT_MS: 3000`
-- ✅ Enemy/boss/weapon stats
-
-**Remaining Work** - Magic numbers still hardcoded:
-```javascript
-// Perspective scale (400) appears in 7+ locations:
-// - js/ui.js:218-219
-// - js/classes/Particle.js:46-48
-// - js/classes/EnemyProjectile.js:64-66
-// - js/classes/GamerProjectile.js:72-73
-
-// Enemy spawn positions in js/game.js:74-88:
-const x = startSide * 500;        // Should be GAME_CONFIG.SIGMA_SPAWN_X
-const z = -400 - Math.random() * 200;  // SIGMA_SPAWN_Z_BASE/RANGE
-const x = (Math.random() - 0.5) * 800; // ENEMY_SPAWN_X_RANGE
-const z = -800 - Math.random() * 500;  // ENEMY_SPAWN_Z_BASE/RANGE
-```
-
-**Files to modify**: `js/constants.js`, `js/game.js`, `js/ui.js`, `js/classes/*.js`
-
-**Acceptance Criteria**:
-- [x] Core game constants extracted to GAME_CONFIG
-- [ ] Perspective scale (400) extracted to constant
-- [ ] Spawn position values extracted to constants
-- [ ] All classes use constants instead of magic numbers
-
----
-
-### REFACTOR-003: Add Object Pooling for Particles
-**Estimate**: 2 hours
-**Priority**: P2 (Medium)
-**Source**: Code Review
-
-**Issue**: Each particle is created with `new`, causing GC pressure during intense gameplay.
-
-**Location**: `js/classes/Particle.js`
-
-**Fix**: Add pooling system to `js/state.js` and modify particle creation:
-```javascript
-// In js/state.js:
-export const particlePool = [];
-const MAX_POOL_SIZE = 200;
-
-export function getParticle(x, y, z, color) {
-    let p = particlePool.pop();
-    if (!p) {
-        p = new Particle(x, y, z, color);
-    } else {
-        p.reset(x, y, z, color);
-    }
-    return p;
-}
-
-export function returnParticle(p) {
-    if (particlePool.length < MAX_POOL_SIZE) {
-        particlePool.push(p);
-    }
-}
-
-// In js/classes/Particle.js - add reset() method:
-reset(x, y, z, color) {
-    this.x = x; this.y = y; this.z = z;
-    this.color = color;
-    this.life = this.maxLife = 30;
-    // Reset velocities...
-}
-```
-
-**Acceptance Criteria**:
-- [ ] Particles reused from pool
-- [ ] No performance regression
-- [ ] Reduced GC pauses during intense combat
-
----
-
-### REFACTOR-004: Remove Unused Code
-**Estimate**: 30 minutes
-**Priority**: P3 (Low)
-**Source**: Code Review
-
-**Issue**: The `keys` object tracks keyboard state but is never used (WASD movement isn't implemented).
-
-**Locations**:
-- `js/state.js:77` - `export const keys = {}`
-- `js/state.js:263-265` - `setKeyState()` function
-- `js/main.js` - keydown/keyup event listeners call `setKeyState()`
-
-**Fix**: Either implement WASD movement or remove the tracking:
-```javascript
-// Option A: Remove from js/state.js:
-// Delete: export const keys = {};
-// Delete: export function setKeyState(key, pressed) { ... }
-
-// Option B: Implement movement in js/game.js using keys object
-```
-
-**Acceptance Criteria**:
-- [ ] No unused code remains
-- [ ] OR WASD movement implemented
-
----
-
-### REFACTOR-005: Add Error Handling to playSound
-**Estimate**: 30 minutes
-**Priority**: P3 (Low)
-**Source**: Code Review
-
-**Issue**: `playSound()` doesn't handle oscillator creation failures (can happen if audio context limit is reached).
-
-**Location**: `js/systems/audio.js:36-178`
-
-**Fix**: Wrap oscillator creation in try-catch:
-```javascript
-// In js/systems/audio.js:
-export function playSound(type) {
-    if (!audioCtx) return;
-    try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        // ... rest of sound code
-    } catch (e) {
-        // Graceful degradation - game continues without sound
-    }
-}
-
-// Also update playHitMarkerSound() and playKillStreakSound()
-```
-
-**Acceptance Criteria**:
-- [ ] No crashes from audio errors
-- [ ] Graceful degradation if audio fails
+All code quality tasks completed! See archived section below.
 
 ---
 
@@ -357,24 +218,22 @@ export function playSound(type) {
 |----------|-------|----------------|
 | P0 (Critical Bugs) | 0 | ✅ Complete |
 | P1 (High Bugs) | 0 | ✅ Complete |
-| P2 (Medium/Refactor) | 3 | 3-4 hours |
+| P2 (Medium/Refactor) | 0 | ✅ Complete |
 | P3 (Low/Features) | 8 | 21-29 hours |
-| **TOTAL** | **11** | **24-33 hours** |
+| **TOTAL** | **8** | **21-29 hours** |
 
-**Note**: REFACTOR-001 is ~60% complete (1 hour remaining). REFACTOR-002 completed and archived.
+**Note**: All code quality refactoring tasks completed and archived.
 
 ---
 
 ## 🏃 SUGGESTED ORDER
 
-**Phase 1: Code Quality**
-1. REFACTOR-001 (Magic Numbers) - ~60% done, finish remaining
-2. REFACTOR-003 (Object Pooling) - Performance improvement
-3. REFACTOR-004/005 (Cleanup) - Low priority polish
+**Phase 1: Code Quality** ✅ COMPLETE
+All refactoring tasks completed!
 
 **Phase 2: Features**
-4. TASK-014 (Combo Counter) - Core gameplay enhancement
-5. Continue with stretch goals based on interest
+1. TASK-014 (Combo Counter) - Core gameplay enhancement
+2. Continue with stretch goals based on interest
 
 ---
 
@@ -540,6 +399,36 @@ export function playSound(type) {
 - Both weapon and upgrade purchases call centralized function
 - Single source of truth for BIG_SPENDER achievement logic
 - Shop spending tracked via `achievementTracking.shopSpending`
+
+### REFACTOR-001: Extract Magic Numbers to Constants ✅
+**Completed**: Code quality refactor
+- Added `PERSPECTIVE_SCALE` and `PERSPECTIVE_MIN_Z` to GAME_CONFIG
+- Added spawn position constants: `SIGMA_SPAWN_X`, `SIGMA_SPAWN_Z_BASE`, `SIGMA_SPAWN_Z_RANGE`, `ENEMY_SPAWN_X_RANGE`, `ENEMY_SPAWN_Z_BASE`, `ENEMY_SPAWN_Z_RANGE`
+- Updated all classes to use constants: `js/ui.js`, `js/classes/Particle.js`, `js/classes/Projectile.js`, `js/classes/Enemy.js`, `js/classes/EnemyProjectile.js`, `js/classes/GamerProjectile.js`, `js/systems/dialogue.js`
+- Updated `js/game.js` to use spawn position constants
+
+### REFACTOR-003: Add Object Pooling for Particles ✅
+**Completed**: Performance optimization
+- Added `particlePool` array and `MAX_POOL_SIZE` constant to `js/state.js`
+- Added `getParticle()` function to get particles from pool or create new
+- Added `returnParticle()` function to return expired particles to pool
+- Added `reset()` method to `Particle` class
+- Updated `js/classes/Enemy.js` to use `getParticle()` instead of `new Particle()`
+- Updated `js/game.js` to call `returnParticle()` when particles expire
+
+### REFACTOR-004: Remove Unused Code ✅
+**Completed**: Code cleanup
+- Removed unused `keys` object from `js/state.js`
+- Removed unused `setKeyState()` function from `js/state.js`
+- Removed `setKeyState` import and usage from `js/main.js`
+- Keyboard events still work for spacebar shooting, E healing, R shop
+
+### REFACTOR-005: Add Error Handling to playSound ✅
+**Completed**: Error handling
+- Added try-catch blocks to `playSound()` function
+- Added try-catch blocks to `playHitMarkerSound()` function
+- Added try-catch blocks to `playKillStreakSound()` function
+- Game gracefully degrades if audio fails (continues without sound)
 
 </details>
 

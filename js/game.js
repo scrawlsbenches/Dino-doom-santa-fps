@@ -11,7 +11,7 @@ import {
     floatingTexts, mousePos,
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
     resetKillStreak, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
-    achievementTracking
+    achievementTracking, returnParticle
 } from './state.js';
 import { Enemy } from './classes/Enemy.js';
 import { Projectile } from './classes/Projectile.js';
@@ -72,8 +72,8 @@ export function spawnEnemy() {
     if (roll < 0.08) {
         type = 'SIGMA_DINO';
         const startSide = Math.random() > 0.5 ? 1 : -1;
-        const x = startSide * 500;
-        const z = -400 - Math.random() * 200;
+        const x = startSide * GAME_CONFIG.SIGMA_SPAWN_X;
+        const z = GAME_CONFIG.SIGMA_SPAWN_Z_BASE - Math.random() * GAME_CONFIG.SIGMA_SPAWN_Z_RANGE;
         enemies.push(new Enemy(type, x, z, getEnemyCallbacks()));
         return;
     } else if (gameState.wave >= 3 && roll < 0.30) {
@@ -84,8 +84,8 @@ export function spawnEnemy() {
         type = 'GIGACHAD';
     }
 
-    const x = (Math.random() - 0.5) * 800;
-    const z = -800 - Math.random() * 500;
+    const x = (Math.random() - 0.5) * GAME_CONFIG.ENEMY_SPAWN_X_RANGE;
+    const z = GAME_CONFIG.ENEMY_SPAWN_Z_BASE - Math.random() * GAME_CONFIG.ENEMY_SPAWN_Z_RANGE;
     enemies.push(new Enemy(type, x, z, getEnemyCallbacks()));
 }
 
@@ -304,6 +304,7 @@ function gameLoop() {
             p.update();
             p.draw(ctx, canvas, player);
             if (p.isExpired()) {
+                returnParticle(p);
                 particles.splice(i, 1);
             }
         }
