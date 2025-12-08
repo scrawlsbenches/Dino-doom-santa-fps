@@ -304,10 +304,13 @@ export class Enemy {
         if (this.callbacks.incrementCombo) this.callbacks.incrementCombo();
         const comboBonus = this.callbacks.getComboBonus ? this.callbacks.getComboBonus(this.points) : 0;
 
+        // Apply coin multiplier from prestige upgrades
+        const earnedCoins = Math.floor(this.coins * player.coinMultiplier);
+
         gameState.score += this.points + comboBonus;
-        gameState.coins += this.coins;
-        gameState.totalCoinsEarned += this.coins;
-        skinState.totalCoins += this.coins;
+        gameState.coins += earnedCoins;
+        gameState.totalCoinsEarned += earnedCoins;
+        skinState.totalCoins += earnedCoins;
         saveSkinState();
         gameState.kills++;
 

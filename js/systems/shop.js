@@ -5,10 +5,39 @@
  * Weapon and upgrade purchasing.
  */
 
-import { WEAPONS, UPGRADES, SHOPKEEPER_DIALOGUE, GAME_CONFIG } from '../constants.js';
+import { WEAPONS, UPGRADES, PRESTIGE_UPGRADES, SHOPKEEPER_DIALOGUE, GAME_CONFIG } from '../constants.js';
 import { gameState, inventory, player, achievementTracking } from '../state.js';
 import { playSound } from './audio.js';
 import { checkShopAchievements } from './achievements.js';
+
+/**
+ * Checks if all basic upgrades are maxed out
+ * @returns {boolean} True if all basic upgrades are at max level
+ */
+export function areAllBasicUpgradesMaxed() {
+    return Object.entries(UPGRADES).every(
+        ([key, upgrade]) => inventory.upgrades[key] >= upgrade.maxLevel
+    );
+}
+
+/**
+ * Gets the price for a prestige upgrade at a specific level
+ * @param {string} upgradeKey - The prestige upgrade key
+ * @param {number} currentLevel - Current level of the upgrade
+ * @returns {number} Price for the next level
+ */
+export function getPrestigeUpgradePrice(upgradeKey, currentLevel) {
+    const upgrade = PRESTIGE_UPGRADES[upgradeKey];
+    return upgrade.basePrice + (currentLevel * upgrade.priceIncrease);
+}
+
+/**
+ * Gets the current coin multiplier from prestige upgrades
+ * @returns {number} Coin multiplier (1.0 = no bonus)
+ */
+export function getCoinMultiplier() {
+    return player.coinMultiplier;
+}
 
 /**
  * Gets shopkeeper dialogue based on player's coins
@@ -149,16 +178,81 @@ export function renderShop(updateHUD) {
 
         upgradesList.appendChild(item);
     }
+
+    // Prestige Upgrades (only show when all basic upgrades are maxed)
+    renderPrestigeUpgrades(updateHUD);
+}
+
+/**
+ * Renders prestige upgrades section
+ * @param {Function} updateHUD - HUD update callback
+ */
+export function renderPrestigeUpgrades(updateHUD) {
+    const prestigeContainer = document.getElementById('prestige-upgrades');
+    if (!prestigeContainer) return;
+
+    const prestigeUnlocked = areAllBasicUpgradesMaxed();
+
+    if (!prestigeUnlocked) {
+        prestigeContainer.style.display = 'none';
+        return;
+    }
+
+    prestigeContainer.style.display = 'block';
+    const prestigeList = document.getElementById('prestige-list');
+    if (!prestigeList) return;
+
+    prestigeList.innerHTML = '';
+
+    for (const [key, upgrade] of Object.entries(PRESTIGE_UPGRADES)) {
+        const level = inventory.prestigeUpgrades[key];
+        const price = getPrestigeUpgradePrice(key, level);
+
+        const item = document.createElement('div');
+        item.className = 'shop-item prestige-item';
+        item.innerHTML = `
+            <div class="shop-item-icon">${upgrade.icon}</div>
+            <div class="shop-item-name">${upgrade.name}</div>
+            <div class="shop-item-desc">${upgrade.description}</div>
+            <div class="shop-item-level">Level ${level}</div>
+            <div class="shop-item-price">🪙 ${price}</div>
+        `;
+
+        item.onclick = () => {
+            if (gameState.coins >= price) {
+                gameState.coins -= price;
+                checkShopAchievements(price);
+                inventory.prestigeUpgrades[key]++;
+                playSound('buy');
+                updateShopkeeperDialogue('purchase');
+                applyUpgrades();
+                document.getElementById('shop-coins').textContent = `🪙 ${gameState.coins}`;
+                updateHUD();
+                renderShop(updateHUD);
+            }
+        };
+
+        prestigeList.appendChild(item);
+    }
 }
 
 /**
  * Applies purchased upgrades to player stats
  */
 export function applyUpgrades() {
+    // Apply basic upgrades
     const baseHealth = GAME_CONFIG.PLAYER_BASE_HEALTH + (inventory.upgrades.health * UPGRADES.health.perLevel);
-    gameState.maxHealth = baseHealth;
-
-    player.critChance = GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE + (inventory.upgrades.critChance * UPGRADES.critChance.perLevel);
     player.damageBonus = inventory.upgrades.damage * UPGRADES.damage.perLevel;
     player.fireRateBonus = inventory.upgrades.fireRate * UPGRADES.fireRate.perLevel;
+    const baseCritChance = GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE + (inventory.upgrades.critChance * UPGRADES.critChance.perLevel);
+
+    // Apply prestige upgrades (multipliers)
+    player.damageMultiplier = 1 + (inventory.prestigeUpgrades.overkill * PRESTIGE_UPGRADES.overkill.perLevel);
+    player.fireRateMultiplier = 1 + (inventory.prestigeUpgrades.bulletHell * PRESTIGE_UPGRADES.bulletHell.perLevel);
+    player.healthMultiplier = 1 + (inventory.prestigeUpgrades.titanHealth * PRESTIGE_UPGRADES.titanHealth.perLevel);
+    player.coinMultiplier = 1 + (inventory.prestigeUpgrades.coinMagnet * PRESTIGE_UPGRADES.coinMagnet.perLevel);
+
+    // Calculate final values with prestige multipliers
+    gameState.maxHealth = Math.floor(baseHealth * player.healthMultiplier);
+    player.critChance = baseCritChance + (inventory.prestigeUpgrades.criticalMass * PRESTIGE_UPGRADES.criticalMass.perLevel);
 }

@@ -32,7 +32,9 @@ export class Projectile {
 
         const weapon = WEAPONS[inventory.currentWeapon];
         this.emoji = weapon.emoji;
-        this.damage = weapon.damage + player.damage + (inventory.upgrades.damage * 10);
+        // Apply base damage + damage bonus, then multiply by prestige damage multiplier
+        const baseDamage = weapon.damage + player.damage + player.damageBonus;
+        this.damage = Math.floor(baseDamage * player.damageMultiplier);
         this.color = weapon.color;
         this.weaponType = inventory.currentWeapon;
         this.special = weapon.special || null;
