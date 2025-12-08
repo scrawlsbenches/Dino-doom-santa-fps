@@ -25,7 +25,7 @@ import {
     incrementCombo, breakCombo, getComboBonus, updateComboDisplay,
     showEnemyDialogue, showSigmaDialogue, showSigmaEscapeText, showGamerAttackText, drawDialogueBubbles,
     updateDeathScreen,
-    openShop, closeShop,
+    openShop, closeShop, showShopIndicator, hideShopIndicator,
     spawnBoss,
     startMinigame,
     createLensFlareSpawner,
@@ -73,14 +73,31 @@ function getEnemyCallbacks() {
 }
 
 /**
+ * Calculates sigma spawn chance based on wave (UX-010)
+ * @returns {number} Spawn chance between base and max
+ */
+function getSigmaSpawnChance() {
+    const waveBonus = (gameState.wave - 1) * GAME_CONFIG.SIGMA_SPAWN_CHANCE_PER_WAVE;
+    return Math.min(
+        GAME_CONFIG.SIGMA_MAX_SPAWN_CHANCE,
+        GAME_CONFIG.SIGMA_BASE_SPAWN_CHANCE + waveBonus
+    );
+}
+
+/**
  * Spawns a regular enemy
  */
 export function spawnEnemy() {
     let type;
     const roll = Math.random();
 
-    if (roll < 0.08) {
+    // UX-010: Wave-based sigma spawn with cap
+    const sigmaChance = getSigmaSpawnChance();
+    const canSpawnSigma = gameState.sigmaSpawnedThisWave < GAME_CONFIG.SIGMA_MAX_PER_WAVE;
+
+    if (canSpawnSigma && roll < sigmaChance) {
         type = 'SIGMA_DINO';
+        gameState.sigmaSpawnedThisWave++;
         const startSide = Math.random() > 0.5 ? 1 : -1;
         const x = startSide * GAME_CONFIG.SIGMA_SPAWN_X;
         const z = GAME_CONFIG.SIGMA_SPAWN_Z_BASE - Math.random() * GAME_CONFIG.SIGMA_SPAWN_Z_RANGE;
@@ -104,6 +121,7 @@ export function spawnEnemy() {
  */
 export function spawnWave() {
     gameState.waveInProgress = true;
+    gameState.sigmaSpawnedThisWave = 0; // UX-010: Reset sigma counter
     gameState.waveSpawningComplete = false;
     onWaveStart();
 
@@ -360,8 +378,14 @@ function gameLoop() {
 
             const nextWaveIsBoss = gameState.wave % GAME_CONFIG.BOSS_WAVE_INTERVAL === 0;
 
+            // UX-003: Show shop indicator for non-boss waves
+            if (!nextWaveIsBoss) {
+                showShopIndicator();
+            }
+
             setTimeout(() => {
                 if (gameState.betweenWaves) {
+                    hideShopIndicator();
                     if (nextWaveIsBoss) {
                         gameState.betweenWaves = false;
                         spawnWave();

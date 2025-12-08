@@ -176,6 +176,41 @@ export function playSound(type) {
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.4);
                 break;
+
+            case 'equip':
+                // Weapon equip sound - satisfying click + swoosh (UX-009)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.25 * masterVolume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+                break;
+
+            case 'heal_ready':
+                // Healing power ready notification (UX-006)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523, audioCtx.currentTime);  // C5
+                osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);  // E5
+                osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);  // G5
+                gain.gain.setValueAtTime(0.2 * masterVolume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.35);
+                break;
+
+            case 'shop_available':
+                // Shop available cha-ching sound (UX-003)
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1500, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.2 * masterVolume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+                break;
         }
     } catch {
         // Graceful degradation - game continues without sound

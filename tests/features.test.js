@@ -1233,3 +1233,455 @@ describe('Deep Fried Mode System', () => {
         });
     });
 });
+
+// ==================== UX-007: BOSS HEALTH BAR PHASE INDICATORS TESTS ====================
+describe('UX-007: Boss Health Bar Phase Indicators', () => {
+    test('HTML has boss phase marker element', () => {
+        const htmlContent = readFile('index.html');
+
+        assert.ok(
+            htmlContent.includes('id="boss-phase-marker"'),
+            'index.html should have boss-phase-marker element'
+        );
+        assert.ok(
+            htmlContent.includes('id="boss-phase-label"'),
+            'index.html should have boss-phase-label element'
+        );
+    });
+
+    test('CSS has boss phase marker styles', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('#boss-phase-marker'),
+            'CSS should have #boss-phase-marker styles'
+        );
+        assert.ok(
+            cssContent.includes('left: 50%'),
+            'Boss phase marker should be positioned at 50%'
+        );
+    });
+
+    test('CSS has boss phase label styles', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('#boss-phase-label'),
+            'CSS should have #boss-phase-label styles'
+        );
+    });
+
+    test('CSS has phase indicator animation', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('@keyframes phaseIndicatorPulse'),
+            'CSS should have phaseIndicatorPulse animation'
+        );
+    });
+
+    test('Boss health bar background has relative positioning', () => {
+        const cssContent = readFile('css/styles.css');
+
+        // Find the boss-health-bar-bg style block
+        assert.ok(
+            cssContent.includes('#boss-health-bar-bg') &&
+            cssContent.includes('position: relative'),
+            'Boss health bar bg should have position: relative'
+        );
+    });
+});
+
+// ==================== UX-009: WEAPON SWITCHING FEEDBACK TESTS ====================
+describe('UX-009: Weapon Switching Feedback', () => {
+    test('Audio system has equip sound', () => {
+        const audioContent = readFile('js/systems/audio.js');
+
+        assert.ok(
+            audioContent.includes("case 'equip':"),
+            'Audio system should handle equip sound type'
+        );
+    });
+
+    test('Equip sound uses masterVolume', () => {
+        const audioContent = readFile('js/systems/audio.js');
+
+        const equipMatch = audioContent.match(/case 'equip':[\s\S]*?break;/);
+        if (equipMatch) {
+            assert.ok(
+                equipMatch[0].includes('masterVolume'),
+                'Equip sound should use masterVolume'
+            );
+        }
+    });
+
+    test('Shop system exports showEquipToast', () => {
+        const shopContent = readFile('js/systems/shop.js');
+
+        assert.ok(
+            shopContent.includes('export function showEquipToast'),
+            'Shop system should export showEquipToast function'
+        );
+    });
+
+    test('Shop calls playSound equip when equipping weapon', () => {
+        const shopContent = readFile('js/systems/shop.js');
+
+        assert.ok(
+            shopContent.includes("playSound('equip')"),
+            'Shop should call playSound equip when equipping'
+        );
+    });
+
+    test('Shop calls showEquipToast when equipping weapon', () => {
+        const shopContent = readFile('js/systems/shop.js');
+
+        assert.ok(
+            shopContent.includes('showEquipToast('),
+            'Shop should call showEquipToast when equipping'
+        );
+    });
+
+    test('CSS has equip toast styles', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('.equip-toast'),
+            'CSS should have .equip-toast styles'
+        );
+    });
+
+    test('CSS has equip toast animations', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('@keyframes equipToastIn'),
+            'CSS should have equipToastIn animation'
+        );
+        assert.ok(
+            cssContent.includes('@keyframes equipToastOut'),
+            'CSS should have equipToastOut animation'
+        );
+        assert.ok(
+            cssContent.includes('@keyframes equipEmojiPulse'),
+            'CSS should have equipEmojiPulse animation'
+        );
+    });
+});
+
+// ==================== UX-006: HEALING POWER PROGRESS CLARITY TESTS ====================
+describe('UX-006: Healing Power Progress Clarity', () => {
+    test('Audio system has heal_ready sound', () => {
+        const audioContent = readFile('js/systems/audio.js');
+
+        assert.ok(
+            audioContent.includes("case 'heal_ready':"),
+            'Audio system should handle heal_ready sound type'
+        );
+    });
+
+    test('heal_ready sound uses masterVolume', () => {
+        const audioContent = readFile('js/systems/audio.js');
+
+        const healReadyMatch = audioContent.match(/case 'heal_ready':[\s\S]*?break;/);
+        if (healReadyMatch) {
+            assert.ok(
+                healReadyMatch[0].includes('masterVolume'),
+                'heal_ready sound should use masterVolume'
+            );
+        }
+    });
+
+    test('Enemy.js plays heal_ready sound when heal becomes available', () => {
+        const enemyContent = readFile('js/classes/Enemy.js');
+
+        assert.ok(
+            enemyContent.includes("playSound('heal_ready')"),
+            'Enemy should play heal_ready sound when heal becomes available'
+        );
+    });
+
+    test('UI displays kills needed instead of fraction', () => {
+        const uiContent = readFile('js/ui.js');
+
+        assert.ok(
+            uiContent.includes('more kill'),
+            'UI should display kills needed text'
+        );
+    });
+
+    test('UI adds heal-ready class to container', () => {
+        const uiContent = readFile('js/ui.js');
+
+        assert.ok(
+            uiContent.includes("classList.add('heal-ready')"),
+            'UI should add heal-ready class when ready'
+        );
+        assert.ok(
+            uiContent.includes("classList.remove('heal-ready')"),
+            'UI should remove heal-ready class when not ready'
+        );
+    });
+
+    test('CSS has heal-ready animation styles', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('#heal-power-container.heal-ready'),
+            'CSS should have heal-ready container styles'
+        );
+        assert.ok(
+            cssContent.includes('@keyframes healReadyPulse'),
+            'CSS should have healReadyPulse animation'
+        );
+    });
+});
+
+// ==================== UX-003: SHOP VISIBILITY TESTS ====================
+describe('UX-003: Shop Visibility/Discovery', () => {
+    test('HTML has shop indicator element', () => {
+        const htmlContent = readFile('index.html');
+
+        assert.ok(
+            htmlContent.includes('id="shop-indicator"'),
+            'index.html should have shop-indicator element'
+        );
+    });
+
+    test('Shop indicator has correct structure', () => {
+        const htmlContent = readFile('index.html');
+
+        assert.ok(
+            htmlContent.includes('shop-indicator-icon'),
+            'Shop indicator should have icon element'
+        );
+        assert.ok(
+            htmlContent.includes('shop-indicator-text'),
+            'Shop indicator should have text element'
+        );
+        assert.ok(
+            htmlContent.includes('shop-indicator-key'),
+            'Shop indicator should have key hint element'
+        );
+    });
+
+    test('Audio system has shop_available sound', () => {
+        const audioContent = readFile('js/systems/audio.js');
+
+        assert.ok(
+            audioContent.includes("case 'shop_available':"),
+            'Audio system should handle shop_available sound type'
+        );
+    });
+
+    test('Shop system exports showShopIndicator and hideShopIndicator', () => {
+        const shopContent = readFile('js/systems/shop.js');
+
+        assert.ok(
+            shopContent.includes('export function showShopIndicator'),
+            'Shop system should export showShopIndicator'
+        );
+        assert.ok(
+            shopContent.includes('export function hideShopIndicator'),
+            'Shop system should export hideShopIndicator'
+        );
+    });
+
+    test('showShopIndicator plays shop_available sound', () => {
+        const shopContent = readFile('js/systems/shop.js');
+
+        const funcMatch = shopContent.match(/export function showShopIndicator[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(
+                funcMatch[0].includes("playSound('shop_available')"),
+                'showShopIndicator should play shop_available sound'
+            );
+        }
+    });
+
+    test('Game.js imports showShopIndicator and hideShopIndicator', () => {
+        const gameContent = readFile('js/game.js');
+
+        assert.ok(
+            gameContent.includes('showShopIndicator'),
+            'game.js should import showShopIndicator'
+        );
+        assert.ok(
+            gameContent.includes('hideShopIndicator'),
+            'game.js should import hideShopIndicator'
+        );
+    });
+
+    test('Game.js shows shop indicator on wave completion (non-boss)', () => {
+        const gameContent = readFile('js/game.js');
+
+        assert.ok(
+            gameContent.includes('showShopIndicator()'),
+            'game.js should call showShopIndicator on wave completion'
+        );
+    });
+
+    test('CSS has shop indicator styles', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('#shop-indicator'),
+            'CSS should have #shop-indicator styles'
+        );
+        assert.ok(
+            cssContent.includes('.shop-indicator-icon'),
+            'CSS should have .shop-indicator-icon styles'
+        );
+        assert.ok(
+            cssContent.includes('.shop-indicator-text'),
+            'CSS should have .shop-indicator-text styles'
+        );
+        assert.ok(
+            cssContent.includes('.shop-indicator-key'),
+            'CSS should have .shop-indicator-key styles'
+        );
+    });
+
+    test('CSS has shop indicator animations', () => {
+        const cssContent = readFile('css/styles.css');
+
+        assert.ok(
+            cssContent.includes('@keyframes shopIndicatorPulse'),
+            'CSS should have shopIndicatorPulse animation'
+        );
+        assert.ok(
+            cssContent.includes('@keyframes shopIconBounce'),
+            'CSS should have shopIconBounce animation'
+        );
+    });
+});
+
+// ==================== UX-010: SIGMA DINO RNG CONSISTENCY TESTS ====================
+describe('UX-010: Sigma Dino RNG Consistency', () => {
+    test('GAME_CONFIG has sigma spawn cap constants', () => {
+        assert.ok(
+            gameData.GAME_CONFIG.hasOwnProperty('SIGMA_MAX_PER_WAVE'),
+            'GAME_CONFIG should have SIGMA_MAX_PER_WAVE'
+        );
+        assert.ok(
+            gameData.GAME_CONFIG.hasOwnProperty('SIGMA_BASE_SPAWN_CHANCE'),
+            'GAME_CONFIG should have SIGMA_BASE_SPAWN_CHANCE'
+        );
+        assert.ok(
+            gameData.GAME_CONFIG.hasOwnProperty('SIGMA_SPAWN_CHANCE_PER_WAVE'),
+            'GAME_CONFIG should have SIGMA_SPAWN_CHANCE_PER_WAVE'
+        );
+        assert.ok(
+            gameData.GAME_CONFIG.hasOwnProperty('SIGMA_MAX_SPAWN_CHANCE'),
+            'GAME_CONFIG should have SIGMA_MAX_SPAWN_CHANCE'
+        );
+    });
+
+    test('Sigma spawn constants have correct values', () => {
+        assert.strictEqual(
+            gameData.GAME_CONFIG.SIGMA_MAX_PER_WAVE,
+            2,
+            'SIGMA_MAX_PER_WAVE should be 2'
+        );
+        assert.strictEqual(
+            gameData.GAME_CONFIG.SIGMA_BASE_SPAWN_CHANCE,
+            0.04,
+            'SIGMA_BASE_SPAWN_CHANCE should be 0.04'
+        );
+        assert.strictEqual(
+            gameData.GAME_CONFIG.SIGMA_SPAWN_CHANCE_PER_WAVE,
+            0.01,
+            'SIGMA_SPAWN_CHANCE_PER_WAVE should be 0.01'
+        );
+        assert.strictEqual(
+            gameData.GAME_CONFIG.SIGMA_MAX_SPAWN_CHANCE,
+            0.12,
+            'SIGMA_MAX_SPAWN_CHANCE should be 0.12'
+        );
+    });
+
+    test('State has sigmaSpawnedThisWave property', () => {
+        const stateContent = readFile('js/state.js');
+
+        assert.ok(
+            stateContent.includes('sigmaSpawnedThisWave:'),
+            'gameState should have sigmaSpawnedThisWave property'
+        );
+    });
+
+    test('resetGameState resets sigmaSpawnedThisWave', () => {
+        const stateContent = readFile('js/state.js');
+
+        assert.ok(
+            stateContent.includes('gameState.sigmaSpawnedThisWave = 0'),
+            'resetGameState should reset sigmaSpawnedThisWave'
+        );
+    });
+
+    test('Game.js has getSigmaSpawnChance function', () => {
+        const gameContent = readFile('js/game.js');
+
+        assert.ok(
+            gameContent.includes('function getSigmaSpawnChance()'),
+            'game.js should have getSigmaSpawnChance function'
+        );
+    });
+
+    test('getSigmaSpawnChance uses wave-based calculation', () => {
+        const gameContent = readFile('js/game.js');
+
+        const funcMatch = gameContent.match(/function getSigmaSpawnChance[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(
+                funcMatch[0].includes('SIGMA_BASE_SPAWN_CHANCE'),
+                'getSigmaSpawnChance should use base chance'
+            );
+            assert.ok(
+                funcMatch[0].includes('SIGMA_SPAWN_CHANCE_PER_WAVE'),
+                'getSigmaSpawnChance should use per-wave chance'
+            );
+            assert.ok(
+                funcMatch[0].includes('SIGMA_MAX_SPAWN_CHANCE'),
+                'getSigmaSpawnChance should cap at max chance'
+            );
+            assert.ok(
+                funcMatch[0].includes('Math.min'),
+                'getSigmaSpawnChance should use Math.min to cap'
+            );
+        }
+    });
+
+    test('spawnEnemy checks sigma cap', () => {
+        const gameContent = readFile('js/game.js');
+
+        assert.ok(
+            gameContent.includes('SIGMA_MAX_PER_WAVE'),
+            'spawnEnemy should check SIGMA_MAX_PER_WAVE'
+        );
+        assert.ok(
+            gameContent.includes('sigmaSpawnedThisWave'),
+            'spawnEnemy should use sigmaSpawnedThisWave'
+        );
+    });
+
+    test('spawnEnemy increments sigma counter', () => {
+        const gameContent = readFile('js/game.js');
+
+        assert.ok(
+            gameContent.includes('gameState.sigmaSpawnedThisWave++'),
+            'spawnEnemy should increment sigmaSpawnedThisWave when spawning sigma'
+        );
+    });
+
+    test('spawnWave resets sigma counter', () => {
+        const gameContent = readFile('js/game.js');
+
+        const funcMatch = gameContent.match(/export function spawnWave[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(
+                funcMatch[0].includes('sigmaSpawnedThisWave = 0'),
+                'spawnWave should reset sigmaSpawnedThisWave'
+            );
+        }
+    });
+});
