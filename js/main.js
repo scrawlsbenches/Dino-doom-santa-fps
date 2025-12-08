@@ -8,6 +8,7 @@
 import { updateMousePos, gameState } from './state.js';
 import { initSkinSystem } from './systems/skins.js';
 import { copyDeathReceipt } from './systems/death.js';
+import { setVolume } from './systems/audio.js';
 import {
     initGame, startGame, shoot, useHealingPower,
     openShopWithCallbacks, closeShopWithCallbacks
@@ -70,6 +71,17 @@ function setupEventListeners() {
     document.getElementById('restart-btn').addEventListener('click', startGame);
     document.getElementById('copy-receipt-btn').addEventListener('click', copyDeathReceipt);
     document.getElementById('continue-btn').addEventListener('click', closeShopWithCallbacks);
+
+    // Volume slider
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    if (volumeSlider && volumeValue) {
+        volumeSlider.addEventListener('input', (e) => {
+            const volume = parseInt(e.target.value, 10);
+            setVolume(volume / 100);
+            volumeValue.textContent = volume + '%';
+        });
+    }
 }
 
 // Start when DOM is ready

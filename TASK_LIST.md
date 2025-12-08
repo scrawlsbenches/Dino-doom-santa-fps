@@ -41,33 +41,6 @@ All code quality tasks completed! See archived section below.
 
 ## 🟢 STRETCH GOAL TASKS
 
-### TASK-015: MLG Sound Pack
-**Estimate**: 4 hours (max 1 day)
-**Priority**: P3
-**Dependencies**: TASK-001 ✅, TASK-002 ✅ (both complete)
-
-**Scope**:
-- Create Web Audio API synthesized sounds for:
-  - "OH BABY A TRIPLE" (for triple kills)
-  - MLG airhorn (wave complete)
-  - "MOM GET THE CAMERA" (for 5+ kill streaks)
-  - Sad violin (player death)
-  - "WOW" sound (boss defeat)
-- Sounds should be procedurally generated, not audio files
-- Add volume slider in settings
-
-**Files to modify**:
-- `js/systems/audio.js` - New sound functions
-- `js/systems/killstreak.js` - Hook MLG sounds to streaks
-- `js/systems/death.js` - Sad violin on death
-- `index.html` / `css/styles.css` - Volume slider UI
-
-**Acceptance Criteria**:
-- [ ] All sounds implemented via Web Audio
-- [ ] Sounds trigger at correct moments
-- [ ] Volume control works
-- [ ] No audio clipping/distortion
-
 ---
 
 ### TASK-016: Deep Fried Mode
@@ -219,8 +192,8 @@ All code quality tasks completed! See archived section below.
 | P0 (Critical Bugs) | 0 | ✅ Complete |
 | P1 (High Bugs) | 0 | ✅ Complete |
 | P2 (Medium/Refactor) | 0 | ✅ Complete |
-| P3 (Low/Features) | 8 | 21-29 hours |
-| **TOTAL** | **8** | **21-29 hours** |
+| P3 (Low/Features) | 7 | 17-25 hours |
+| **TOTAL** | **7** | **17-25 hours** |
 
 **Note**: All code quality refactoring tasks completed and archived.
 
@@ -429,6 +402,27 @@ All refactoring tasks completed!
 - Added try-catch blocks to `playHitMarkerSound()` function
 - Added try-catch blocks to `playKillStreakSound()` function
 - Game gracefully degrades if audio fails (continues without sound)
+
+### TASK-015: MLG Sound Pack ✅
+**Completed**: Feature implementation
+- Added 5 MLG sound functions to `js/systems/audio.js`:
+  - `playTripleKillSound()` - "OH BABY A TRIPLE" voice-like tones
+  - `playAirhorn()` - MLG airhorn chord (A major)
+  - `playMomGetTheCamera()` - excited voice effect for 5+ streaks
+  - `playSadViolin()` - mournful melody with vibrato on death
+  - `playWowSound()` - "WOW" formant sweep on boss defeat
+- Added volume control system:
+  - `masterVolume` variable for global volume
+  - `getVolume()` and `setVolume()` functions
+  - All sound functions respect master volume
+- Added volume slider UI:
+  - Volume control in start screen (`index.html`)
+  - Styled slider in `css/styles.css`
+  - Event listener in `js/main.js`
+- Hooked sounds to game events:
+  - `js/systems/killstreak.js` - triple kill and 5+ streak sounds
+  - `js/systems/achievements.js` - airhorn on wave complete, WOW on boss defeat
+  - `js/game.js` - sad violin on death
 
 </details>
 

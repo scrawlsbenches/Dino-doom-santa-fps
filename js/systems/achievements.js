@@ -7,7 +7,7 @@
 
 import { ACHIEVEMENTS, GAME_CONFIG } from '../constants.js';
 import { unlockedAchievements, achievementTracking, gameState } from '../state.js';
-import { playSound } from './audio.js';
+import { playSound, playAirhorn, playWowSound } from './audio.js';
 
 /**
  * Unlocks an achievement and shows toast
@@ -60,6 +60,9 @@ export function onWaveStart() {
  * Called when wave is completed
  */
 export function onWaveComplete() {
+    // MLG Sound Pack - Airhorn on wave complete
+    playAirhorn();
+
     // WAVE SURVIVOR - no damage taken this wave
     if (gameState.health === achievementTracking.waveStartHealth) {
         unlockAchievement('WAVE_SURVIVOR');
@@ -84,6 +87,8 @@ export function checkKillAchievements(enemy) {
     // BOSS_SLAYER - Defeat first boss
     if (enemy.isBoss) {
         unlockAchievement('BOSS_SLAYER');
+        // MLG Sound Pack - "WOW" sound for boss defeat
+        playWowSound();
     }
 
     // BUILT_DIFFERENT - One-shot a Gigachad
