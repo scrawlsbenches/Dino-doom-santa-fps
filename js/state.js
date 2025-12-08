@@ -126,6 +126,14 @@ export const achievementTracking = {
     shopSpending: 0
 };
 
+// ==================== DAMAGE HISTORY (UX-008) ====================
+export const damageHistory = {
+    // Track damage taken by enemy type (key: enemy type name, value: damage amount)
+    byEnemyType: {},
+    // Track hit count by enemy type for death analysis
+    hitsByEnemyType: {}
+};
+
 // ==================== MINIGAME STATE ====================
 export const minigameState = {
     active: false,
@@ -287,6 +295,28 @@ export function resetAchievementTracking() {
     achievementTracking.waveStartHealth = GAME_CONFIG.PLAYER_BASE_HEALTH;
     achievementTracking.totalDamageTaken = 0;
     achievementTracking.shopSpending = 0;
+}
+
+/**
+ * Resets damage history for a new game (UX-008)
+ */
+export function resetDamageHistory() {
+    damageHistory.byEnemyType = {};
+    damageHistory.hitsByEnemyType = {};
+}
+
+/**
+ * Records damage taken from an enemy type (UX-008)
+ * @param {string} enemyType - The enemy type name
+ * @param {number} damage - The damage amount
+ */
+export function recordDamage(enemyType, damage) {
+    if (!damageHistory.byEnemyType[enemyType]) {
+        damageHistory.byEnemyType[enemyType] = 0;
+        damageHistory.hitsByEnemyType[enemyType] = 0;
+    }
+    damageHistory.byEnemyType[enemyType] += damage;
+    damageHistory.hitsByEnemyType[enemyType]++;
 }
 
 /**

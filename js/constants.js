@@ -722,3 +722,97 @@ export const TWITCH_CHAT_MESSAGES = {
         'WHAT A GAMER'
     ]
 };
+
+// ==================== DEATH TIPS (UX-008) ====================
+export const DEATH_TIPS = {
+    // Tips based on enemy type that killed the player
+    byKiller: {
+        'GIGACHAD DINO': [
+            'Gigachads are slow but hit HARD. Keep your distance!',
+            'Try kiting Gigachads - shoot while backing away.',
+            'Upgrade damage to take down Gigachads faster.'
+        ],
+        'BUFF NERD DINO': [
+            'Buff Nerds are fast! Prioritize them before they close in.',
+            'Fire rate upgrades help against speedy Buff Nerds.',
+            'Buff Nerds have low HP - focus fire to drop them quick.'
+        ],
+        'DINO OVERLORD': [
+            'Boss fights require patience. Save your heal for phase 2!',
+            'At 50% HP, the boss becomes vulnerable to the minigame.',
+            'Keep moving during boss fights - their attacks are telegraphed.'
+        ],
+        'GAMER DINO': [
+            'Gamer Dinos shoot back! Take them out first.',
+            'Strafe side to side to dodge Gamer Dino projectiles.',
+            'Gamer attacks hurt your combo - prioritize them!'
+        ],
+        'SIGMA DINO': [
+            'Sigma Dinos don\'t attack - they drop bonus coins when killed!',
+            'You can safely ignore Sigmas, but the coins are worth it.'
+        ],
+        'Boss Fireball': [
+            'Watch for the boss fireball wind-up animation.',
+            'Boss fireballs do splash damage - keep moving!',
+            'Stay mobile during boss fights to avoid ranged attacks.'
+        ],
+        '360 NO SCOPE': [
+            'Gamer Dinos do \"360 no scopes\" - prioritize killing them!',
+            'The best defense against Gamer projectiles is offense.',
+            'Fire rate helps you eliminate Gamers before they can shoot.'
+        ]
+    },
+    // Tips based on damage taken from specific enemy types (most damage)
+    byMostDamage: {
+        'GIGACHAD DINO': [
+            'You took the most damage from Gigachads - try keeping distance!',
+            'Gigachads wrecked you. Consider upgrading max health.'
+        ],
+        'BUFF NERD DINO': [
+            'Buff Nerds swarmed you! Fire rate upgrades help clear them fast.',
+            'Those speedy nerds got you. Try the Candy Cane for faster shots.'
+        ],
+        'GAMER DINO': [
+            'Gamer Dinos dealt tons of damage - prioritize shooting them first!',
+            'You got out-gamed. Kill Gamers before they can attack.'
+        ],
+        'DINO OVERLORD': [
+            'Boss damage adds up. Make sure to use your heal (E) wisely!',
+            'Practice the vulnerable phase minigame - it\'s key to boss fights.'
+        ]
+    },
+    // Tips based on wave number
+    byWave: {
+        early: [  // Waves 1-3
+            'Early waves are for learning - focus on aim practice!',
+            'Don\'t forget to open the shop between waves! [R]',
+            'Save coins for key upgrades like damage and fire rate.'
+        ],
+        mid: [  // Waves 4-7
+            'Mid-game is about efficiency - keep your combo going!',
+            'Healing power (E) is crucial - get those 10 kills!',
+            'Consider buying a new weapon from the shop.'
+        ],
+        late: [  // Waves 8+
+            'Late-game is brutal - every upgrade counts!',
+            'Prestige upgrades unlock after maxing basic stats.',
+            'Keep your combo alive for huge score multipliers!'
+        ],
+        boss: [  // Boss waves (5, 10, 15...)
+            'Boss waves are tough! Make sure you\'re upgraded first.',
+            'The minigame at 50% HP is crucial - practice clicking fast!',
+            'Boss fights reward patience - don\'t panic shoot.'
+        ]
+    },
+    // Generic tips (used as fallback)
+    generic: [
+        'Keep moving! Standing still makes you an easy target.',
+        'Open the shop between waves with [R] to spend coins.',
+        'Build up your combo for score multipliers!',
+        'Healing power (E) fully restores HP - save it for emergencies.',
+        'Critical hits deal 2x damage - upgrade crit chance for big numbers!',
+        'Different weapons have different fire rates and damage.',
+        'Watch the heal bar - it charges with every kill!',
+        'Bosses appear every 5 waves - prepare accordingly!'
+    ]
+};

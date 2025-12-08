@@ -11,7 +11,7 @@ import {
     floatingTexts, mousePos, weakPoints,
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
     resetKillStreak, resetComboState, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
-    achievementTracking, returnParticle
+    achievementTracking, returnParticle, recordDamage, resetDamageHistory
 } from './state.js';
 import { Enemy } from './classes/Enemy.js';
 import { Projectile } from './classes/Projectile.js';
@@ -254,6 +254,7 @@ export function startGame() {
     resetComboState();
     clearDialogueBubbles();
     resetAchievementTracking();
+    resetDamageHistory();  // UX-008: Reset damage tracking for death tips
     resetMinigameState();
     resetBossTutorial(); // UX-004: Reset tutorial state
     updateComboDisplay();
@@ -343,6 +344,7 @@ function gameLoop() {
                 gameState.health -= proj.damage;
                 gameState.lastAttacker = proj.attackerName;
                 achievementTracking.totalDamageTaken += proj.damage;
+                recordDamage(proj.attackerName, proj.damage);  // UX-008: Track damage for death tips
                 playSound('damage');
                 showDamageOverlay();
                 shakeOnDamage();
