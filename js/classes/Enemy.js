@@ -47,6 +47,7 @@ export class Enemy {
         this.attackCooldown = 0;
         this.hitFlash = 0;
         this.invulnerable = false;
+        this.stunned = false; // UX-004: Boss stunned during vulnerability phase
         this.hitCount = 0;
         this.wasOneShot = true;
         this.markedForRemoval = false;
@@ -83,6 +84,13 @@ export class Enemy {
      */
     update() {
         if (this.invulnerable) return;
+
+        // UX-004: Stunned enemies only wobble, don't move or attack
+        if (this.stunned) {
+            this.wobble += 0.15; // Faster wobble when stunned
+            this.hitFlash = Math.max(0, this.hitFlash - 0.1);
+            return;
+        }
 
         // Sigma special movement
         if (this.isSigma) {
@@ -476,6 +484,13 @@ export class Enemy {
             ctx.font = 'bold 16px Orbitron';
             ctx.fillStyle = '#ff0000';
             ctx.fillText('INVULNERABLE', screenX, screenY - size - 55);
+        }
+
+        // UX-004: Stunned indicator during vulnerability phase
+        if (this.stunned) {
+            ctx.font = 'bold 16px Orbitron';
+            ctx.fillStyle = '#ff3333';
+            ctx.fillText('STUNNED - SHOOT WEAK POINTS!', screenX, screenY - size - 55);
         }
     }
 }
