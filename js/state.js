@@ -44,7 +44,12 @@ export const player = {
     critChance: GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE,
     critMultiplier: GAME_CONFIG.PLAYER_CRIT_MULTIPLIER,
     damageBonus: 0,
-    fireRateBonus: 0
+    fireRateBonus: 0,
+    // Prestige bonuses (multipliers)
+    damageMultiplier: 1,
+    fireRateMultiplier: 1,
+    healthMultiplier: 1,
+    coinMultiplier: 1
 };
 
 // ==================== INVENTORY ====================
@@ -64,6 +69,13 @@ export const inventory = {
         fireRate: 0,
         health: 0,
         critChance: 0
+    },
+    prestigeUpgrades: {
+        overkill: 0,
+        bulletHell: 0,
+        titanHealth: 0,
+        criticalMass: 0,
+        coinMagnet: 0
     }
 };
 
@@ -180,6 +192,11 @@ export function resetPlayerState() {
     player.critMultiplier = GAME_CONFIG.PLAYER_CRIT_MULTIPLIER;
     player.damageBonus = 0;
     player.fireRateBonus = 0;
+    // Reset prestige multipliers
+    player.damageMultiplier = 1;
+    player.fireRateMultiplier = 1;
+    player.healthMultiplier = 1;
+    player.coinMultiplier = 1;
 }
 
 /**
@@ -201,6 +218,13 @@ export function resetInventory() {
         fireRate: 0,
         health: 0,
         critChance: 0
+    };
+    inventory.prestigeUpgrades = {
+        overkill: 0,
+        bulletHell: 0,
+        titanHealth: 0,
+        criticalMass: 0,
+        coinMagnet: 0
     };
 }
 

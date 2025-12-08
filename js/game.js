@@ -5,7 +5,7 @@
  * Core game loop, spawning, and game flow.
  */
 
-import { WEAPONS, UPGRADES, GAME_CONFIG } from './constants.js';
+import { WEAPONS, GAME_CONFIG } from './constants.js';
 import {
     gameState, player, inventory, enemies, projectiles, enemyProjectiles, particles,
     floatingTexts, mousePos,
@@ -134,8 +134,9 @@ export function shoot() {
         playSound('shoot');
     }
 
-    player.fireCooldown = weapon.fireRate - (inventory.upgrades.fireRate * UPGRADES.fireRate.perLevel);
-    player.fireCooldown = Math.max(3, player.fireCooldown);
+    // Apply base fire rate - bonus, then divide by prestige fire rate multiplier
+    const baseCooldown = weapon.fireRate - player.fireRateBonus;
+    player.fireCooldown = Math.max(3, Math.floor(baseCooldown / player.fireRateMultiplier));
 
     const screenCenterX = canvas.width / 2;
     const screenCenterY = canvas.height / 2;

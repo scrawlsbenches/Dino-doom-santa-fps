@@ -90,6 +90,7 @@ function loadConstants() {
             GAME_CONFIG,
             WEAPONS,
             UPGRADES,
+            PRESTIGE_UPGRADES,
             ENEMY_TYPES,
             SANTA_SKINS,
             ACHIEVEMENTS,
@@ -3138,6 +3139,506 @@ describe('Deep Fried Mode System', () => {
             assert.ok(
                 cssContent.includes('@keyframes lensFlareAnim'),
                 'CSS should have lensFlareAnim animation'
+            );
+        });
+    });
+});
+
+// ==================== PRESTIGE UPGRADES TESTS ====================
+describe('Prestige Upgrades System', () => {
+    describe('Constants', () => {
+        test('PRESTIGE_UPGRADES constant exists and is exported', () => {
+            assert.ok(
+                gameData.PRESTIGE_UPGRADES,
+                'PRESTIGE_UPGRADES should be exported from constants.js'
+            );
+        });
+
+        test('All prestige upgrades have required properties', () => {
+            const requiredProps = ['name', 'icon', 'basePrice', 'priceIncrease', 'perLevel', 'description'];
+
+            Object.entries(gameData.PRESTIGE_UPGRADES).forEach(([key, upgrade]) => {
+                requiredProps.forEach(prop => {
+                    assert.ok(
+                        upgrade.hasOwnProperty(prop),
+                        `Prestige upgrade ${key} missing property: ${prop}`
+                    );
+                });
+            });
+        });
+
+        test('All expected prestige upgrades are present', () => {
+            const expectedUpgrades = ['overkill', 'bulletHell', 'titanHealth', 'criticalMass', 'coinMagnet'];
+            expectedUpgrades.forEach(upgrade => {
+                assert.ok(
+                    gameData.PRESTIGE_UPGRADES[upgrade],
+                    `Prestige upgrade ${upgrade} should exist`
+                );
+            });
+        });
+
+        test('Prestige upgrade base prices are positive', () => {
+            Object.entries(gameData.PRESTIGE_UPGRADES).forEach(([key, upgrade]) => {
+                assert.ok(
+                    upgrade.basePrice > 0,
+                    `Prestige upgrade ${key} should have positive base price`
+                );
+            });
+        });
+
+        test('Prestige upgrade price increases are positive', () => {
+            Object.entries(gameData.PRESTIGE_UPGRADES).forEach(([key, upgrade]) => {
+                assert.ok(
+                    upgrade.priceIncrease > 0,
+                    `Prestige upgrade ${key} should have positive price increase`
+                );
+            });
+        });
+
+        test('Prestige upgrade per-level values are positive', () => {
+            Object.entries(gameData.PRESTIGE_UPGRADES).forEach(([key, upgrade]) => {
+                assert.ok(
+                    upgrade.perLevel > 0,
+                    `Prestige upgrade ${key} should have positive per-level value`
+                );
+            });
+        });
+
+        test('Prestige upgrade icons are non-empty', () => {
+            Object.entries(gameData.PRESTIGE_UPGRADES).forEach(([key, upgrade]) => {
+                assert.ok(
+                    upgrade.icon.length > 0,
+                    `Prestige upgrade ${key} should have an icon`
+                );
+            });
+        });
+
+        test('Prestige upgrades have higher base prices than basic upgrades', () => {
+            const maxBasicPrice = Math.max(
+                ...Object.values(gameData.UPGRADES).map(u => u.basePrice)
+            );
+            const minPrestigePrice = Math.min(
+                ...Object.values(gameData.PRESTIGE_UPGRADES).map(u => u.basePrice)
+            );
+
+            assert.ok(
+                minPrestigePrice >= maxBasicPrice,
+                'Prestige upgrades should cost more than basic upgrades'
+            );
+        });
+    });
+
+    describe('State', () => {
+        test('State.js inventory includes prestigeUpgrades', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('prestigeUpgrades'),
+                'inventory should include prestigeUpgrades'
+            );
+        });
+
+        test('State.js has all prestige upgrade keys in inventory', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            const prestigeKeys = ['overkill', 'bulletHell', 'titanHealth', 'criticalMass', 'coinMagnet'];
+            prestigeKeys.forEach(key => {
+                assert.ok(
+                    stateContent.includes(key),
+                    `inventory.prestigeUpgrades should include ${key}`
+                );
+            });
+        });
+
+        test('State.js player has prestige multiplier properties', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            const multiplierProps = ['damageMultiplier', 'fireRateMultiplier', 'healthMultiplier', 'coinMultiplier'];
+            multiplierProps.forEach(prop => {
+                assert.ok(
+                    stateContent.includes(prop),
+                    `player should have ${prop} property`
+                );
+            });
+        });
+
+        test('resetInventory resets prestige upgrades', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            // Check that resetInventory resets prestigeUpgrades
+            const resetInventoryMatch = stateContent.match(/function resetInventory\(\)[\s\S]*?^}/m);
+            assert.ok(resetInventoryMatch, 'resetInventory function should exist');
+
+            const resetInventoryBody = resetInventoryMatch[0];
+            assert.ok(
+                resetInventoryBody.includes('prestigeUpgrades'),
+                'resetInventory should reset prestigeUpgrades'
+            );
+        });
+
+        test('resetPlayerState resets prestige multipliers', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            // Check that resetPlayerState resets multipliers
+            const resetPlayerMatch = stateContent.match(/function resetPlayerState\(\)[\s\S]*?^}/m);
+            assert.ok(resetPlayerMatch, 'resetPlayerState function should exist');
+
+            const resetPlayerBody = resetPlayerMatch[0];
+            assert.ok(
+                resetPlayerBody.includes('damageMultiplier'),
+                'resetPlayerState should reset damageMultiplier'
+            );
+            assert.ok(
+                resetPlayerBody.includes('coinMultiplier'),
+                'resetPlayerState should reset coinMultiplier'
+            );
+        });
+    });
+
+    describe('Shop Integration', () => {
+        test('Shop.js imports PRESTIGE_UPGRADES', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('PRESTIGE_UPGRADES'),
+                'shop.js should import PRESTIGE_UPGRADES'
+            );
+        });
+
+        test('Shop.js exports areAllBasicUpgradesMaxed function', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('export function areAllBasicUpgradesMaxed'),
+                'shop.js should export areAllBasicUpgradesMaxed function'
+            );
+        });
+
+        test('areAllBasicUpgradesMaxed checks all basic upgrades', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('UPGRADES') &&
+                shopContent.includes('inventory.upgrades'),
+                'areAllBasicUpgradesMaxed should check inventory.upgrades against UPGRADES'
+            );
+        });
+
+        test('Shop.js exports getPrestigeUpgradePrice function', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('export function getPrestigeUpgradePrice'),
+                'shop.js should export getPrestigeUpgradePrice function'
+            );
+        });
+
+        test('getPrestigeUpgradePrice calculates price with base and increase', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('basePrice') && shopContent.includes('priceIncrease'),
+                'getPrestigeUpgradePrice should use basePrice and priceIncrease'
+            );
+        });
+
+        test('Shop.js exports getCoinMultiplier function', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('export function getCoinMultiplier'),
+                'shop.js should export getCoinMultiplier function'
+            );
+        });
+
+        test('Shop.js exports renderPrestigeUpgrades function', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('export function renderPrestigeUpgrades'),
+                'shop.js should export renderPrestigeUpgrades function'
+            );
+        });
+
+        test('renderShop calls renderPrestigeUpgrades', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('renderPrestigeUpgrades(updateHUD)'),
+                'renderShop should call renderPrestigeUpgrades'
+            );
+        });
+
+        test('applyUpgrades applies prestige damage multiplier', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('player.damageMultiplier'),
+                'applyUpgrades should set player.damageMultiplier'
+            );
+        });
+
+        test('applyUpgrades applies prestige fire rate multiplier', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('player.fireRateMultiplier'),
+                'applyUpgrades should set player.fireRateMultiplier'
+            );
+        });
+
+        test('applyUpgrades applies prestige health multiplier', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('player.healthMultiplier'),
+                'applyUpgrades should set player.healthMultiplier'
+            );
+        });
+
+        test('applyUpgrades applies prestige coin multiplier', () => {
+            const shopContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                shopContent.includes('player.coinMultiplier'),
+                'applyUpgrades should set player.coinMultiplier'
+            );
+        });
+    });
+
+    describe('Game Integration', () => {
+        test('Projectile.js applies damage multiplier', () => {
+            const projectileContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Projectile.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                projectileContent.includes('damageMultiplier'),
+                'Projectile should apply player.damageMultiplier to damage'
+            );
+        });
+
+        test('Projectile.js uses player.damageBonus', () => {
+            const projectileContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Projectile.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                projectileContent.includes('player.damageBonus'),
+                'Projectile should use player.damageBonus for damage calculation'
+            );
+        });
+
+        test('game.js applies fire rate multiplier', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                gameContent.includes('fireRateMultiplier'),
+                'game.js shoot function should use player.fireRateMultiplier'
+            );
+        });
+
+        test('game.js uses player.fireRateBonus', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                gameContent.includes('player.fireRateBonus'),
+                'game.js shoot function should use player.fireRateBonus'
+            );
+        });
+
+        test('Enemy.js applies coin multiplier', () => {
+            const enemyContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Enemy.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                enemyContent.includes('coinMultiplier'),
+                'Enemy die() should apply player.coinMultiplier to coin rewards'
+            );
+        });
+
+        test('UI.js displays damage with multiplier', () => {
+            const uiContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'ui.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                uiContent.includes('damageMultiplier'),
+                'UI should display damage with damageMultiplier applied'
+            );
+        });
+    });
+
+    describe('HTML Integration', () => {
+        test('index.html has prestige-upgrades container', () => {
+            const htmlContent = fs.readFileSync(
+                path.join(__dirname, '..', 'index.html'),
+                'utf8'
+            );
+
+            assert.ok(
+                htmlContent.includes('id="prestige-upgrades"'),
+                'index.html should have prestige-upgrades container'
+            );
+        });
+
+        test('index.html has prestige-list element', () => {
+            const htmlContent = fs.readFileSync(
+                path.join(__dirname, '..', 'index.html'),
+                'utf8'
+            );
+
+            assert.ok(
+                htmlContent.includes('id="prestige-list"'),
+                'index.html should have prestige-list element'
+            );
+        });
+
+        test('index.html has prestige section with correct class', () => {
+            const htmlContent = fs.readFileSync(
+                path.join(__dirname, '..', 'index.html'),
+                'utf8'
+            );
+
+            assert.ok(
+                htmlContent.includes('prestige-section'),
+                'index.html should have prestige-section class'
+            );
+        });
+
+        test('index.html has prestige info text', () => {
+            const htmlContent = fs.readFileSync(
+                path.join(__dirname, '..', 'index.html'),
+                'utf8'
+            );
+
+            assert.ok(
+                htmlContent.includes('prestige-info'),
+                'index.html should have prestige-info element'
+            );
+        });
+    });
+
+    describe('CSS Styling', () => {
+        test('CSS has prestige section styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('.prestige-section'),
+                'CSS should have prestige-section styles'
+            );
+        });
+
+        test('CSS has prestige item styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('.prestige-item'),
+                'CSS should have prestige-item styles'
+            );
+        });
+
+        test('CSS has prestige info styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('.prestige-info'),
+                'CSS should have prestige-info styles'
+            );
+        });
+
+        test('CSS has prestige glow animation', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('@keyframes prestigeGlow'),
+                'CSS should have prestigeGlow animation'
+            );
+        });
+
+        test('CSS has prestige pulse animation', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('@keyframes prestigePulse'),
+                'CSS should have prestigePulse animation'
             );
         });
     });
