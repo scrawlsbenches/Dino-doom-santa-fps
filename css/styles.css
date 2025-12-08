@@ -1,0 +1,1091 @@
+/**
+ * Dino Doom: Santa's Last Stand
+ * Main Stylesheet
+ *
+ * Organized sections:
+ * 1. Reset & Base
+ * 2. Game Container
+ * 3. HUD Elements
+ * 4. Crosshair & Hit Markers
+ * 5. Kill Streak & Achievements
+ * 6. Boss System
+ * 7. Screens (Start, Shop, Game Over, Minigame)
+ * 8. Animations
+ */
+
+/* ==================== 1. RESET & BASE ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0a0f;
+    font-family: 'Orbitron', sans-serif;
+    overflow: hidden;
+    cursor: none;
+}
+
+/* ==================== 2. GAME CONTAINER ==================== */
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
+    transition: transform 0.05s ease-out;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ==================== 3. HUD ELEMENTS ==================== */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.hud-corner {
+    position: absolute;
+    padding: 20px;
+}
+
+.top-left { top: 0; left: 0; }
+.top-right { top: 0; right: 0; text-align: right; }
+.bottom-left { bottom: 0; left: 0; }
+.bottom-right { bottom: 0; right: 0; text-align: right; }
+.top-center { top: 0; left: 50%; transform: translateX(-50%); text-align: center; }
+
+.stat-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #ff6b6b;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ff6b6b;
+}
+
+.stat-value {
+    font-family: 'Bungee', cursive;
+    font-size: 36px;
+    color: #fff;
+    text-shadow:
+        0 0 10px #00ff88,
+        0 0 20px #00ff88,
+        0 0 40px #00ff88;
+}
+
+#health-bar-container {
+    width: 300px;
+    height: 30px;
+    background: rgba(0,0,0,0.7);
+    border: 3px solid #ff3333;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(255,51,51,0.5);
+}
+
+#health-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000, #ff6600, #ff3333);
+    transition: width 0.3s ease;
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.3);
+}
+
+#coins-display {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700;
+}
+
+#wave-display {
+    font-family: 'Bungee', cursive;
+    font-size: 24px;
+    color: #ffcc00;
+    text-shadow: 0 0 15px #ffcc00;
+}
+
+#weapon-name {
+    font-family: 'Bungee', cursive;
+    font-size: 20px;
+    color: #ff6b6b;
+    text-shadow: 0 0 10px #ff6b6b;
+}
+
+/* Kill feed */
+#kill-feed {
+    position: absolute;
+    top: 100px;
+    right: 20px;
+    width: 300px;
+}
+
+.kill-entry {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #fff;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    background: rgba(0,0,0,0.7);
+    border-left: 4px solid #ff0000;
+    animation: killSlide 0.3s ease-out;
+}
+
+/* Damage overlay */
+#damage-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(255,0,0,0.5) 100%);
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+/* Wave announcement */
+#wave-announcement {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bungee', cursive;
+    font-size: 72px;
+    color: #ffcc00;
+    text-shadow:
+        0 0 20px #ffcc00,
+        0 0 40px #ffcc00;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    text-align: center;
+}
+
+/* Muzzle flash */
+#muzzle-flash {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, #ffff00 0%, #ff6600 30%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ==================== 4. CROSSHAIR & HIT MARKERS ==================== */
+#crosshair {
+    position: absolute;
+    pointer-events: none;
+    z-index: 50;
+}
+
+.crosshair-line {
+    position: absolute;
+    background: #ff0000;
+    box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+}
+
+.crosshair-h {
+    width: 20px;
+    height: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.crosshair-v {
+    width: 3px;
+    height: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.ch-left { left: -35px; }
+.ch-right { right: -35px; }
+.ch-top { top: -35px; }
+.ch-bottom { bottom: -35px; }
+
+#crosshair-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #ff0000;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 15px #ff0000;
+}
+
+/* Hit Markers - COD style X */
+.hit-marker {
+    position: absolute;
+    pointer-events: none;
+    z-index: 60;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+    animation: hitMarkerFade 0.2s ease-out forwards;
+}
+
+.hit-marker::before,
+.hit-marker::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 3px;
+    background: white;
+    box-shadow: 0 0 8px white, 0 0 15px white;
+}
+
+.hit-marker::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.hit-marker::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.hit-marker.crit::before,
+.hit-marker.crit::after {
+    background: #ffd700;
+    box-shadow: 0 0 10px #ffd700, 0 0 20px #ff8800;
+    width: 25px;
+    height: 4px;
+}
+
+/* ==================== 5. KILL STREAK & ACHIEVEMENTS ==================== */
+.kill-streak-announcement {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bungee', cursive;
+    font-size: 64px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 70;
+    animation: killStreakAnimate 1.5s ease-out forwards;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+#achievement-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 320px;
+    pointer-events: none;
+    z-index: 80;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.achievement-toast {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(50, 50, 50, 0.95));
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: achievementSlideIn 0.5s ease-out forwards;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.achievement-toast.hiding {
+    animation: achievementSlideOut 0.5s ease-in forwards;
+}
+
+.achievement-icon {
+    font-size: 32px;
+}
+
+.achievement-content {
+    flex: 1;
+}
+
+.achievement-title {
+    font-family: 'Bungee', cursive;
+    font-size: 14px;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700;
+    margin-bottom: 4px;
+}
+
+.achievement-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+/* ==================== 6. BOSS SYSTEM ==================== */
+#boss-intro-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 100;
+    pointer-events: none;
+}
+
+#boss-intro-overlay.active {
+    display: flex;
+    animation: bossDarken 0.5s ease-out forwards;
+}
+
+#boss-intro-emoji {
+    font-size: 150px;
+    opacity: 0;
+    transform: translateY(-200px) scale(0.5);
+}
+
+#boss-intro-emoji.slide-in {
+    animation: bossSlideIn 0.8s ease-out forwards;
+}
+
+#boss-intro-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 48px;
+    color: #ffd700;
+    text-shadow: 0 0 20px #ffd700, 0 0 40px #ff8800;
+    opacity: 0;
+    margin-top: 20px;
+}
+
+#boss-intro-name.show {
+    animation: bossNameReveal 0.5s ease-out forwards;
+}
+
+#boss-intro-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: #ff4444;
+    text-shadow: 0 0 10px #ff0000;
+    opacity: 0;
+    margin-top: 10px;
+}
+
+#boss-intro-title.show {
+    animation: bossTitleReveal 0.4s ease-out forwards;
+}
+
+#boss-intro-flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#boss-intro-flash.flash {
+    animation: bossFlash 0.3s ease-out forwards;
+}
+
+#boss-health-container {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    display: none;
+    text-align: center;
+}
+
+#boss-name {
+    font-family: 'Bungee', cursive;
+    font-size: 24px;
+    color: #ff0000;
+    text-shadow: 0 0 10px #ff0000;
+    margin-bottom: 10px;
+}
+
+#boss-health-bar-bg {
+    width: 100%;
+    height: 25px;
+    background: #333;
+    border: 3px solid #ff0000;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#boss-health-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000, #ff6600);
+    transition: width 0.3s;
+}
+
+/* ==================== 7. SCREENS ==================== */
+
+/* Start screen */
+#start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #0a0015 0%, #1a0a2e 50%, #0f1a3e 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+#start-screen h1 {
+    font-family: 'Bungee', cursive;
+    font-size: 72px;
+    color: #ff3333;
+    text-shadow:
+        0 0 10px #ff3333,
+        0 0 30px #ff3333,
+        0 0 60px #ff3333,
+        5px 5px 0 #00ff88;
+    margin-bottom: 20px;
+    animation: titlePulse 2s ease-in-out infinite;
+}
+
+#start-screen h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    color: #00ffff;
+    text-shadow: 0 0 20px #00ffff;
+    margin-bottom: 50px;
+}
+
+.enemy-preview {
+    display: flex;
+    gap: 60px;
+    margin-bottom: 50px;
+}
+
+.enemy-card {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #ff6b6b;
+    border-radius: 10px;
+}
+
+.enemy-card h3 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: #ffcc00;
+    margin-top: 10px;
+}
+
+/* Santa Skin Selector */
+#skin-selector {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid #ffd700;
+    border-radius: 15px;
+}
+
+#skin-selector h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    color: #ffd700;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+#skin-options {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.skin-option {
+    background: rgba(30, 30, 50, 0.9);
+    border: 3px solid #444;
+    border-radius: 10px;
+    padding: 15px;
+    width: 120px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.skin-option:hover {
+    border-color: #ffd700;
+    transform: translateY(-3px);
+}
+
+.skin-option.selected {
+    border-color: #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+}
+
+.skin-option.locked {
+    opacity: 0.6;
+}
+
+.skin-option.locked:hover {
+    border-color: #ff4444;
+}
+
+.skin-emoji {
+    font-size: 50px;
+    margin-bottom: 8px;
+}
+
+.skin-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.skin-price {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    color: #ffd700;
+}
+
+.skin-price.owned {
+    color: #00ff00;
+}
+
+#skin-coins-display {
+    margin-top: 15px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    color: #ffd700;
+}
+
+/* Game buttons */
+.game-btn {
+    font-family: 'Bungee', cursive;
+    font-size: 32px;
+    padding: 20px 60px;
+    background: linear-gradient(180deg, #ff3333, #cc0000);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-shadow: 2px 2px 0 #000;
+    box-shadow:
+        0 5px 0 #990000,
+        0 10px 30px rgba(255,0,0,0.5);
+    transition: all 0.1s;
+    pointer-events: auto;
+}
+
+.game-btn:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 8px 0 #990000,
+        0 15px 40px rgba(255,0,0,0.7);
+}
+
+.game-btn:active {
+    transform: translateY(3px);
+    box-shadow:
+        0 2px 0 #990000,
+        0 5px 20px rgba(255,0,0,0.5);
+}
+
+.game-btn.green {
+    background: linear-gradient(180deg, #00ff88, #00aa55);
+    box-shadow: 0 5px 0 #007733, 0 10px 30px rgba(0,255,136,0.5);
+}
+
+.game-btn.green:hover {
+    box-shadow: 0 8px 0 #007733, 0 15px 40px rgba(0,255,136,0.7);
+}
+
+.controls-info {
+    margin-top: 40px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #888;
+    text-align: center;
+    line-height: 2;
+}
+
+/* Shop screen */
+#shop-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #0a0015 0%, #1a0a2e 100%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+#shop-screen h1 {
+    font-family: 'Bungee', cursive;
+    font-size: 48px;
+    color: #ffd700;
+    text-shadow: 0 0 20px #ffd700;
+    margin-bottom: 10px;
+}
+
+#shop-coins {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    color: #ffd700;
+    margin-bottom: 20px;
+}
+
+/* Shopkeeper */
+#shopkeeper-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, rgba(40, 30, 60, 0.9), rgba(30, 20, 50, 0.9));
+    border: 2px solid #8b7355;
+    border-radius: 15px;
+    padding: 15px 25px;
+    margin-bottom: 25px;
+    max-width: 600px;
+    box-shadow: 0 0 20px rgba(139, 115, 85, 0.3);
+}
+
+#shopkeeper-emoji {
+    font-size: 80px;
+    animation: shopkeeperBob 2s ease-in-out infinite;
+}
+
+#shopkeeper-dialogue {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    line-height: 1.6;
+    max-width: 400px;
+}
+
+.shop-section {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 30px;
+}
+
+.shop-section h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    color: #00ffff;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #00ffff;
+    padding-bottom: 10px;
+}
+
+.shop-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.shop-item {
+    background: rgba(0,0,0,0.6);
+    border: 2px solid #444;
+    border-radius: 10px;
+    padding: 20px;
+    width: 200px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    pointer-events: auto;
+}
+
+.shop-item:hover {
+    border-color: #ffd700;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(255,215,0,0.3);
+}
+
+.shop-item.owned {
+    border-color: #00ff88;
+    background: rgba(0,255,136,0.1);
+}
+
+.shop-item.equipped {
+    border-color: #00ffff;
+    box-shadow: 0 0 20px #00ffff;
+}
+
+.shop-item.maxed {
+    border-color: #888;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.shop-item-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.shop-item-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.shop-item-desc {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+.shop-item-price {
+    font-family: 'Bungee', cursive;
+    font-size: 18px;
+    color: #ffd700;
+}
+
+.shop-item-level {
+    font-size: 12px;
+    color: #00ff88;
+    margin-top: 5px;
+}
+
+#continue-btn {
+    margin-top: 20px;
+    font-size: 24px;
+    padding: 15px 50px;
+}
+
+/* Minigame screen */
+#minigame-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 150;
+    cursor: crosshair;
+}
+
+#minigame-screen h1 {
+    font-family: 'Bungee', cursive;
+    font-size: 36px;
+    color: #ff3333;
+    text-shadow: 0 0 20px #ff3333;
+    margin-bottom: 20px;
+}
+
+#minigame-instructions {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #ffcc00;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+#minigame-area {
+    width: 600px;
+    height: 400px;
+    background: #111;
+    border: 3px solid #ff3333;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.minigame-target {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ff0000, #aa0000);
+    border: 3px solid #fff;
+    cursor: crosshair;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    animation: targetPulse 0.5s ease-in-out infinite;
+    pointer-events: auto;
+}
+
+#minigame-timer {
+    font-family: 'Bungee', cursive;
+    font-size: 48px;
+    color: #00ffff;
+    margin-top: 20px;
+}
+
+#minigame-hits {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    color: #00ff88;
+    margin-top: 10px;
+}
+
+/* Game over screen */
+#game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+/* Death Receipt Styling */
+#death-receipt {
+    background: #111;
+    border: 3px solid #ff3333;
+    border-radius: 15px;
+    padding: 30px 40px;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.receipt-header h1 {
+    font-family: 'Bungee', cursive;
+    font-size: 32px;
+    color: #ff3333;
+    text-shadow: 0 0 20px #ff3333;
+    margin: 0 0 5px 0;
+    animation: gameOverShake 0.5s ease-in-out infinite;
+}
+
+.receipt-subtitle {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #888;
+    letter-spacing: 2px;
+}
+
+.receipt-divider {
+    font-family: monospace;
+    color: #444;
+    margin: 15px 0;
+    font-size: 12px;
+}
+
+.receipt-stats {
+    text-align: left;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    color: #ccc;
+    margin: 8px 0;
+}
+
+.receipt-row span:last-child {
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.receipt-rating {
+    margin: 20px 0;
+}
+
+.rating-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.rating-value {
+    font-family: 'Bungee', cursive;
+    font-size: 36px;
+    color: #ffd700;
+    text-shadow: 0 0 15px #ffd700;
+}
+
+.receipt-lastwords {
+    margin: 15px 0;
+}
+
+.lastwords-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.lastwords-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    color: #ff6b6b;
+    font-style: italic;
+}
+
+.receipt-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* ==================== 8. ANIMATIONS ==================== */
+@keyframes titlePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes hitMarkerFade {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes killStreakAnimate {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    15% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    70% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+@keyframes achievementSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes achievementSlideOut {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+@keyframes bossDarken {
+    0% { background: rgba(0, 0, 0, 0); }
+    100% { background: rgba(0, 0, 0, 0.8); }
+}
+
+@keyframes bossSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-200px) scale(0.5);
+    }
+    70% {
+        transform: translateY(20px) scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes bossNameReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+        letter-spacing: 20px;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        letter-spacing: 5px;
+    }
+}
+
+@keyframes bossTitleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bossFlash {
+    0% { opacity: 0.8; }
+    100% { opacity: 0; }
+}
+
+@keyframes killSlide {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes gameOverShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+@keyframes shopkeeperBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes targetPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
