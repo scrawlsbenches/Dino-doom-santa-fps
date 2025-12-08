@@ -16,19 +16,33 @@ export class EnemyProjectile {
      * @param {number} y - Starting Y position
      * @param {number} z - Starting Z position
      * @param {number} damage - Damage amount
+     * @param {boolean} isMeteor - TASK-020: Is this a meteor (falls from above)
      */
-    constructor(x, y, z, damage) {
+    constructor(x, y, z, damage, isMeteor = false) {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.vx = (Math.random() - 0.5) * 3; // Slight random spread
-        this.vy = 0;
-        this.vz = 15; // Moving toward player
         this.damage = damage;
-        this.life = 120;
-        this.emoji = '🔥';
-        this.color = '#ff4400';
-        this.attackerName = 'Boss Fireball';
+        this.isMeteor = isMeteor;
+
+        if (isMeteor) {
+            // TASK-020: Meteor falls from above
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = 8; // Falls down
+            this.vz = 8; // Also moves toward player
+            this.life = 150;
+            this.emoji = '☄️';
+            this.color = '#ff6600';
+            this.attackerName = 'Meteor';
+        } else {
+            this.vx = (Math.random() - 0.5) * 3; // Slight random spread
+            this.vy = 0;
+            this.vz = 15; // Moving toward player
+            this.life = 120;
+            this.emoji = '🔥';
+            this.color = '#ff4400';
+            this.attackerName = 'Boss Fireball';
+        }
     }
 
     /**

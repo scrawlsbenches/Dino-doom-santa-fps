@@ -47,6 +47,18 @@ export const GAME_CONFIG = {
     MINIGAME_TARGET_LIFETIME: 1500,
     MINIGAME_DAMAGE_PER_HIT: 50,
 
+    // Boss Phases (TASK-020)
+    BOSS_PHASE_2_THRESHOLD: 0.50,  // Phase 2 at 50% HP
+    BOSS_PHASE_3_THRESHOLD: 0.25,  // Phase 3 at 25% HP
+    BOSS_PHASE_2_DAMAGE_MULT: 1.5, // +50% damage in phase 2
+    BOSS_PHASE_3_DAMAGE_MULT: 2.0, // +100% damage in phase 3
+    BOSS_PHASE_2_COOLDOWN_MULT: 0.75, // 25% faster attacks in phase 2
+    BOSS_PHASE_3_COOLDOWN_MULT: 0.5,  // 50% faster attacks in phase 3
+    BOSS_METEOR_DAMAGE: 20,        // Damage per meteor
+    BOSS_METEOR_COOLDOWN: 60,      // Frames between meteor spawns
+    BOSS_ASCEND_HEIGHT: -60,       // Y offset when ascended
+    BOSS_PHASE_TRANSITION_DURATION: 2000, // ms for phase transition cutscene
+
     // Gamer Dino
     GAMER_RANGED_COOLDOWN: 300,
     GAMER_PROJECTILE_DAMAGE: 15,
@@ -808,6 +820,40 @@ export const SECRET_ACHIEVEMENTS = {
         description: 'Activated bat mode',
         icon: '🦇'
     }
+};
+
+// ==================== BACKGROUND MEME ELEMENTS (TASK-019) ====================
+export const MEME_BACKGROUND_CONFIG = {
+    // Doge on the moon (static, top-right corner)
+    DOGE_MOON: {
+        emoji: '🐕',
+        x: 0.85,  // Percentage of canvas width
+        y: 0.12,  // Percentage of canvas height
+        size: 50,
+        parallaxFactor: 0.1  // Subtle movement with mouse
+    },
+    // Floating elements configuration
+    FLOATING_ELEMENTS: [
+        { emoji: '🕶️', name: 'MLG Glasses', spawnChance: 0.002, speed: 0.5, size: 40 },
+        { emoji: '🔺', name: 'Doritos', spawnChance: 0.002, speed: 0.3, size: 35 },
+        { emoji: '🥤', name: 'Mountain Dew', spawnChance: 0.002, speed: 0.25, size: 38 },
+        { emoji: '✈️', name: 'Airplane', spawnChance: 0.001, speed: 0.8, size: 45 }
+    ],
+    // Airplane banner messages
+    AIRPLANE_BANNERS: [
+        'SUBSCRIBE!',
+        'GIT GUD',
+        'NO CAP',
+        'BUSSIN',
+        'SIGMA MODE',
+        'BASED',
+        'POG',
+        'W RIZZ'
+    ],
+    // Max floating elements on screen
+    MAX_FLOATING_ELEMENTS: 8,
+    // Parallax intensity for mouse movement
+    PARALLAX_INTENSITY: 15
 };
 
 // ==================== DEATH TIPS (UX-008) ====================

@@ -101,7 +101,8 @@ export function loadConstants() {
             TWITCH_CHAT_MESSAGES,
             EASTER_EGG_CONFIG,
             EASTER_EGGS,
-            SECRET_ACHIEVEMENTS
+            SECRET_ACHIEVEMENTS,
+            MEME_BACKGROUND_CONFIG
         };
     `);
     return fn();

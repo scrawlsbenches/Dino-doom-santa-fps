@@ -183,6 +183,12 @@ export const easterEggState = {
     dripModeUnlocked: false
 };
 
+// ==================== BACKGROUND MEMES STATE (TASK-019) ====================
+export const backgroundMemesState = {
+    enabled: true,  // Default to enabled
+    floatingElements: []  // Array of floating meme elements
+};
+
 // ==================== STATE RESET FUNCTIONS ====================
 
 /**
@@ -553,4 +559,56 @@ export function returnParticle(p) {
     if (particlePool.length < MAX_POOL_SIZE) {
         particlePool.push(p);
     }
+}
+
+// ==================== BACKGROUND MEMES FUNCTIONS (TASK-019) ====================
+
+/**
+ * Loads background memes state from localStorage
+ */
+export function loadBackgroundMemesState() {
+    try {
+        const saved = localStorage.getItem('backgroundMemesEnabled');
+        if (saved !== null) {
+            backgroundMemesState.enabled = JSON.parse(saved);
+        }
+    } catch {
+        // Gracefully handle localStorage errors (e.g., private browsing)
+    }
+}
+
+/**
+ * Saves background memes state to localStorage
+ */
+export function saveBackgroundMemesState() {
+    try {
+        localStorage.setItem('backgroundMemesEnabled', JSON.stringify(backgroundMemesState.enabled));
+    } catch {
+        // Gracefully handle localStorage errors
+    }
+}
+
+/**
+ * Toggles background memes on/off
+ * @returns {boolean} The new state
+ */
+export function toggleBackgroundMemes() {
+    backgroundMemesState.enabled = !backgroundMemesState.enabled;
+    saveBackgroundMemesState();
+    return backgroundMemesState.enabled;
+}
+
+/**
+ * Clears all floating meme elements
+ */
+export function clearFloatingMemes() {
+    backgroundMemesState.floatingElements.length = 0;
+}
+
+/**
+ * Checks if background memes are enabled
+ * @returns {boolean} True if enabled
+ */
+export function isBackgroundMemesEnabled() {
+    return backgroundMemesState.enabled;
 }

@@ -211,6 +211,37 @@ export function playSound(type) {
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.25);
                 break;
+
+            case 'boss_phase2':
+                // TASK-020: Phase 2 transition - menacing power-up
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 0.3);
+                osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.3 * masterVolume, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.4 * masterVolume, audioCtx.currentTime + 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.8);
+                // Play additional warning tone
+                playBossPhaseWarning();
+                break;
+
+            case 'boss_phase3':
+                // TASK-020: Phase 3 transition - epic ascension
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 0.5);
+                osc.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 0.8);
+                osc.frequency.linearRampToValueAtTime(500, audioCtx.currentTime + 1.0);
+                gain.gain.setValueAtTime(0.35 * masterVolume, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.45 * masterVolume, audioCtx.currentTime + 0.5);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.2);
+                // Play epic ascension chord
+                playBossAscensionChord();
+                break;
         }
     } catch {
         // Graceful degradation - game continues without sound
@@ -522,5 +553,83 @@ export function playWowSound() {
         osc2.stop(audioCtx.currentTime + 0.7);
     } catch {
         // Graceful degradation - game continues without sound
+    }
+}
+
+// ==================== TASK-020: BOSS PHASE SOUNDS ====================
+
+/**
+ * TASK-020: Plays warning tone for phase 2 transition
+ */
+function playBossPhaseWarning() {
+    if (!audioCtx) return;
+
+    try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.type = 'square';
+        // Warning beeps
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(0, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.2);
+        osc.frequency.setValueAtTime(0, audioCtx.currentTime + 0.3);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.4);
+
+        gain.gain.setValueAtTime(0.2 * masterVolume, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.6);
+    } catch {
+        // Graceful degradation
+    }
+}
+
+/**
+ * TASK-020: Plays epic ascension chord for phase 3 transition
+ */
+function playBossAscensionChord() {
+    if (!audioCtx) return;
+
+    try {
+        // Epic minor chord with rising sweep (D minor - dramatic)
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const osc3 = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        osc3.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        // D minor chord with rising pitch
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(147, audioCtx.currentTime);  // D3
+        osc1.frequency.linearRampToValueAtTime(294, audioCtx.currentTime + 0.8);  // D4
+
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(175, audioCtx.currentTime);  // F3
+        osc2.frequency.linearRampToValueAtTime(349, audioCtx.currentTime + 0.8);  // F4
+
+        osc3.type = 'sawtooth';
+        osc3.frequency.setValueAtTime(220, audioCtx.currentTime);  // A3
+        osc3.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.8);  // A4
+
+        gain.gain.setValueAtTime(0.25 * masterVolume, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.35 * masterVolume, audioCtx.currentTime + 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+
+        osc1.start();
+        osc2.start();
+        osc3.start();
+        osc1.stop(audioCtx.currentTime + 1.0);
+        osc2.stop(audioCtx.currentTime + 1.0);
+        osc3.stop(audioCtx.currentTime + 1.0);
+    } catch {
+        // Graceful degradation
     }
 }

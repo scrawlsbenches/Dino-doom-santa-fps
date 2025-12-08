@@ -5,7 +5,10 @@
  * Initializes the game and sets up event listeners.
  */
 
-import { updateMousePos, gameState } from './state.js';
+import {
+    updateMousePos, gameState,
+    backgroundMemesState, loadBackgroundMemesState, toggleBackgroundMemes
+} from './state.js';
 import { initSkinSystem } from './systems/skins.js';
 import { copyDeathReceipt } from './systems/death.js';
 import { setVolume } from './systems/audio.js';
@@ -17,6 +20,44 @@ import {
 } from './game.js';
 
 // ==================== INITIALIZATION ====================
+
+/**
+ * Initializes the background memes toggle system (TASK-019)
+ * Loads saved state and sets up the toggle button
+ */
+function initBackgroundMemesSystem() {
+    // Load saved state from localStorage
+    loadBackgroundMemesState();
+
+    // Set up the toggle button
+    const toggleBtn = document.getElementById('background-memes-btn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            toggleBackgroundMemes();
+            updateBackgroundMemesToggleUI();
+        });
+        // Update UI to match saved state
+        updateBackgroundMemesToggleUI();
+    }
+}
+
+/**
+ * Updates the background memes toggle button UI
+ */
+function updateBackgroundMemesToggleUI() {
+    const toggleBtn = document.getElementById('background-memes-btn');
+    const toggleText = toggleBtn?.querySelector('.toggle-text');
+
+    if (!toggleBtn || !toggleText) return;
+
+    if (backgroundMemesState.enabled) {
+        toggleBtn.classList.add('active');
+        toggleText.textContent = 'BACKGROUND MEMES: ON';
+    } else {
+        toggleBtn.classList.remove('active');
+        toggleText.textContent = 'BACKGROUND MEMES: OFF';
+    }
+}
 
 /**
  * Initializes all game systems when DOM is ready
@@ -32,6 +73,9 @@ function init() {
 
     // Initialize easter egg system (loads from localStorage)
     initEasterEggSystem();
+
+    // Initialize background memes system (TASK-019)
+    initBackgroundMemesSystem();
 
     // Initialize game
     initGame(canvas);

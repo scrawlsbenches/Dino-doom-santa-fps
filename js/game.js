@@ -12,7 +12,7 @@ import {
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
     resetKillStreak, resetComboState, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
     achievementTracking, returnParticle, recordDamage, resetDamageHistory,
-    resetEasterEggEffects, resetEasterEggInput
+    resetEasterEggEffects, resetEasterEggInput, clearFloatingMemes
 } from './state.js';
 import { Enemy } from './classes/Enemy.js';
 import { Projectile } from './classes/Projectile.js';
@@ -31,11 +31,13 @@ import {
     startMinigame,
     createLensFlareSpawner,
     onChatKill, onChatDeath, onChatBossKill, clearChat, initChatSystem,
-    checkWaveEasterEggs, applyEasterEggEffectsToEnemy
+    checkWaveEasterEggs, applyEasterEggEffectsToEnemy,
+    triggerPhaseTransition, clearPhaseEffects
 } from './systems/index.js';
 import {
     updateHUD, updateCrosshair, addKillFeed,
-    resizeCanvas, drawBackground, drawWeapon, drawFloatingTexts
+    resizeCanvas, drawBackground, drawWeapon, drawFloatingTexts,
+    updateFloatingMemes, drawMemeBackground
 } from './ui.js';
 
 // Canvas reference
@@ -70,7 +72,11 @@ function getEnemyCallbacks() {
         checkAchievements: checkKillAchievements,
         spawnLensFlare: lensFlareSpawner,
         onChatKill,
-        onChatBossKill
+        onChatBossKill,
+        // TASK-020: Boss phase transition callback
+        triggerPhaseTransition: (boss, newPhase) => triggerPhaseTransition(boss, newPhase, playSound),
+        // TASK-020: Clear phase effects on boss death
+        clearPhaseEffects
     };
 }
 
@@ -268,6 +274,7 @@ export function startGame() {
     resetPlayerState();
     resetInventory();
     clearEntities();
+    clearFloatingMemes();  // TASK-019: Clear background meme elements
     resetKillStreak();
     resetComboState();
     clearDialogueBubbles();
@@ -294,6 +301,10 @@ export function startGame() {
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground(ctx, canvas);
+
+    // TASK-019: Update and draw meme background elements
+    updateFloatingMemes(canvas);
+    drawMemeBackground(ctx, canvas);
 
     updateCrosshair();
     updateScreenShake();

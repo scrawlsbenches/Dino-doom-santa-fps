@@ -7,7 +7,7 @@
  */
 
 import { BOSS_NAMES, GAME_CONFIG } from '../constants.js';
-import { gameState, trackTimeout, enemies } from '../state.js';
+import { gameState, trackTimeout, enemies, floatingTexts } from '../state.js';
 import { Enemy } from '../classes/Enemy.js';
 import { playSound } from './audio.js';
 import { onChatBossSpawn } from './chat.js';
@@ -168,4 +168,152 @@ export function shouldShowBossTutorial() {
  */
 export function resetBossTutorial() {
     bossTutorialShown = false;
+}
+
+/**
+ * TASK-020: Triggers boss phase transition with mini-cutscene
+ * @param {Object} boss - The boss enemy object
+ * @param {number} newPhase - The new phase (2 or 3)
+ * @param {Function} playPhaseSound - Function to play phase transition sound
+ */
+export function triggerPhaseTransition(boss, newPhase, playPhaseSound) {
+    if (!boss || boss.phaseTransitioning) return;
+
+    boss.phaseTransitioning = true;
+    boss.invulnerable = true; // Brief invulnerability during transition
+
+    // Play phase transition sound
+    if (playPhaseSound) {
+        playPhaseSound(newPhase === 3 ? 'boss_phase3' : 'boss_phase2');
+    }
+
+    // Show phase transition overlay
+    showPhaseTransitionOverlay(boss, newPhase);
+
+    // After transition cutscene, apply phase effects
+    trackTimeout(setTimeout(() => {
+        boss.transitionToPhase(newPhase);
+        boss.phaseTransitioning = false;
+        boss.invulnerable = false;
+        hidePhaseTransitionOverlay();
+
+        // Update boss health bar phase indicator
+        updateBossPhaseIndicator(newPhase);
+    }, GAME_CONFIG.BOSS_PHASE_TRANSITION_DURATION));
+}
+
+/**
+ * TASK-020: Shows the phase transition overlay
+ * @param {Object} boss - The boss enemy object
+ * @param {number} newPhase - The new phase
+ */
+function showPhaseTransitionOverlay(boss, newPhase) {
+    const overlay = document.getElementById('boss-phase-overlay');
+    const phaseNumber = document.getElementById('boss-phase-number');
+    const phaseTitle = document.getElementById('boss-phase-title');
+    const phaseEmoji = document.getElementById('boss-phase-emoji');
+
+    if (!overlay) return;
+
+    // Set content based on phase
+    if (newPhase === 2) {
+        if (phaseNumber) phaseNumber.textContent = 'PHASE 2';
+        if (phaseTitle) phaseTitle.textContent = 'SUNGLASSES MODE ACTIVATED';
+        if (phaseEmoji) phaseEmoji.textContent = '😎';
+    } else if (newPhase === 3) {
+        if (phaseNumber) phaseNumber.textContent = 'FINAL PHASE';
+        if (phaseTitle) phaseTitle.textContent = 'ASCENSION COMPLETE';
+        if (phaseEmoji) phaseEmoji.textContent = '🔥👑🔥';
+    }
+
+    overlay.classList.add('active');
+    overlay.classList.add(`phase-${newPhase}`);
+}
+
+/**
+ * TASK-020: Hides the phase transition overlay
+ */
+function hidePhaseTransitionOverlay() {
+    const overlay = document.getElementById('boss-phase-overlay');
+    if (overlay) {
+        overlay.classList.remove('active', 'phase-2', 'phase-3');
+    }
+}
+
+/**
+ * TASK-020: Updates the boss health bar phase indicator
+ * @param {number} phase - Current phase
+ */
+function updateBossPhaseIndicator(phase) {
+    const phaseLabel = document.getElementById('boss-phase-label');
+    const phase3Marker = document.getElementById('boss-phase-3-marker');
+    const phase3Label = document.getElementById('boss-phase-3-label');
+    const gameContainer = document.getElementById('game-container');
+
+    if (phaseLabel) {
+        if (phase === 2) {
+            phaseLabel.textContent = '⚠️ PHASE 2 ACTIVE';
+            phaseLabel.style.color = '#ff8800';
+        } else if (phase === 3) {
+            phaseLabel.textContent = '🔥 FINAL PHASE 🔥';
+            phaseLabel.style.color = '#ff3333';
+        }
+    }
+
+    // Show phase 3 marker when entering phase 2
+    if (phase3Marker && phase === 2) {
+        phase3Marker.style.display = 'block';
+    }
+    if (phase3Label && phase === 2) {
+        phase3Label.style.display = 'block';
+    }
+
+    // Phase 3 screen effects
+    if (phase === 3) {
+        const phase2Marker = document.getElementById('boss-phase-marker');
+        if (phase2Marker) phase2Marker.style.opacity = '0.3';
+        if (phase3Marker) phase3Marker.style.opacity = '0.3';
+
+        // Add screen shake and vignette effect for phase 3
+        if (gameContainer) {
+            gameContainer.classList.add('phase-3-active');
+        }
+
+        // Add floating text announcement
+        floatingTexts.push({
+            text: '🔥 BOSS ENRAGED! 🔥',
+            x: 0,
+            y: -200,
+            z: -300,
+            life: 120,
+            color: '#ff3333'
+        });
+    }
+}
+
+/**
+ * TASK-020: Clears phase 3 screen effects (call on boss death)
+ */
+export function clearPhaseEffects() {
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.classList.remove('phase-3-active');
+    }
+
+    // Reset phase indicators
+    const phase2Marker = document.getElementById('boss-phase-marker');
+    const phase3Marker = document.getElementById('boss-phase-3-marker');
+    const phase3Label = document.getElementById('boss-phase-3-label');
+    const phaseLabel = document.getElementById('boss-phase-label');
+
+    if (phase2Marker) phase2Marker.style.opacity = '1';
+    if (phase3Marker) {
+        phase3Marker.style.display = 'none';
+        phase3Marker.style.opacity = '1';
+    }
+    if (phase3Label) phase3Label.style.display = 'none';
+    if (phaseLabel) {
+        phaseLabel.textContent = '⚠️ PHASE 2';
+        phaseLabel.style.color = '#ffd700';
+    }
 }
