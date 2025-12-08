@@ -4,6 +4,154 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 
 ---
 
+## 🔴 BUG FIXES (Player-Reported Issues)
+
+### BUG-007: Fix Overly Permissive Shop Guard Condition
+**Estimate**: 30 minutes
+**Priority**: P1 (High)
+**Source**: Player Bug Reports / Code Review
+
+**Issue**: The shop can potentially be opened when the game is NOT running (e.g., after game over) due to incorrect boolean logic.
+
+**Location**: `js/systems/shop.js:45-46`
+
+**Current Code**:
+```javascript
+export function openShop(updateHUD) {
+    if (!gameState.betweenWaves && gameState.running) return;
+```
+
+**Problem**: The condition uses `&&` which means:
+- Returns early if `!betweenWaves AND running` (correct behavior)
+- Allows shop to open if `running === false` (BUG!)
+
+**Fix**:
+```javascript
+export function openShop(updateHUD) {
+    if (!gameState.betweenWaves || !gameState.running) return;
+```
+
+**Acceptance Criteria**:
+- [ ] Shop cannot be opened after game over
+- [ ] Shop can only be opened between waves when game is running
+- [ ] All existing shop tests pass
+
+---
+
+### BUG-008: Simplify Confusing Enemy Cleanup Logic
+**Estimate**: 1-2 hours
+**Priority**: P1 (High)
+**Source**: Player Bug Reports / Code Review
+
+**Issue**: Enemy array cleanup uses a convoluted double-filter ternary that is inefficient, error-prone, and difficult to maintain.
+
+**Location**: `js/game.js:295-297`
+
+**Current Code**:
+```javascript
+enemies.length = enemies.filter(e => !e.markedForRemoval).length === enemies.length
+    ? enemies.length
+    : (enemies.splice(0, enemies.length, ...enemies.filter(e => !e.markedForRemoval)), enemies.length);
+```
+
+**Problem**:
+- Filters the array twice (inefficient)
+- Complex ternary is hard to understand
+- Fragile pattern that could break during maintenance
+
+**Fix**:
+```javascript
+// Simple reverse-order removal to avoid index shifting
+for (let i = enemies.length - 1; i >= 0; i--) {
+    if (enemies[i].markedForRemoval) {
+        enemies.splice(i, 1);
+    }
+}
+```
+
+**Acceptance Criteria**:
+- [ ] Enemy cleanup works correctly
+- [ ] Code is readable and maintainable
+- [ ] No performance regression
+- [ ] All enemy-related tests pass
+
+---
+
+### BUG-009: Fix Inconsistent Enemy Removal in Minigame
+**Estimate**: 30 minutes
+**Priority**: P2 (Medium)
+**Source**: Code Review
+
+**Issue**: Boss is directly spliced from enemies array when killed in minigame, while regular enemies use the `markedForRemoval` flag pattern.
+
+**Location**: `js/systems/minigame.js:99-103`
+
+**Current Code**:
+```javascript
+if (gameState.currentBoss.health <= 0) {
+    gameState.currentBoss.die();
+    const idx = enemies.indexOf(gameState.currentBoss);
+    if (idx > -1) enemies.splice(idx, 1);
+}
+```
+
+**Problem**: Inconsistent removal patterns can cause maintenance issues and potential bugs if the cleanup logic changes.
+
+**Fix**:
+```javascript
+if (gameState.currentBoss.health <= 0) {
+    gameState.currentBoss.die();
+    gameState.currentBoss.markedForRemoval = true;
+}
+```
+
+**Acceptance Criteria**:
+- [ ] Boss removal uses same pattern as regular enemies
+- [ ] Minigame boss death still works correctly
+- [ ] No array modification during iteration issues
+
+---
+
+### BUG-010: Standardize Upgrade Application in applyUpgrades()
+**Estimate**: 1 hour
+**Priority**: P2 (Medium)
+**Source**: Code Review
+
+**Issue**: The `applyUpgrades()` function applies health and crit chance upgrades to the player object, but damage and fire rate upgrades are never applied (calculated at projectile creation time instead). This inconsistency is confusing and error-prone.
+
+**Location**: `js/systems/shop.js:157-162`
+
+**Current Code**:
+```javascript
+export function applyUpgrades() {
+    const baseHealth = GAME_CONFIG.PLAYER_BASE_HEALTH + (inventory.upgrades.health * UPGRADES.health.perLevel);
+    gameState.maxHealth = baseHealth;
+    player.critChance = GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE + (inventory.upgrades.critChance * UPGRADES.critChance.perLevel);
+    // Note: damage and fireRate upgrades are NOT applied here
+}
+```
+
+**Problem**: Some upgrades are "applied" to state, others are calculated on-the-fly. Inconsistent design makes the system harder to understand and maintain.
+
+**Fix**: Apply all upgrades consistently in `applyUpgrades()`:
+```javascript
+export function applyUpgrades() {
+    const baseHealth = GAME_CONFIG.PLAYER_BASE_HEALTH + (inventory.upgrades.health * UPGRADES.health.perLevel);
+    gameState.maxHealth = baseHealth;
+    player.critChance = GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE + (inventory.upgrades.critChance * UPGRADES.critChance.perLevel);
+    player.damageBonus = inventory.upgrades.damage * UPGRADES.damage.perLevel;
+    player.fireRateBonus = inventory.upgrades.fireRate * UPGRADES.fireRate.perLevel;
+}
+```
+
+**Acceptance Criteria**:
+- [ ] All upgrades applied consistently in one place
+- [ ] Projectile damage calculation uses player.damageBonus
+- [ ] Fire rate calculation uses player.fireRateBonus
+- [ ] All upgrade-related tests pass
+
+---
+
 ## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
 
 ### REFACTOR-001: Extract Magic Numbers to Constants
@@ -336,23 +484,31 @@ function playSound(type) {
 | Priority | Count | Total Estimate |
 |----------|-------|----------------|
 | P0 (Critical Bugs) | 0 | ✅ Complete |
-| P1 (High Bugs) | 0 | ✅ Complete |
-| P2 (Medium/Refactor) | 4 | 5-7 hours |
+| P1 (High Bugs) | 2 | 1.5-2.5 hours |
+| P2 (Medium/Refactor) | 6 | 7-9 hours |
 | P3 (Low/Features) | 8 | 21-29 hours |
-| **TOTAL** | **12** | **26-36 hours** |
+| **TOTAL** | **16** | **29.5-40.5 hours** |
 
 ---
 
 ## 🏃 SUGGESTED ORDER
 
-**Phase 1: Code Quality**
-1. REFACTOR-001 (Magic Numbers) - Maintainability
-2. REFACTOR-002 (Duplicate Code) - DRY principle
-3. REFACTOR-003 (Object Pooling) - Performance
+**Phase 1: Bug Fixes (P1 - High Priority)**
+1. BUG-007 (Shop Guard) - Prevents post-game-over shop access
+2. BUG-008 (Enemy Cleanup) - Simplify fragile code pattern
 
-**Phase 2: Features**
-4. TASK-014 (Combo Counter) - Core gameplay
-5. Continue with stretch goals based on interest
+**Phase 2: Bug Fixes (P2 - Medium Priority)**
+3. BUG-009 (Minigame Enemy Removal) - Consistency fix
+4. BUG-010 (Upgrade Application) - Standardize upgrade system
+
+**Phase 3: Code Quality**
+5. REFACTOR-001 (Magic Numbers) - Maintainability
+6. REFACTOR-002 (Duplicate Code) - DRY principle
+7. REFACTOR-003 (Object Pooling) - Performance
+
+**Phase 4: Features**
+8. TASK-014 (Combo Counter) - Core gameplay
+9. Continue with stretch goals based on interest
 
 ---
 
