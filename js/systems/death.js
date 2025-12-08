@@ -5,8 +5,8 @@
  * Game over screen with stats and meme ratings.
  */
 
-import { MEME_RATINGS, LAST_WORDS } from '../constants.js';
-import { gameState } from '../state.js';
+import { MEME_RATINGS, LAST_WORDS, DEATH_TIPS } from '../constants.js';
+import { gameState, damageHistory } from '../state.js';
 
 /**
  * Gets meme rating based on score
@@ -42,6 +42,93 @@ export function formatTime(ms) {
 }
 
 /**
+ * Gets the enemy type that dealt the most damage this run
+ * @returns {string|null} Enemy type name or null if no damage tracked
+ */
+export function getMostDamagingEnemy() {
+    const damages = damageHistory.byEnemyType;
+    let maxDamage = 0;
+    let maxEnemy = null;
+
+    for (const [enemy, damage] of Object.entries(damages)) {
+        if (damage > maxDamage) {
+            maxDamage = damage;
+            maxEnemy = enemy;
+        }
+    }
+
+    return maxEnemy;
+}
+
+/**
+ * Gets the wave category for tip selection
+ * @param {number} wave - Current wave number
+ * @returns {string} Wave category: 'early', 'mid', 'late', or 'boss'
+ */
+export function getWaveCategory(wave) {
+    // Boss waves are every 5 waves
+    if (wave % 5 === 0 && wave > 0) {
+        return 'boss';
+    }
+    if (wave <= 3) {
+        return 'early';
+    }
+    if (wave <= 7) {
+        return 'mid';
+    }
+    return 'late';
+}
+
+/**
+ * Generates a context-aware death tip based on how the player died (UX-008)
+ * @returns {string} A helpful tip for the player
+ */
+export function generateDeathTip() {
+    const killer = gameState.lastAttacker;
+    const wave = gameState.wave;
+    const mostDamaging = getMostDamagingEnemy();
+    const waveCategory = getWaveCategory(wave);
+
+    // Priority 1: Specific tip based on what killed the player
+    if (killer && DEATH_TIPS.byKiller[killer]) {
+        const tips = DEATH_TIPS.byKiller[killer];
+        return tips[Math.floor(Math.random() * tips.length)];
+    }
+
+    // Priority 2: Tip based on enemy that dealt the most damage
+    if (mostDamaging && DEATH_TIPS.byMostDamage[mostDamaging]) {
+        const tips = DEATH_TIPS.byMostDamage[mostDamaging];
+        return tips[Math.floor(Math.random() * tips.length)];
+    }
+
+    // Priority 3: Tip based on wave category
+    if (DEATH_TIPS.byWave[waveCategory]) {
+        const tips = DEATH_TIPS.byWave[waveCategory];
+        return tips[Math.floor(Math.random() * tips.length)];
+    }
+
+    // Fallback: Generic tip
+    return DEATH_TIPS.generic[Math.floor(Math.random() * DEATH_TIPS.generic.length)];
+}
+
+/**
+ * Generates a damage summary string showing hits by enemy type
+ * @returns {string} Summary of damage taken
+ */
+export function getDamageSummary() {
+    const hits = damageHistory.hitsByEnemyType;
+    const entries = Object.entries(hits).sort((a, b) => b[1] - a[1]);
+
+    if (entries.length === 0) {
+        return '';
+    }
+
+    // Get top 2 enemy types that hit the player most
+    const top = entries.slice(0, 2);
+    return top.map(([enemy, count]) => `${enemy}: ${count}x`).join(', ');
+}
+
+/**
  * Updates the death screen with current stats
  */
 export function updateDeathScreen() {
@@ -61,6 +148,24 @@ export function updateDeathScreen() {
     ratingEl.style.textShadow = `0 0 15px ${rating.color}`;
 
     document.getElementById('stat-lastwords').textContent = getRandomLastWords();
+
+    // UX-008: Add context-aware death tip
+    const tipEl = document.getElementById('stat-tip');
+    if (tipEl) {
+        tipEl.textContent = generateDeathTip();
+    }
+
+    // UX-008: Add damage summary (optional display)
+    const summaryEl = document.getElementById('stat-damage-summary');
+    if (summaryEl) {
+        const summary = getDamageSummary();
+        if (summary) {
+            summaryEl.textContent = summary;
+            summaryEl.parentElement.style.display = 'block';
+        } else {
+            summaryEl.parentElement.style.display = 'none';
+        }
+    }
 }
 
 /**
@@ -69,6 +174,7 @@ export function updateDeathScreen() {
 export function copyDeathReceipt() {
     const timeSurvived = Date.now() - gameState.startTime;
     const rating = getMemeRating(gameState.score);
+    const tip = generateDeathTip();
 
     const receipt = `
 ╔══════════════════════════════════╗
@@ -83,6 +189,8 @@ export function copyDeathReceipt() {
 ║ Cause of Death:    ${gameState.lastAttacker.padStart(14)} ║
 ╠══════════════════════════════════╣
 ║ Rating: ${rating.rating.padEnd(24)} ║
+╠══════════════════════════════════╣
+║ 💡 TIP: ${tip.substring(0, 24).padEnd(24)} ║
 ╚══════════════════════════════════╝
 🦖 DINO DOOM: Santa's Last Stand 🎅
     `.trim();

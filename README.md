@@ -306,8 +306,34 @@ When you inevitably get destroyed by a dinosaur, you get a **DEATH RECEIPT** you
 ║ Cause of Death:    GIGACHAD DINO ║
 ╠══════════════════════════════════╣
 ║ Rating: Kinda Mid                ║
+╠══════════════════════════════════╣
+║ 💡 PRO TIP: Gigachads hit HARD!  ║
 ╚══════════════════════════════════╝
 ```
+
+### CONTEXT-AWARE DEATH TIPS:
+
+The game analyzes HOW you died and gives you **ACTUALLY USEFUL ADVICE**:
+
+**Died to a Gigachad?**
+> "Gigachads are slow but hit HARD. Keep your distance!"
+
+**Gamer Dino wrecked you?**
+> "Gamer Dinos shoot back! Take them out first."
+
+**Died in early waves?**
+> "Don't forget to open the shop between waves! [R]"
+
+**Died to a boss?**
+> "Save your heal for phase 2! The minigame at 50% HP is crucial."
+
+Tips are based on:
+- What killed you
+- Which enemy dealt the most damage
+- What wave you're on
+- Whether it's a boss wave
+
+**It's like having a coach, but sassier.**
 
 ### PERFORMANCE RATINGS:
 

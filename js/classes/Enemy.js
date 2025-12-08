@@ -8,7 +8,7 @@
 import { ENEMY_TYPES, GAME_CONFIG } from '../constants.js';
 import {
     gameState, player, particles, floatingTexts, enemyProjectiles,
-    achievementTracking, skinState, saveSkinState, getParticle
+    achievementTracking, skinState, saveSkinState, getParticle, recordDamage
 } from '../state.js';
 
 const { PERSPECTIVE_SCALE, PERSPECTIVE_MIN_Z } = GAME_CONFIG;
@@ -211,6 +211,7 @@ export class Enemy {
         gameState.health -= this.damage;
         gameState.lastAttacker = this.name;
         achievementTracking.totalDamageTaken += this.damage;
+        recordDamage(this.name, this.damage);  // UX-008: Track damage for death tips
 
         if (this.callbacks.playSound) this.callbacks.playSound('damage');
         if (this.callbacks.showDamageOverlay) this.callbacks.showDamageOverlay();

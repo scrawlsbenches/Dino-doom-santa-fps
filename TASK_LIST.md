@@ -83,35 +83,8 @@ See archived section for implementation details.
 
 ---
 
-### UX-008: Death Screen Lacks Actionable Feedback
-**Estimate**: 2 hours
-**Priority**: P3 (Low Impact)
-**Dependencies**: None
-
-**Problem**:
-Death screen shows stats but doesn't provide actionable information. "Cause of Death" shows enemy type but not useful context. No tips or suggestions for improvement. Players don't learn what to do differently.
-
-**Symptoms**:
-- Players repeat same mistakes
-- No learning loop from deaths
-- "Skill issue" meme is funny but unhelpful
-- Missed coaching opportunity
-
-**Suggested Solutions**:
-- Add "Tip:" section with context-aware advice
-- Show which enemy type dealt most damage that run
-- Add "You died X times to [enemy]" tracking
-- Include wave-specific tips (e.g., "Try upgrading fire rate for Gamer Dinos")
-
-**Files to modify**:
-- `js/systems/death.js` - Death analysis logic
-- `js/state.js` - Track damage sources
-- `index.html` - Tip display element
-
-**Acceptance Criteria**:
-- [ ] Death screen includes helpful tip
-- [ ] Tips are contextual to how player died
-- [ ] Players feel they learned something
+### UX-008: Death Screen Lacks Actionable Feedback ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
@@ -229,11 +202,11 @@ See archived section for implementation details.
 | P0 (Critical Bugs) | 0 | ✅ Complete |
 | P1 (UX/Enjoyment - High) | 0 | ✅ Complete |
 | P2 (UX/Enjoyment - Medium) | 1 | 3-4 hours |
-| P3 (UX/Enjoyment - Low) | 1 | 2 hours |
+| P3 (UX/Enjoyment - Low) | 0 | ✅ Complete |
 | P3 (Stretch Features) | 3 (1 done) | 9-11 hours |
-| **TOTAL** | **4** | **14-17 hours** |
+| **TOTAL** | **3** | **12-15 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-005, UX-006, UX-007, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-005, UX-006, UX-007, UX-008, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -259,7 +232,7 @@ All refactoring tasks completed!
 **Phase 5: Low-Impact Polish & Stretch Goals** (Mostly Complete)
 - UX-006 (Healing Progress) ✅ - Clearer heal status
 - UX-007 (Boss Phase Indicators) ✅ - Phase threshold visibility
-- UX-008 (Death Screen Tips) - Pending
+- UX-008 (Death Screen Tips) ✅ - Context-aware death tips
 - UX-009 (Weapon Feedback) ✅ - Equip sound and toast
 - TASK-017 (Fake Twitch Chat) ✅ - Chat overlay reacts to gameplay!
 - TASK-018 through TASK-020 (Fun features)
@@ -661,6 +634,33 @@ All refactoring tasks completed!
   - `#boss-phase-label` - Pulsing label positioned above marker
   - `@keyframes phaseIndicatorPulse` - Subtle opacity animation
 - Players can now anticipate boss minigame phase transition
+
+### UX-008: Death Screen Lacks Actionable Feedback ✅
+**Completed**: Context-aware death tips help players learn
+- Added `damageHistory` to `js/state.js`:
+  - Tracks damage taken by enemy type
+  - Tracks hit count by enemy type
+  - `recordDamage()` function to log damage
+  - `resetDamageHistory()` for game restart
+- Added `DEATH_TIPS` constant in `js/constants.js`:
+  - Tips by killer type (Gigachad, Buff Nerd, Gamer, Boss, etc.)
+  - Tips by most damaging enemy
+  - Tips by wave category (early, mid, late, boss)
+  - Generic fallback tips
+- Updated `js/systems/death.js`:
+  - `getMostDamagingEnemy()` - Analyzes damage history
+  - `getWaveCategory()` - Categorizes wave for tip selection
+  - `generateDeathTip()` - Context-aware tip generation
+  - `getDamageSummary()` - Damage breakdown display
+- Updated `index.html`:
+  - Added `#stat-tip` element in death receipt
+  - "PRO TIP:" section with green styling
+- Updated `css/styles.css`:
+  - `.receipt-tip` - Green gradient background with border
+  - `.tip-label` - Glowing green label
+  - `.tip-text` - Readable tip text styling
+- Death receipt clipboard copy now includes the tip
+- Players get actionable advice based on how they died
 
 ### UX-009: Weapon Switching Lacks Feedback ✅
 **Completed**: Equip sound and visual toast notification
