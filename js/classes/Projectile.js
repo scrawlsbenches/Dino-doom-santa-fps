@@ -5,8 +5,10 @@
  * Player-fired projectiles with collision detection.
  */
 
-import { WEAPONS } from '../constants.js';
+import { WEAPONS, GAME_CONFIG } from '../constants.js';
 import { inventory, player, floatingTexts } from '../state.js';
+
+const { PERSPECTIVE_SCALE, PERSPECTIVE_MIN_Z } = GAME_CONFIG;
 
 export class Projectile {
     /**
@@ -116,9 +118,9 @@ export class Projectile {
      * @param {HTMLCanvasElement} canvas - Canvas element
      */
     draw(ctx, canvas) {
-        const screenX = canvas.width / 2 + this.x * (400 / Math.max(100, -this.z));
-        const screenY = canvas.height / 2 + (this.y + 100) * (400 / Math.max(100, -this.z));
-        const scale = 400 / Math.max(100, -this.z);
+        const screenX = canvas.width / 2 + this.x * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z));
+        const screenY = canvas.height / 2 + (this.y + 100) * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z));
+        const scale = PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z);
 
         if (-this.z < 10) return;
 

@@ -8,9 +8,10 @@
 import { ENEMY_TYPES, GAME_CONFIG } from '../constants.js';
 import {
     gameState, player, particles, floatingTexts, enemyProjectiles,
-    achievementTracking, skinState, saveSkinState
+    achievementTracking, skinState, saveSkinState, getParticle
 } from '../state.js';
-import { Particle } from './Particle.js';
+
+const { PERSPECTIVE_SCALE, PERSPECTIVE_MIN_Z } = GAME_CONFIG;
 import { EnemyProjectile } from './EnemyProjectile.js';
 import { GamerProjectile } from './GamerProjectile.js';
 
@@ -252,7 +253,7 @@ export class Enemy {
 
         // Spawn particles
         for (let i = 0; i < 5; i++) {
-            particles.push(new Particle(this.x, this.y, this.z, this.color));
+            particles.push(getParticle(this.x, this.y, this.z, this.color));
         }
 
         // Floating damage text
@@ -331,7 +332,7 @@ export class Enemy {
 
         // Death particles
         for (let i = 0; i < 20; i++) {
-            particles.push(new Particle(this.x, this.y, this.z, this.color));
+            particles.push(getParticle(this.x, this.y, this.z, this.color));
         }
 
         // Score floating text
@@ -385,9 +386,9 @@ export class Enemy {
      * @param {HTMLCanvasElement} canvas - Canvas element
      */
     draw(ctx, canvas) {
-        const screenX = canvas.width / 2 + (this.x - player.x) * (400 / Math.max(100, -this.z));
-        const screenY = canvas.height / 2 + 100 * (400 / Math.max(100, -this.z));
-        const scale = 400 / Math.max(100, -this.z);
+        const screenX = canvas.width / 2 + (this.x - player.x) * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z));
+        const screenY = canvas.height / 2 + 100 * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z));
+        const scale = PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z);
         const size = this.size * scale;
 
         if (-this.z < 50 || -this.z > 2000) return;
