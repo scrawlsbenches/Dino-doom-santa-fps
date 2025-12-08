@@ -55,3 +55,69 @@ describe('State Management', () => {
         assert.ok(stateContent.includes('gameState.wave = 1'), 'resetGameState should reset wave');
     });
 });
+
+// ==================== BACKGROUND MEMES STATE TESTS (TASK-019) ====================
+describe('Background Memes State (TASK-019)', () => {
+    test('backgroundMemesState is exported', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('export const backgroundMemesState'),
+            'Should export backgroundMemesState'
+        );
+    });
+
+    test('backgroundMemesState has required properties', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('enabled:'),
+            'backgroundMemesState should have enabled property'
+        );
+        assert.ok(
+            stateContent.includes('floatingElements:'),
+            'backgroundMemesState should have floatingElements property'
+        );
+    });
+
+    test('Background memes functions are exported', () => {
+        const stateContent = readFile('js/state.js');
+
+        const requiredFunctions = [
+            'loadBackgroundMemesState',
+            'saveBackgroundMemesState',
+            'toggleBackgroundMemes',
+            'clearFloatingMemes',
+            'isBackgroundMemesEnabled'
+        ];
+
+        requiredFunctions.forEach(fn => {
+            assert.ok(
+                stateContent.includes(`export function ${fn}`),
+                `Should export ${fn} function`
+            );
+        });
+    });
+
+    test('toggleBackgroundMemes saves state', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('saveBackgroundMemesState()'),
+            'toggleBackgroundMemes should call saveBackgroundMemesState'
+        );
+    });
+
+    test('clearFloatingMemes resets array', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('backgroundMemesState.floatingElements.length = 0'),
+            'clearFloatingMemes should clear the floatingElements array'
+        );
+    });
+
+    test('localStorage is used for persistence', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('backgroundMemesEnabled'),
+            'Should use backgroundMemesEnabled as localStorage key'
+        );
+    });
+});

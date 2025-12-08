@@ -723,6 +723,40 @@ export const TWITCH_CHAT_MESSAGES = {
     ]
 };
 
+// ==================== BACKGROUND MEME ELEMENTS (TASK-019) ====================
+export const MEME_BACKGROUND_CONFIG = {
+    // Doge on the moon (static, top-right corner)
+    DOGE_MOON: {
+        emoji: '🐕',
+        x: 0.85,  // Percentage of canvas width
+        y: 0.12,  // Percentage of canvas height
+        size: 50,
+        parallaxFactor: 0.1  // Subtle movement with mouse
+    },
+    // Floating elements configuration
+    FLOATING_ELEMENTS: [
+        { emoji: '🕶️', name: 'MLG Glasses', spawnChance: 0.002, speed: 0.5, size: 40 },
+        { emoji: '🔺', name: 'Doritos', spawnChance: 0.002, speed: 0.3, size: 35 },
+        { emoji: '🥤', name: 'Mountain Dew', spawnChance: 0.002, speed: 0.25, size: 38 },
+        { emoji: '✈️', name: 'Airplane', spawnChance: 0.001, speed: 0.8, size: 45 }
+    ],
+    // Airplane banner messages
+    AIRPLANE_BANNERS: [
+        'SUBSCRIBE!',
+        'GIT GUD',
+        'NO CAP',
+        'BUSSIN',
+        'SIGMA MODE',
+        'BASED',
+        'POG',
+        'W RIZZ'
+    ],
+    // Max floating elements on screen
+    MAX_FLOATING_ELEMENTS: 8,
+    // Parallax intensity for mouse movement
+    PARALLAX_INTENSITY: 15
+};
+
 // ==================== DEATH TIPS (UX-008) ====================
 export const DEATH_TIPS = {
     // Tips based on enemy type that killed the player

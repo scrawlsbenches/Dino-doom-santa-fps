@@ -5,10 +5,11 @@
  * HUD updates, rendering, and UI interactions.
  */
 
-import { WEAPONS, GAME_CONFIG } from './constants.js';
+import { WEAPONS, GAME_CONFIG, MEME_BACKGROUND_CONFIG } from './constants.js';
 import {
     gameState, player, inventory, mousePos,
-    floatingTexts, minigameState
+    floatingTexts, minigameState, backgroundMemesState,
+    isBackgroundMemesEnabled
 } from './state.js';
 import { getCurrentSkin } from './systems/skins.js';
 
@@ -242,5 +243,137 @@ export function drawFloatingTexts(ctx, canvas) {
         if (ft.life <= 0) {
             floatingTexts.splice(i, 1);
         }
+    }
+}
+
+// ==================== MEME BACKGROUND ELEMENTS (TASK-019) ====================
+
+/**
+ * Updates floating meme elements (spawn new, move existing, remove expired)
+ * @param {HTMLCanvasElement} canvas - Canvas element
+ */
+export function updateFloatingMemes(canvas) {
+    if (!isBackgroundMemesEnabled()) return;
+
+    const elements = backgroundMemesState.floatingElements;
+    const config = MEME_BACKGROUND_CONFIG;
+
+    // Try to spawn new floating elements
+    if (elements.length < config.MAX_FLOATING_ELEMENTS) {
+        for (const elementConfig of config.FLOATING_ELEMENTS) {
+            if (Math.random() < elementConfig.spawnChance) {
+                const isAirplane = elementConfig.name === 'Airplane';
+                elements.push({
+                    emoji: elementConfig.emoji,
+                    name: elementConfig.name,
+                    x: -100,  // Start off-screen left
+                    y: Math.random() * (canvas.height * 0.5),  // Top half of screen (sky)
+                    speed: elementConfig.speed + Math.random() * 0.3,
+                    size: elementConfig.size,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.02,
+                    banner: isAirplane ? config.AIRPLANE_BANNERS[Math.floor(Math.random() * config.AIRPLANE_BANNERS.length)] : null,
+                    parallaxFactor: 0.05 + Math.random() * 0.1  // Random depth
+                });
+                break;  // Only spawn one per frame
+            }
+        }
+    }
+
+    // Update existing elements
+    for (let i = elements.length - 1; i >= 0; i--) {
+        const el = elements[i];
+        el.x += el.speed;
+        el.rotation += el.rotationSpeed;
+
+        // Remove if off-screen right
+        if (el.x > canvas.width + 200) {
+            elements.splice(i, 1);
+        }
+    }
+}
+
+/**
+ * Draws meme background elements with parallax effect
+ * @param {CanvasRenderingContext2D} ctx - Canvas context
+ * @param {HTMLCanvasElement} canvas - Canvas element
+ */
+export function drawMemeBackground(ctx, canvas) {
+    if (!isBackgroundMemesEnabled()) return;
+
+    const config = MEME_BACKGROUND_CONFIG;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Calculate parallax offset based on mouse position
+    const parallaxX = (mousePos.x - centerX) / centerX;
+    const parallaxY = (mousePos.y - centerY) / centerY;
+
+    // Draw Doge on the moon (static element with subtle parallax)
+    const doge = config.DOGE_MOON;
+    const dogeX = canvas.width * doge.x + parallaxX * config.PARALLAX_INTENSITY * doge.parallaxFactor;
+    const dogeY = canvas.height * doge.y + parallaxY * config.PARALLAX_INTENSITY * doge.parallaxFactor;
+
+    ctx.save();
+    ctx.font = `${doge.size}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = 0.8;
+    ctx.fillText(doge.emoji, dogeX, dogeY);
+
+    // Draw "SUCH WOW" text near doge (very subtle)
+    ctx.font = 'bold 12px Comic Sans MS, cursive';
+    ctx.fillStyle = '#FFD700';
+    ctx.globalAlpha = 0.5;
+    ctx.fillText('much moon', dogeX + 40, dogeY - 20);
+    ctx.fillText('very space', dogeX - 45, dogeY + 25);
+    ctx.restore();
+
+    // Draw floating meme elements
+    const elements = backgroundMemesState.floatingElements;
+    for (const el of elements) {
+        // Apply parallax based on element's depth
+        const elParallaxX = parallaxX * config.PARALLAX_INTENSITY * el.parallaxFactor;
+        const elParallaxY = parallaxY * config.PARALLAX_INTENSITY * el.parallaxFactor;
+
+        ctx.save();
+        ctx.translate(el.x + elParallaxX, el.y + elParallaxY);
+        ctx.rotate(el.rotation);
+        ctx.globalAlpha = 0.7;
+        ctx.font = `${el.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(el.emoji, 0, 0);
+
+        // Draw banner for airplanes
+        if (el.banner) {
+            ctx.rotate(-el.rotation);  // Un-rotate for readable text
+            ctx.font = 'bold 14px Bungee, Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 0.9;
+
+            // Draw banner line
+            ctx.beginPath();
+            ctx.moveTo(el.size / 2, 0);
+            ctx.lineTo(el.size / 2 + 80, 20);
+            ctx.strokeStyle = '#888888';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw banner text with background
+            const bannerX = el.size / 2 + 80;
+            const bannerY = 20;
+            ctx.fillStyle = '#FF6B6B';
+            ctx.fillRect(bannerX - 5, bannerY - 12, ctx.measureText(el.banner).width + 10, 24);
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1;
+            ctx.strokeText(el.banner, bannerX, bannerY);
+            ctx.fillText(el.banner, bannerX, bannerY);
+        }
+
+        ctx.restore();
     }
 }

@@ -11,7 +11,8 @@ import {
     floatingTexts, mousePos, weakPoints,
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
     resetKillStreak, resetComboState, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
-    achievementTracking, returnParticle, recordDamage, resetDamageHistory
+    achievementTracking, returnParticle, recordDamage, resetDamageHistory,
+    clearFloatingMemes
 } from './state.js';
 import { Enemy } from './classes/Enemy.js';
 import { Projectile } from './classes/Projectile.js';
@@ -33,7 +34,8 @@ import {
 } from './systems/index.js';
 import {
     updateHUD, updateCrosshair, addKillFeed,
-    resizeCanvas, drawBackground, drawWeapon, drawFloatingTexts
+    resizeCanvas, drawBackground, drawWeapon, drawFloatingTexts,
+    updateFloatingMemes, drawMemeBackground
 } from './ui.js';
 
 // Canvas reference
@@ -250,6 +252,7 @@ export function startGame() {
     resetPlayerState();
     resetInventory();
     clearEntities();
+    clearFloatingMemes();  // TASK-019: Clear background meme elements
     resetKillStreak();
     resetComboState();
     clearDialogueBubbles();
@@ -274,6 +277,10 @@ export function startGame() {
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground(ctx, canvas);
+
+    // TASK-019: Update and draw meme background elements
+    updateFloatingMemes(canvas);
+    drawMemeBackground(ctx, canvas);
 
     updateCrosshair();
     updateScreenShake();

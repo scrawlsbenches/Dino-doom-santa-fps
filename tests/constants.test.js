@@ -642,3 +642,72 @@ describe('Twitch Chat System', () => {
         );
     });
 });
+
+// ==================== MEME BACKGROUND TESTS (TASK-019) ====================
+describe('Meme Background System', () => {
+    test('MEME_BACKGROUND_CONFIG exists', () => {
+        assert.ok(gameData.MEME_BACKGROUND_CONFIG, 'MEME_BACKGROUND_CONFIG should exist');
+    });
+
+    test('MEME_BACKGROUND_CONFIG has required properties', () => {
+        const requiredProps = ['DOGE_MOON', 'FLOATING_ELEMENTS', 'AIRPLANE_BANNERS', 'MAX_FLOATING_ELEMENTS', 'PARALLAX_INTENSITY'];
+        requiredProps.forEach(prop => {
+            assert.ok(
+                gameData.MEME_BACKGROUND_CONFIG.hasOwnProperty(prop),
+                `MEME_BACKGROUND_CONFIG missing property: ${prop}`
+            );
+        });
+    });
+
+    test('DOGE_MOON configuration is valid', () => {
+        const doge = gameData.MEME_BACKGROUND_CONFIG.DOGE_MOON;
+        assert.ok(doge.emoji, 'Doge should have an emoji');
+        assert.ok(doge.x >= 0 && doge.x <= 1, 'Doge x position should be between 0 and 1');
+        assert.ok(doge.y >= 0 && doge.y <= 1, 'Doge y position should be between 0 and 1');
+        assert.ok(doge.size > 0, 'Doge size should be positive');
+        assert.ok(typeof doge.parallaxFactor === 'number', 'Doge parallaxFactor should be a number');
+    });
+
+    test('FLOATING_ELEMENTS has valid configurations', () => {
+        const elements = gameData.MEME_BACKGROUND_CONFIG.FLOATING_ELEMENTS;
+        assert.ok(Array.isArray(elements), 'FLOATING_ELEMENTS should be an array');
+        assert.ok(elements.length > 0, 'FLOATING_ELEMENTS should not be empty');
+
+        elements.forEach((el, i) => {
+            assert.ok(el.emoji, `Element ${i} should have an emoji`);
+            assert.ok(el.name, `Element ${i} should have a name`);
+            assert.ok(el.spawnChance > 0 && el.spawnChance < 1, `Element ${i} spawnChance should be between 0 and 1`);
+            assert.ok(el.speed > 0, `Element ${i} speed should be positive`);
+            assert.ok(el.size > 0, `Element ${i} size should be positive`);
+        });
+    });
+
+    test('AIRPLANE_BANNERS has variety', () => {
+        const banners = gameData.MEME_BACKGROUND_CONFIG.AIRPLANE_BANNERS;
+        assert.ok(Array.isArray(banners), 'AIRPLANE_BANNERS should be an array');
+        assert.ok(banners.length >= 5, 'Should have at least 5 banner messages');
+
+        banners.forEach((banner, i) => {
+            assert.ok(typeof banner === 'string', `Banner ${i} should be a string`);
+            assert.ok(banner.length > 0, `Banner ${i} should not be empty`);
+        });
+    });
+
+    test('MAX_FLOATING_ELEMENTS is reasonable', () => {
+        const max = gameData.MEME_BACKGROUND_CONFIG.MAX_FLOATING_ELEMENTS;
+        assert.ok(max > 0, 'MAX_FLOATING_ELEMENTS should be positive');
+        assert.ok(max <= 20, 'MAX_FLOATING_ELEMENTS should not be excessive');
+    });
+
+    test('PARALLAX_INTENSITY is reasonable', () => {
+        const intensity = gameData.MEME_BACKGROUND_CONFIG.PARALLAX_INTENSITY;
+        assert.ok(intensity > 0, 'PARALLAX_INTENSITY should be positive');
+        assert.ok(intensity <= 50, 'PARALLAX_INTENSITY should not be excessive');
+    });
+
+    test('Floating elements include airplane type', () => {
+        const elements = gameData.MEME_BACKGROUND_CONFIG.FLOATING_ELEMENTS;
+        const airplane = elements.find(el => el.name === 'Airplane');
+        assert.ok(airplane, 'Should have an Airplane element');
+    });
+});
