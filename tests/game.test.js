@@ -6,7 +6,7 @@
  * Comprehensive unit tests for high code coverage.
  */
 
-import { test, describe, beforeEach, mock } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import fs from 'fs';
 import path from 'path';
@@ -19,8 +19,10 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Loads and evaluates a JS module file, stripping exports
+ * @param {string} relativePath - Path to the module
+ * @param {string} _additionalSetup - Additional setup code (reserved for future use)
  */
-function loadModule(relativePath, additionalSetup = '') {
+function _loadModule(relativePath, _additionalSetup = '') {
     const filePath = path.join(__dirname, '..', relativePath);
     let content = fs.readFileSync(filePath, 'utf8');
 
@@ -36,8 +38,9 @@ function loadModule(relativePath, additionalSetup = '') {
 
 /**
  * Creates a mock DOM environment
+ * Reserved for future use in browser-context tests
  */
-function createMockDOM() {
+function _createMockDOM() {
     const elements = {};
     return {
         getElementById: (id) => {
@@ -58,7 +61,7 @@ function createMockDOM() {
             }
             return elements[id];
         },
-        createElement: (tag) => ({
+        createElement: (_tag) => ({
             style: {},
             textContent: '',
             innerHTML: '',
@@ -678,10 +681,10 @@ describe('State Management', () => {
             'utf8'
         );
 
-        // Check for key exports
-        assert.ok(stateContent.includes('export let gameState'), 'Should export gameState');
-        assert.ok(stateContent.includes('export let player'), 'Should export player');
-        assert.ok(stateContent.includes('export let inventory'), 'Should export inventory');
+        // Check for key exports (const used for object references that aren't reassigned)
+        assert.ok(stateContent.includes('export const gameState'), 'Should export gameState');
+        assert.ok(stateContent.includes('export const player'), 'Should export player');
+        assert.ok(stateContent.includes('export const inventory'), 'Should export inventory');
         assert.ok(stateContent.includes('export function resetGameState'), 'Should export resetGameState');
         assert.ok(stateContent.includes('export function resetPlayerState'), 'Should export resetPlayerState');
     });
@@ -718,7 +721,7 @@ describe('State Management', () => {
 
         const arrays = ['enemies', 'projectiles', 'enemyProjectiles', 'particles', 'floatingTexts'];
         arrays.forEach(arr => {
-            assert.ok(stateContent.includes(`export let ${arr} = []`), `Should export ${arr} array`);
+            assert.ok(stateContent.includes(`export const ${arr} = []`), `Should export ${arr} array`);
         });
     });
 

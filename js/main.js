@@ -62,7 +62,7 @@ function setupEventListeners() {
         updateMousePos(e.clientX, e.clientY);
     });
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (_e) => {
         if (gameState.running && !gameState.paused) {
             shoot();
         }

@@ -5,6 +5,10 @@ playwright-report/
 test-results/
 playwright/.cache/
 
+# Code coverage
+coverage/
+.c8_output/
+
 # OS files
 .DS_Store
 Thumbs.db

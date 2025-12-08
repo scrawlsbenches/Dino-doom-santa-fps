@@ -8,7 +8,7 @@
 import { ENEMY_TYPES, GAME_CONFIG } from '../constants.js';
 import {
     gameState, player, particles, floatingTexts, enemyProjectiles,
-    activeTimeouts, trackTimeout, achievementTracking, skinState, saveSkinState
+    achievementTracking, skinState, saveSkinState
 } from '../state.js';
 import { Particle } from './Particle.js';
 import { EnemyProjectile } from './EnemyProjectile.js';
@@ -238,7 +238,7 @@ export class Enemy {
 
         // Crit check
         let finalDamage = amount;
-        let isCrit = Math.random() < player.critChance;
+        const isCrit = Math.random() < player.critChance;
         if (isCrit) {
             finalDamage *= player.critMultiplier;
             if (this.callbacks.shakeOnCrit) this.callbacks.shakeOnCrit();

@@ -29,11 +29,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Run ESLint (warnings as errors)
+        run: npm run lint:strict
 
-      - name: Run unit tests
-        run: npm test
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
 
   # End-to-End Tests with Playwright
   e2e:
@@ -88,7 +95,7 @@ jobs:
           find js -name "*.js" -type f -exec node --check {} \;
           echo "All JavaScript files have valid syntax!"
 
-  # All required checks must pass (E2E is optional)
+  # All checks must pass
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
@@ -98,20 +105,16 @@ jobs:
     steps:
       - name: Check CI status
         run: |
-          # Unit tests and syntax check are required
-          # E2E tests are informational (can fail without blocking)
+          # All checks are required: unit tests, E2E tests, and syntax validation
           if [[ "${{ needs.test.result }}" == "success" && \
+                "${{ needs.e2e.result }}" == "success" && \
                 "${{ needs.syntax-check.result }}" == "success" ]]; then
-            echo "All required CI checks passed!"
-            if [[ "${{ needs.e2e.result }}" != "success" ]]; then
-              echo "Note: E2E tests did not pass (informational only)"
-              echo "e2e: ${{ needs.e2e.result }}"
-            fi
+            echo "All CI checks passed!"
             exit 0
           else
-            echo "Required CI checks failed!"
+            echo "CI checks failed!"
             echo "test: ${{ needs.test.result }}"
+            echo "e2e: ${{ needs.e2e.result }}"
             echo "syntax-check: ${{ needs.syntax-check.result }}"
-            echo "e2e: ${{ needs.e2e.result }} (informational)"
             exit 1
           fi

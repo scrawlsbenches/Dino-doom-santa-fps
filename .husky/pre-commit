@@ -1,0 +1,4 @@
+# Pre-commit hook: Run linting and unit tests before allowing commit
+# Note: E2E tests are only run on the build server, not locally
+
+npm run precommit
