@@ -25,35 +25,8 @@ See archived section for implementation details.
 
 ---
 
-### UX-002: Combo System Fragility
-**Estimate**: 2-3 hours
-**Priority**: P1 (High Impact)
-**Dependencies**: TASK-014 ✅
-
-**Problem**:
-Combo resets on ANY damage, even a single stray Gamer Dino projectile. Players can reach wave 10+ with 0 combo score bonus due to one unavoidable hit. This makes the combo system feel punishing rather than rewarding, and undermines its purpose as a skill indicator.
-
-**Symptoms**:
-- Players feel punished for minor mistakes
-- High-skill plays don't accumulate meaningful bonuses
-- "WOMBO COMBO" achievement feels impossible
-- Combo display rarely shows high numbers
-
-**Suggested Solutions**:
-- Add combo decay instead of instant reset (lose 50% on hit, not 100%)
-- Add "combo shield" that absorbs first hit without breaking combo
-- Reduce combo penalty based on current combo size (higher combos = more forgiving)
-- Add brief invulnerability after taking damage to prevent multi-hit combo breaks
-
-**Files to modify**:
-- `js/systems/combo.js` - Modify `breakCombo()` logic
-- `js/state.js` - Add combo shield state if needed
-- `js/constants.js` - Combo decay/shield parameters
-
-**Acceptance Criteria**:
-- [ ] Single hit doesn't completely destroy large combos
-- [ ] Players can maintain combos through reasonable gameplay
-- [ ] System still rewards damage avoidance
+### UX-002: Combo System Fragility ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
@@ -413,13 +386,13 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 | Priority | Count | Total Estimate |
 |----------|-------|----------------|
 | P0 (Critical Bugs) | 0 | ✅ Complete |
-| P1 (UX/Enjoyment - High) | 1 | 2-3 hours |
+| P1 (UX/Enjoyment - High) | 0 | ✅ Complete |
 | P2 (UX/Enjoyment - Medium) | 4 | 10-12 hours |
 | P3 (UX/Enjoyment - Low) | 4 | 5-7 hours |
 | P3 (Stretch Features) | 3 (1 done) | 10-15 hours |
-| **TOTAL** | **12** | **27-37 hours** |
+| **TOTAL** | **11** | **25-34 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, and UX-001 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, and UX-002 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -432,9 +405,9 @@ All refactoring tasks completed!
 - TASK-014 (Combo Counter) ✅ - Core gameplay enhancement done!
 - TASK-016 (Deep Fried Mode) ✅ - Meme visual effects done!
 
-**Phase 3: High-Impact UX Fixes**
+**Phase 3: High-Impact UX Fixes** ✅ COMPLETE
 - UX-001 (Late-Game Progression) ✅ - Prestige upgrades system added!
-- UX-002 (Combo System Fragility) - Core mechanic improvement (RECOMMENDED NEXT)
+- UX-002 (Combo System Fragility) ✅ - Combo decay system added!
 
 **Phase 4: Medium-Impact UX Fixes**
 - UX-003 (Shop Visibility) - New player experience
@@ -754,6 +727,32 @@ All refactoring tasks completed!
 - Added CSS styling for prestige upgrades in `css/styles.css`
   - Glowing orange theme
   - Pulsing animations for section and info text
+
+### UX-002: Combo System Fragility ✅
+**Completed**: Combo decay system for more forgiving combo gameplay
+- Added combo decay constants in `js/constants.js`:
+  - `COMBO_DECAY_BASE_PERCENT: 50` - Base: lose 50% of combo on hit
+  - `COMBO_DECAY_HIGH_PERCENT: 40` - At 10+ combo: lose only 40%
+  - `COMBO_DECAY_VERY_HIGH_PERCENT: 30` - At 20+ combo: lose only 30%
+  - `COMBO_HIGH_THRESHOLD: 10` - Threshold for reduced decay
+  - `COMBO_VERY_HIGH_THRESHOLD: 20` - Threshold for even more reduced decay
+  - `COMBO_DAMAGE_COOLDOWN_MS: 1000` - Brief invulnerability (1s) to prevent multi-hit combo breaks
+- Updated `js/state.js`:
+  - Added `lastDamageTime: 0` to `comboState` for tracking cooldown
+  - Updated `resetComboState()` to reset `lastDamageTime`
+- Updated `js/systems/combo.js`:
+  - Added `getComboDecayPercent()` - Returns decay percentage based on combo level
+  - Added `isComboProtected()` - Checks if combo is protected by damage cooldown
+  - Refactored `breakCombo()` to decay combo instead of full reset:
+    - Checks damage cooldown to prevent rapid multi-hit combo breaks
+    - Calculates decay based on current combo level (higher combos = more forgiving)
+    - Uses `Math.ceil()` to ensure at least 1 combo is lost
+    - Only resets `showWomboCombo` if below threshold
+- Benefits:
+  - Single hit doesn't completely destroy large combos
+  - Players can maintain combos through reasonable gameplay
+  - Higher combos are more forgiving (reward for building up combo)
+  - Brief invulnerability prevents frustrating multi-hit combo breaks
 
 </details>
 
