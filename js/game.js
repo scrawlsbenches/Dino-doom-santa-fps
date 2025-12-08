@@ -291,10 +291,12 @@ function gameLoop() {
             e.draw(ctx, canvas);
         });
 
-        // Clean up dead enemies
-        enemies.length = enemies.filter(e => !e.markedForRemoval).length === enemies.length
-            ? enemies.length
-            : (enemies.splice(0, enemies.length, ...enemies.filter(e => !e.markedForRemoval)), enemies.length);
+        // Clean up dead enemies (reverse-order removal to avoid index shifting)
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            if (enemies[i].markedForRemoval) {
+                enemies.splice(i, 1);
+            }
+        }
 
         // Update particles
         for (let i = particles.length - 1; i >= 0; i--) {

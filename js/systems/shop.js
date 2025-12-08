@@ -43,7 +43,7 @@ export function updateShopkeeperDialogue(type = null) {
  * @param {Function} updateHUD - HUD update callback
  */
 export function openShop(updateHUD) {
-    if (!gameState.betweenWaves && gameState.running) return;
+    if (!gameState.betweenWaves || !gameState.running) return;
 
     achievementTracking.shopSpending = 0;
 
@@ -159,4 +159,6 @@ export function applyUpgrades() {
     gameState.maxHealth = baseHealth;
 
     player.critChance = GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE + (inventory.upgrades.critChance * UPGRADES.critChance.perLevel);
+    player.damageBonus = inventory.upgrades.damage * UPGRADES.damage.perLevel;
+    player.fireRateBonus = inventory.upgrades.fireRate * UPGRADES.fireRate.perLevel;
 }

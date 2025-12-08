@@ -6,7 +6,7 @@
  */
 
 import { GAME_CONFIG } from '../constants.js';
-import { gameState, minigameState, floatingTexts, enemies } from '../state.js';
+import { gameState, minigameState, floatingTexts } from '../state.js';
 import { playSound } from './audio.js';
 
 /**
@@ -98,8 +98,7 @@ export function endMinigame() {
 
             if (gameState.currentBoss.health <= 0) {
                 gameState.currentBoss.die();
-                const idx = enemies.indexOf(gameState.currentBoss);
-                if (idx > -1) enemies.splice(idx, 1);
+                gameState.currentBoss.markedForRemoval = true;
             }
         }
     }
