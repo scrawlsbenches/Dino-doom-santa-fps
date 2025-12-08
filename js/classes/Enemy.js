@@ -321,11 +321,13 @@ export class Enemy {
             this.callbacks.checkAchievements(this);
         }
 
-        // Healing power tracking
+        // Healing power tracking (UX-006: Play sound when ready)
         if (!gameState.healReady) {
             gameState.healKills++;
             if (gameState.healKills >= gameState.healKillsRequired) {
                 gameState.healReady = true;
+                // Play heal ready sound (UX-006)
+                if (this.callbacks.playSound) this.callbacks.playSound('heal_ready');
             }
         }
 

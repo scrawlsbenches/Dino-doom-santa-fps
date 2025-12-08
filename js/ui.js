@@ -34,20 +34,29 @@ export function updateHUD() {
     document.getElementById('weapon-stats').textContent =
         `DMG: ${displayDamage} | CRIT: ${Math.floor(player.critChance * 100)}%`;
 
-    // Healing power display
+    // Healing power display (UX-006: Clearer progress indication)
     const healPercent = (gameState.healKills / gameState.healKillsRequired) * 100;
-    document.getElementById('heal-power-bar').style.width = `${Math.min(100, healPercent)}%`;
+    const healBar = document.getElementById('heal-power-bar');
+    const healText = document.getElementById('heal-power-text');
+    const healContainer = document.getElementById('heal-power-container');
+
+    healBar.style.width = `${Math.min(100, healPercent)}%`;
 
     if (gameState.healReady) {
-        document.getElementById('heal-power-text').textContent = '✨ READY! Press E ✨';
-        document.getElementById('heal-power-text').style.color = '#00ff00';
-        document.getElementById('heal-power-container').style.borderColor = '#00ff00';
-        document.getElementById('heal-power-container').style.boxShadow = '0 0 15px #00ff00';
+        healText.textContent = '✨ READY! Press E ✨';
+        healText.style.color = '#ffd700';
+        healContainer.style.borderColor = '#ffd700';
+        healContainer.style.boxShadow = '0 0 20px #ffd700';
+        healBar.style.background = 'linear-gradient(90deg, #ffd700, #ffaa00)';
+        healContainer.classList.add('heal-ready');
     } else {
-        document.getElementById('heal-power-text').textContent = `${gameState.healKills} / ${gameState.healKillsRequired} kills`;
-        document.getElementById('heal-power-text').style.color = '#888';
-        document.getElementById('heal-power-container').style.borderColor = '#444';
-        document.getElementById('heal-power-container').style.boxShadow = 'none';
+        const killsNeeded = gameState.healKillsRequired - gameState.healKills;
+        healText.textContent = `${killsNeeded} more kill${killsNeeded !== 1 ? 's' : ''} needed`;
+        healText.style.color = '#888';
+        healContainer.style.borderColor = '#444';
+        healContainer.style.boxShadow = 'none';
+        healBar.style.background = 'linear-gradient(90deg, #00ff00, #88ff88)';
+        healContainer.classList.remove('heal-ready');
     }
 }
 

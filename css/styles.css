@@ -99,6 +99,31 @@ body {
     box-shadow: inset 0 0 20px rgba(255,255,255,0.3);
 }
 
+/* Healing Power Ready State (UX-006) */
+#heal-power-container.heal-ready {
+    animation: healReadyPulse 1s ease-in-out infinite;
+}
+
+#heal-power-container.heal-ready #heal-power-text {
+    animation: healTextGlow 1s ease-in-out infinite;
+}
+
+@keyframes healReadyPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px #ffd700;
+        border-color: #ffd700;
+    }
+    50% {
+        box-shadow: 0 0 30px #ffaa00, 0 0 50px rgba(255, 215, 0, 0.5);
+        border-color: #ffaa00;
+    }
+}
+
+@keyframes healTextGlow {
+    0%, 100% { text-shadow: 0 0 5px #ffd700; }
+    50% { text-shadow: 0 0 15px #ffd700, 0 0 25px #ffaa00; }
+}
+
 #coins-display {
     font-family: 'Orbitron', sans-serif;
     font-size: 28px;
@@ -169,6 +194,67 @@ body {
     pointer-events: none;
     z-index: 50;
     text-align: center;
+}
+
+/* Shop Available Indicator (UX-003) */
+#shop-indicator {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 170, 0, 0.95));
+    border: 3px solid #ffd700;
+    border-radius: 15px;
+    padding: 15px 30px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 80;
+    animation: shopIndicatorPulse 1s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#shop-indicator.visible {
+    display: flex;
+}
+
+.shop-indicator-icon {
+    font-size: 32px;
+    animation: shopIconBounce 0.5s ease-in-out infinite;
+}
+
+.shop-indicator-text {
+    font-family: 'Bungee', cursive;
+    font-size: 20px;
+    color: #1a1a2e;
+    text-shadow: none;
+}
+
+.shop-indicator-key {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #fff;
+    background: #1a1a2e;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+@keyframes shopIndicatorPulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.9);
+    }
+}
+
+@keyframes shopIconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }
 
 /* Muzzle flash */
@@ -444,18 +530,49 @@ body {
 }
 
 #boss-health-bar-bg {
+    position: relative;
     width: 100%;
     height: 25px;
     background: #333;
     border: 3px solid #ff0000;
     border-radius: 5px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 #boss-health-bar {
     height: 100%;
     background: linear-gradient(90deg, #ff0000, #ff6600);
     transition: width 0.3s;
+}
+
+/* Boss Phase Indicator (UX-007) */
+#boss-phase-marker {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 3px;
+    height: 100%;
+    background: #ffd700;
+    box-shadow: 0 0 8px #ffd700, 0 0 15px #ff8800;
+    z-index: 2;
+}
+
+#boss-phase-label {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #ffd700;
+    text-shadow: 0 0 5px #ff8800;
+    white-space: nowrap;
+    animation: phaseIndicatorPulse 1s ease-in-out infinite;
+}
+
+@keyframes phaseIndicatorPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
 }
 
 /* ==================== 7. SCREENS ==================== */
@@ -902,6 +1019,64 @@ body {
 
 .shop-item.prestige-item .shop-item-level {
     color: #ff9900;
+}
+
+/* Weapon Equip Toast (UX-009) */
+.equip-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.95), rgba(0, 200, 100, 0.95));
+    border: 3px solid #00ff88;
+    border-radius: 15px;
+    padding: 20px 40px;
+    font-family: 'Bungee', cursive;
+    font-size: 28px;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+    z-index: 200;
+    animation: equipToastIn 0.3s ease-out forwards;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.equip-toast.hiding {
+    animation: equipToastOut 0.3s ease-in forwards;
+}
+
+.equip-emoji {
+    font-size: 40px;
+    animation: equipEmojiPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes equipToastIn {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes equipToastOut {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
+@keyframes equipEmojiPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
 }
 
 #continue-btn {

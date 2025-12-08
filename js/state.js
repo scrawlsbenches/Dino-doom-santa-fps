@@ -26,6 +26,8 @@ export const gameState = {
     healKills: 0,
     healReady: false,
     healKillsRequired: GAME_CONFIG.HEAL_KILLS_REQUIRED,
+    // UX-010: Sigma spawn tracking
+    sigmaSpawnedThisWave: 0,
     // Death screen tracking
     startTime: 0,
     lastAttacker: 'Unknown',
@@ -173,6 +175,7 @@ export function resetGameState() {
     gameState.healKills = 0;
     gameState.healReady = false;
     gameState.healKillsRequired = GAME_CONFIG.HEAL_KILLS_REQUIRED;
+    gameState.sigmaSpawnedThisWave = 0;
     gameState.startTime = Date.now();
     gameState.lastAttacker = 'Unknown';
     gameState.totalCoinsEarned = 0;

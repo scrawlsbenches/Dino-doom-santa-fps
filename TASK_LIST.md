@@ -30,36 +30,8 @@ See archived section for implementation details.
 
 ---
 
-### UX-003: Shop Visibility/Discovery Problem
-**Estimate**: 2 hours
-**Priority**: P2 (Medium Impact)
-**Dependencies**: None
-
-**Problem**:
-The R key to open shop only works "between waves," but there's no visual indicator when the shop becomes available. First-time players often don't realize the shop exists until several waves in, missing critical upgrade opportunities.
-
-**Symptoms**:
-- New players don't upgrade early, making game harder
-- "Press R for Shop" text in controls often overlooked
-- No audio/visual cue when shop becomes available
-- Players die with unspent coins
-
-**Suggested Solutions**:
-- Add pulsing "SHOP AVAILABLE [R]" indicator after wave completion
-- Play a "cha-ching" sound when shop unlocks
-- Auto-open shop after first wave (tutorial behavior)
-- Add floating coin animation pointing to shop prompt
-
-**Files to modify**:
-- `js/ui.js` - Shop availability indicator
-- `js/systems/audio.js` - Shop available sound
-- `css/styles.css` - Pulsing indicator animation
-- `index.html` - Shop indicator element
-
-**Acceptance Criteria**:
-- [ ] Clear visual indicator when shop is available
-- [ ] First-time players discover shop within waves 1-2
-- [ ] Indicator doesn't obstruct gameplay
+### UX-003: Shop Visibility/Discovery Problem ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
@@ -128,65 +100,13 @@ No way to adjust game audio volume. The synthesized sounds can be harsh during e
 
 ---
 
-### UX-006: Healing Power Progress Unclear
-**Estimate**: 1-2 hours
-**Priority**: P3 (Low Impact)
-**Dependencies**: None
-
-**Problem**:
-The healing power UI shows "X / 10 kills" but players must mentally calculate how many more kills are needed. During intense combat, this cognitive load is distracting. The bar also doesn't show when heal is ready to use vs. charging.
-
-**Symptoms**:
-- Players forget they have heal available
-- Mental math during combat
-- No "ready!" indicator when charged
-- Unclear if heal is on cooldown after use
-
-**Suggested Solutions**:
-- Add "X more kills" text instead of "X / 10"
-- Add pulsing glow when heal is ready
-- Play sound when heal becomes available
-- Change bar color when ready (green → gold)
-
-**Files to modify**:
-- `js/ui.js` - Heal bar display logic
-- `js/systems/audio.js` - Ready sound
-- `css/styles.css` - Ready state styling
-
-**Acceptance Criteria**:
-- [ ] Clear visual distinction between charging and ready states
-- [ ] Players know immediately when heal is available
-- [ ] Audio cue for heal ready
+### UX-006: Healing Power Progress Unclear ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
-### UX-007: Boss Health Bar Missing Phase Indicators
-**Estimate**: 1 hour
-**Priority**: P3 (Low Impact)
-**Dependencies**: None
-
-**Problem**:
-Boss health bar doesn't show the 50% threshold where the minigame triggers. Players are surprised by the sudden phase transition and can't strategize around it.
-
-**Symptoms**:
-- Unexpected minigame interruption
-- Can't plan burst damage timing
-- No sense of "phases" during boss fight
-- Reduced tactical depth
-
-**Suggested Solutions**:
-- Add tick mark at 50% on boss health bar
-- Add phase labels (Phase 1 / Phase 2)
-- Change health bar color at phase thresholds
-- Add "VULNERABLE SOON" warning at 60% HP
-
-**Files to modify**:
-- `js/ui.js` - Boss health bar rendering
-- `css/styles.css` - Phase indicator styling
-
-**Acceptance Criteria**:
-- [ ] 50% threshold clearly visible on health bar
-- [ ] Players can anticipate phase transition
+### UX-007: Boss Health Bar Missing Phase Indicators ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
@@ -222,65 +142,13 @@ Death screen shows stats but doesn't provide actionable information. "Cause of D
 
 ---
 
-### UX-009: Weapon Switching Lacks Feedback
-**Estimate**: 1 hour
-**Priority**: P3 (Low Impact)
-**Dependencies**: None
-
-**Problem**:
-Equipping a weapon in the shop just changes the stat display. No equip sound, no animation, no confirmation. Players sometimes aren't sure if the weapon changed, especially with similar-looking options.
-
-**Symptoms**:
-- Uncertain if weapon equipped
-- Weapons feel interchangeable visually
-- No satisfaction from purchase
-- Missed "new toy" feeling
-
-**Suggested Solutions**:
-- Add equip sound effect (weapon-specific)
-- Add brief weapon glow/pulse animation
-- Show "EQUIPPED!" toast notification
-- Preview weapon appearance before purchase
-
-**Files to modify**:
-- `js/systems/shop.js` - Equip feedback
-- `js/systems/audio.js` - Equip sounds
-- `css/styles.css` - Equip animation
-
-**Acceptance Criteria**:
-- [ ] Clear audio/visual feedback on weapon equip
-- [ ] Players feel satisfaction when switching weapons
+### UX-009: Weapon Switching Lacks Feedback ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
-### UX-010: Sigma Dino RNG Creates Inconsistent Difficulty
-**Estimate**: 3 hours
-**Priority**: P2 (Medium Impact)
-**Dependencies**: None
-
-**Problem**:
-Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This creates lottery-dependent difficulty where some waves are trivially easy (multiple Sigmas) while others are brutal (all aggressive enemies). Player skill matters less than spawn RNG.
-
-**Symptoms**:
-- Inconsistent wave difficulty
-- "Free" waves reduce challenge satisfaction
-- High coin variance affects progression pacing
-- Some runs feel "lucky" rather than skilled
-
-**Suggested Solutions**:
-- Cap Sigma spawns per wave (max 1)
-- Make Sigma spawn on fixed schedule (every 4th wave guaranteed)
-- Reduce Sigma coin reward to match other enemies
-- Add Sigma "escape timer" pressure (faster escape = fewer coins)
-
-**Files to modify**:
-- `js/game.js` - Spawn logic modification
-- `js/constants.js` - Sigma spawn parameters
-
-**Acceptance Criteria**:
-- [ ] Sigma spawns feel special but not game-breaking
-- [ ] Wave difficulty more consistent
-- [ ] Skilled play still rewarded
+### UX-010: Sigma Dino RNG Creates Inconsistent Difficulty ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
@@ -387,12 +255,12 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 |----------|-------|----------------|
 | P0 (Critical Bugs) | 0 | ✅ Complete |
 | P1 (UX/Enjoyment - High) | 0 | ✅ Complete |
-| P2 (UX/Enjoyment - Medium) | 4 | 10-12 hours |
-| P3 (UX/Enjoyment - Low) | 4 | 5-7 hours |
+| P2 (UX/Enjoyment - Medium) | 1 | 3-4 hours |
+| P3 (UX/Enjoyment - Low) | 1 | 2 hours |
 | P3 (Stretch Features) | 3 (1 done) | 10-15 hours |
-| **TOTAL** | **11** | **25-34 hours** |
+| **TOTAL** | **5** | **15-21 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, and UX-002 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-006, UX-007, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -409,14 +277,17 @@ All refactoring tasks completed!
 - UX-001 (Late-Game Progression) ✅ - Prestige upgrades system added!
 - UX-002 (Combo System Fragility) ✅ - Combo decay system added!
 
-**Phase 4: Medium-Impact UX Fixes**
-- UX-003 (Shop Visibility) - New player experience
+**Phase 4: Medium-Impact UX Fixes** (Mostly Complete)
+- UX-003 (Shop Visibility) ✅ - New player experience
 - UX-004 (Boss Minigame Flow) - Combat consistency
-- UX-005 (Volume Control) - Accessibility/QoL
-- UX-010 (Sigma RNG) - Difficulty consistency
+- UX-005 (Volume Control) - Already implemented in TASK-015!
+- UX-010 (Sigma RNG) ✅ - Difficulty consistency
 
-**Phase 5: Low-Impact Polish & Stretch Goals**
-- UX-006 through UX-009 (Minor polish)
+**Phase 5: Low-Impact Polish & Stretch Goals** (Mostly Complete)
+- UX-006 (Healing Progress) ✅ - Clearer heal status
+- UX-007 (Boss Phase Indicators) ✅ - Phase threshold visibility
+- UX-008 (Death Screen Tips) - Pending
+- UX-009 (Weapon Feedback) ✅ - Equip sound and toast
 - TASK-017 (Fake Twitch Chat) ✅ - Chat overlay reacts to gameplay!
 - TASK-018 through TASK-020 (Fun features)
 
@@ -753,6 +624,91 @@ All refactoring tasks completed!
   - Players can maintain combos through reasonable gameplay
   - Higher combos are more forgiving (reward for building up combo)
   - Brief invulnerability prevents frustrating multi-hit combo breaks
+
+### UX-003: Shop Visibility/Discovery Problem ✅
+**Completed**: Shop available indicator with sound feedback
+- Added shop indicator element to `index.html`:
+  - Pulsing "SHOP AVAILABLE!" indicator with cart emoji
+  - "[R]" key hint for new players
+  - Shows after wave completion (non-boss waves)
+- Added `shop_available` sound effect in `js/systems/audio.js`:
+  - Cha-ching style triangle wave sound
+  - Plays when indicator appears
+- Added CSS styling in `css/styles.css`:
+  - Gold/amber gradient background
+  - `shopIndicatorPulse` animation for attention
+  - `shopIconBounce` animation for cart icon
+  - Positioned at bottom center, non-obstructive
+- Added shop indicator functions in `js/systems/shop.js`:
+  - `showShopIndicator()` - Shows indicator and plays sound
+  - `hideShopIndicator()` - Hides indicator
+- Integrated with game flow in `js/game.js`:
+  - Shows indicator on wave completion (non-boss)
+  - Hides before shop opens
+
+### UX-006: Healing Power Progress Unclear ✅
+**Completed**: Clearer healing status with audio feedback
+- Updated `js/ui.js` heal bar display:
+  - Changed from "X / 10 kills" to "X more kills needed"
+  - Added `heal-ready` class when heal is available
+  - Changed bar color from green to gold when ready
+- Added `heal_ready` sound in `js/systems/audio.js`:
+  - Musical ascending tone (C5-E5-G5 arpeggio)
+  - Plays when heal becomes available
+- Updated `js/classes/Enemy.js`:
+  - Plays `heal_ready` sound when healReady becomes true
+- Added CSS animations in `css/styles.css`:
+  - `healReadyPulse` - Pulsing glow effect on container
+  - `healTextGlow` - Text shadow animation
+  - Gold color scheme when ready
+
+### UX-007: Boss Health Bar Missing Phase Indicators ✅
+**Completed**: Phase threshold marker on boss health bar
+- Added phase indicator elements to `index.html`:
+  - `#boss-phase-marker` - Vertical line at 50% position
+  - `#boss-phase-label` - "⚠️ PHASE 2" label above marker
+- Updated `css/styles.css`:
+  - `#boss-health-bar-bg` now has `position: relative` and `overflow: visible`
+  - `#boss-phase-marker` - Gold 3px line with glow effect at 50%
+  - `#boss-phase-label` - Pulsing label positioned above marker
+  - `@keyframes phaseIndicatorPulse` - Subtle opacity animation
+- Players can now anticipate boss minigame phase transition
+
+### UX-009: Weapon Switching Lacks Feedback ✅
+**Completed**: Equip sound and visual toast notification
+- Added `equip` sound in `js/systems/audio.js`:
+  - Satisfying click/swoosh rising tone
+  - Uses sine wave with frequency ramp
+- Updated `js/systems/shop.js`:
+  - Changed weapon equip to use `playSound('equip')` instead of `playSound('buy')`
+  - Added `showEquipToast()` function - displays "EQUIPPED!" toast with weapon emoji
+  - Toast auto-dismisses after 1.5s with fade animation
+- Added CSS styling in `css/styles.css`:
+  - `.equip-toast` - Green gradient, centered, bold styling
+  - `@keyframes equipToastIn` - Scale-up entrance animation
+  - `@keyframes equipToastOut` - Scale-up exit animation
+  - `@keyframes equipEmojiPulse` - Emoji bounce effect
+
+### UX-010: Sigma Dino RNG Creates Inconsistent Difficulty ✅
+**Completed**: Sigma spawn cap and wave-based spawn rate
+- Added spawn cap constants in `js/constants.js`:
+  - `SIGMA_MAX_PER_WAVE: 2` - Maximum sigmas per wave
+  - `SIGMA_BASE_SPAWN_CHANCE: 0.04` - 4% base chance
+  - `SIGMA_SPAWN_CHANCE_PER_WAVE: 0.01` - +1% per wave
+  - `SIGMA_MAX_SPAWN_CHANCE: 0.12` - 12% maximum chance
+- Added `sigmaSpawnedThisWave` tracker in `js/state.js`:
+  - Tracks sigmas spawned in current wave
+  - Reset in `resetGameState()`
+- Updated `js/game.js`:
+  - Added `getSigmaSpawnChance()` - Calculates wave-based spawn rate
+  - Updated `spawnEnemy()` to check sigma cap before spawning
+  - Increments counter when sigma spawns
+  - Reset counter at start of each wave in `spawnWave()`
+- Benefits:
+  - No more waves with 4+ sigmas (capped at 2)
+  - Spawn chance increases with wave difficulty
+  - More consistent wave difficulty
+  - Skilled play matters more than RNG
 
 </details>
 

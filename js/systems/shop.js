@@ -6,9 +6,52 @@
  */
 
 import { WEAPONS, UPGRADES, PRESTIGE_UPGRADES, SHOPKEEPER_DIALOGUE, GAME_CONFIG } from '../constants.js';
-import { gameState, inventory, player, achievementTracking } from '../state.js';
+import { gameState, inventory, player, achievementTracking, trackTimeout } from '../state.js';
 import { playSound } from './audio.js';
 import { checkShopAchievements } from './achievements.js';
+
+/**
+ * Shows the shop available indicator after wave completion (UX-003)
+ */
+export function showShopIndicator() {
+    const indicator = document.getElementById('shop-indicator');
+    if (indicator) {
+        indicator.classList.add('visible');
+        playSound('shop_available');
+    }
+}
+
+/**
+ * Hides the shop available indicator (UX-003)
+ */
+export function hideShopIndicator() {
+    const indicator = document.getElementById('shop-indicator');
+    if (indicator) {
+        indicator.classList.remove('visible');
+    }
+}
+
+/**
+ * Shows an "EQUIPPED!" toast notification when switching weapons (UX-009)
+ * @param {string} weaponName - Name of the equipped weapon
+ * @param {string} emoji - Weapon emoji
+ */
+export function showEquipToast(weaponName, emoji) {
+    // Remove any existing toast
+    const existing = document.querySelector('.equip-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'equip-toast';
+    toast.innerHTML = `<span class="equip-emoji">${emoji}</span> EQUIPPED!`;
+
+    document.getElementById('shop-screen').appendChild(toast);
+
+    trackTimeout(setTimeout(() => {
+        toast.classList.add('hiding');
+        trackTimeout(setTimeout(() => toast.remove(), 300));
+    }, 1500));
+}
 
 /**
  * Checks if all basic upgrades are maxed out
@@ -127,7 +170,8 @@ export function renderShop(updateHUD) {
         item.onclick = () => {
             if (owned) {
                 inventory.currentWeapon = key;
-                playSound('buy');
+                playSound('equip');
+                showEquipToast(weapon.name, weapon.emoji);
                 updateHUD();
                 renderShop(updateHUD);
             } else if (gameState.coins >= weapon.price) {
