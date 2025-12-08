@@ -48,6 +48,9 @@ npm run lint:strict   # Lint with zero warnings (used in CI)
 
 # Full CI check locally
 npm run ci            # lint:strict + test:coverage + test:e2e
+
+# Build
+npm run build         # Bundle into single portable HTML file (dist/dino-doom.html)
 ```
 
 ## Code Standards

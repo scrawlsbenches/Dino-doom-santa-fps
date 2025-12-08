@@ -5,7 +5,9 @@ export default [
       'node_modules/**',
       'playwright-report/**',
       'test-results/**',
-      'SantaGigaChadDino.htm'
+      'SantaGigaChadDino.htm',
+      'scripts/**',
+      'dist/**'
     ]
   },
   {

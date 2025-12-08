@@ -22,3 +22,5 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Build output (dist/dino-doom.html is tracked for easy distribution)
