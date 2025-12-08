@@ -39,14 +39,14 @@
                 </div>
                 <div style="margin-top: 15px;">
                     <div class="stat-label">AMMO</div>
-                    <div id="ammo-display" style="font-size: 32px; color: #00ffff; text-shadow: 0 0 10px #00ffff;">∞</div>
+                    <div id="ammo-display" style="font-size: clamp(20px, 5vw, 32px); color: #00ffff; text-shadow: 0 0 10px #00ffff;">∞</div>
                 </div>
                 <div style="margin-top: 15px;">
                     <div class="stat-label">HEALING POWER [E]</div>
-                    <div id="heal-power-container" style="width: 200px; height: 20px; background: rgba(0,0,0,0.7); border: 2px solid #00ff00; border-radius: 5px; overflow: hidden;">
+                    <div id="heal-power-container" style="width: min(200px, 35vw); height: 20px; background: rgba(0,0,0,0.7); border: 2px solid #00ff00; border-radius: 5px; overflow: hidden;">
                         <div id="heal-power-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #00ff00, #88ff88); transition: width 0.3s;"></div>
                     </div>
-                    <div id="heal-power-text" style="font-size: 14px; color: #00ff00; margin-top: 5px;">0 / 10 kills</div>
+                    <div id="heal-power-text" style="font-size: clamp(10px, 2vw, 14px); color: #00ff00; margin-top: 5px;">0 / 10 kills</div>
                 </div>
             </div>
 
@@ -137,19 +137,19 @@
 
             <div class="enemy-preview">
                 <div class="enemy-card">
-                    <div style="font-size: 80px;">🦖</div>
+                    <div class="enemy-card-emoji">🦖</div>
                     <h3>GIGACHAD DINO</h3>
-                    <p style="color: #ff6b6b; font-size: 12px; margin-top: 5px;">ULTRA SWOLE • SLOW</p>
+                    <p style="color: #ff6b6b; font-size: clamp(9px, 1.5vw, 12px); margin-top: 5px;">ULTRA SWOLE • SLOW</p>
                 </div>
                 <div class="enemy-card">
-                    <div style="font-size: 80px;">🤓🦕</div>
+                    <div class="enemy-card-emoji">🤓🦕</div>
                     <h3>BUFF NERD DINO</h3>
-                    <p style="color: #00ffff; font-size: 12px; margin-top: 5px;">BIG BRAIN • FAST</p>
+                    <p style="color: #00ffff; font-size: clamp(9px, 1.5vw, 12px); margin-top: 5px;">BIG BRAIN • FAST</p>
                 </div>
                 <div class="enemy-card">
-                    <div style="font-size: 80px;">👑🦖</div>
+                    <div class="enemy-card-emoji">👑🦖</div>
                     <h3>MINI BOSS</h3>
-                    <p style="color: #ffd700; font-size: 12px; margin-top: 5px;">EVERY 5 WAVES</p>
+                    <p style="color: #ffd700; font-size: clamp(9px, 1.5vw, 12px); margin-top: 5px;">EVERY 5 WAVES</p>
                 </div>
             </div>
 
