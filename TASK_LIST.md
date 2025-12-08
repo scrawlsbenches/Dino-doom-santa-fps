@@ -94,69 +94,12 @@ See archived section for implementation details.
 ---
 
 ### TASK-019: Background Meme Elements ✅ COMPLETE
-**Estimate**: 2-3 hours
-**Priority**: P3
-**Dependencies**: None
-
-**Completed Implementation**:
-- Added floating background meme elements:
-  - **Doge on the moon**: Static element in top-right corner with subtle parallax
-  - **MLG Glasses** (🕶️): Random floating elements
-  - **Doritos** (🔺): Floating chip triangles
-  - **Mountain Dew** (🥤): Floating soda cups
-  - **Airplanes** (✈️): Flying across with meme banners ("SUBSCRIBE", "LIKE & SHARE", etc.)
-- Mouse-based parallax effect for depth perception
-- Toggle button on start screen to enable/disable
-- State persists in localStorage
-
-**Files modified**:
-- `js/constants.js` - Added BACKGROUND_MEMES config (DOGE_MOON, FLOATING_MEMES, AIRPLANE_BANNERS, PARALLAX_INTENSITY)
-- `js/ui.js` - Added `updateMemeElements()` and `drawMemeElements()` functions
-- `js/state.js` - Added `backgroundMemesState`, load/save/toggle functions
-- `js/main.js` - Added `initBackgroundMemesSystem()` and toggle button listener
-- `index.html` - Added background memes toggle button
-
-**Acceptance Criteria**:
-- [x] Background elements visible
-- [x] Don't obstruct gameplay
-- [x] Parallax effect works
-- [x] Can be disabled in settings
+**Completed**: See archived section for implementation details.
 
 ---
 
 ### TASK-020: Advanced Boss Phases ✅ COMPLETE
-**Estimate**: 4 hours (max 1 day)
-**Priority**: P3
-**Dependencies**: TASK-011 ✅ (completed)
-
-**Completed Implementation**:
-- Enhanced boss fights with 3 phases:
-  - **Phase 1 (100-50% HP)**: Normal attacks with base damage/cooldown
-  - **Phase 2 (50-25% HP)**: Boss puts on sunglasses (😎 overlay), +50% damage, 25% faster attacks
-  - **Phase 3 (25-0% HP)**: Boss ASCENDS with floating animation, +100% damage, 50% faster attacks, meteors rain down (☄️)
-- Phase transition mini-cutscene overlay with dramatic visuals:
-  - Phase 2: "SUNGLASSES MODE ACTIVATED" with warning sounds
-  - Phase 3: "ASCENSION COMPLETE" with epic chord and fire effects
-- Boss invulnerable during 2-second transitions
-- Boss health bar shows phase markers at 50% and 25%
-- Phase 3 adds screen shake and red vignette effect
-- Phase-specific sounds: warning beeps for phase 2, D minor ascending chord for phase 3
-
-**Files modified**:
-- `js/constants.js` - Added 10 new boss phase constants
-- `js/classes/Enemy.js` - Added phase tracking, phase-based attack patterns, meteor rain, ascend animation, visual changes per phase
-- `js/classes/EnemyProjectile.js` - Added meteor support with different behavior
-- `js/systems/boss.js` - Added triggerPhaseTransition(), clearPhaseEffects(), phase overlay functions
-- `js/systems/audio.js` - Added boss_phase2, boss_phase3 sounds with warning/ascension effects
-- `js/game.js` - Added phase transition callback
-- `index.html` - Added boss phase overlay and phase 3 marker
-- `css/styles.css` - Added phase transition animations, screen effects
-
-**Acceptance Criteria**:
-- [x] Phases trigger at correct HP thresholds
-- [x] Visual changes per phase (sunglasses in P2, fire crown in P3)
-- [x] New attacks in later phases (meteor rain in P3)
-- [x] Phase transitions feel epic (cutscene overlay + sounds)
+**Completed**: See archived section for implementation details.
 
 ---
 
@@ -750,6 +693,47 @@ All refactoring tasks completed!
   - **Wave 420**: Green screen flash with "DANK" text
   - **MORBIN** (Type MORBIN): All enemies become 🦇 bats for one wave
 - All eggs tracked in localStorage with secret achievements
+
+### TASK-019: Background Meme Elements ✅
+**Completed**: Floating background meme elements feature
+- Added floating background meme elements:
+  - **Doge on the moon**: Static element in top-right corner with subtle parallax
+  - **MLG Glasses** (🕶️): Random floating elements
+  - **Doritos** (🔺): Floating chip triangles
+  - **Mountain Dew** (🥤): Floating soda cups
+  - **Airplanes** (✈️): Flying across with meme banners ("SUBSCRIBE", "LIKE & SHARE", etc.)
+- Mouse-based parallax effect for depth perception
+- Toggle button on start screen to enable/disable
+- State persists in localStorage
+- Files modified:
+  - `js/constants.js` - Added BACKGROUND_MEMES config (DOGE_MOON, FLOATING_MEMES, AIRPLANE_BANNERS, PARALLAX_INTENSITY)
+  - `js/ui.js` - Added `updateMemeElements()` and `drawMemeElements()` functions
+  - `js/state.js` - Added `backgroundMemesState`, load/save/toggle functions
+  - `js/main.js` - Added `initBackgroundMemesSystem()` and toggle button listener
+  - `index.html` - Added background memes toggle button
+
+### TASK-020: Advanced Boss Phases ✅
+**Completed**: Enhanced boss fights with multi-phase mechanics
+- Enhanced boss fights with 3 phases:
+  - **Phase 1 (100-50% HP)**: Normal attacks with base damage/cooldown
+  - **Phase 2 (50-25% HP)**: Boss puts on sunglasses (😎 overlay), +50% damage, 25% faster attacks
+  - **Phase 3 (25-0% HP)**: Boss ASCENDS with floating animation, +100% damage, 50% faster attacks, meteors rain down (☄️)
+- Phase transition mini-cutscene overlay with dramatic visuals:
+  - Phase 2: "SUNGLASSES MODE ACTIVATED" with warning sounds
+  - Phase 3: "ASCENSION COMPLETE" with epic chord and fire effects
+- Boss invulnerable during 2-second transitions
+- Boss health bar shows phase markers at 50% and 25%
+- Phase 3 adds screen shake and red vignette effect
+- Phase-specific sounds: warning beeps for phase 2, D minor ascending chord for phase 3
+- Files modified:
+  - `js/constants.js` - Added 10 new boss phase constants
+  - `js/classes/Enemy.js` - Added phase tracking, phase-based attack patterns, meteor rain, ascend animation, visual changes per phase
+  - `js/classes/EnemyProjectile.js` - Added meteor support with different behavior
+  - `js/systems/boss.js` - Added triggerPhaseTransition(), clearPhaseEffects(), phase overlay functions
+  - `js/systems/audio.js` - Added boss_phase2, boss_phase3 sounds with warning/ascension effects
+  - `js/game.js` - Added phase transition callback
+  - `index.html` - Added boss phase overlay and phase 3 marker
+  - `css/styles.css` - Added phase transition animations, screen effects
 
 </details>
 
