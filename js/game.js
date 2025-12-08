@@ -16,7 +16,7 @@ import {
 import { Enemy } from './classes/Enemy.js';
 import { Projectile } from './classes/Projectile.js';
 import {
-    playSound, initAudio,
+    playSound, initAudio, playSadViolin,
     updateScreenShake, showMuzzleFlash, showDamageOverlay, showHealOverlay,
     showWaveAnnouncement, shakeOnDamage, shakeOnKill, shakeOnCrit, shakeOnBossDeath,
     showHitMarker,
@@ -184,6 +184,9 @@ export function useHealingPower() {
  */
 export function gameOver() {
     gameState.running = false;
+
+    // MLG Sound Pack - Sad violin on death
+    playSadViolin();
 
     checkDeathAchievements();
     updateDeathScreen();

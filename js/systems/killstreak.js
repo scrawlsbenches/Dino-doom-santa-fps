@@ -7,7 +7,7 @@
 
 import { KILL_STREAK_TIERS } from '../constants.js';
 import { killStreakState } from '../state.js';
-import { playKillStreakSound } from './audio.js';
+import { playKillStreakSound, playTripleKillSound, playMomGetTheCamera } from './audio.js';
 
 /**
  * Records a kill and checks for kill streaks
@@ -26,6 +26,15 @@ export function recordKill() {
     if (tier && killStreakState.count === tier.count) {
         showKillStreakAnnouncement(tier);
         playKillStreakSound(tier.count);
+
+        // MLG Sound Pack - play special sounds at specific kill counts
+        if (tier.count === 3) {
+            // "OH BABY A TRIPLE" for triple kills
+            playTripleKillSound();
+        } else if (tier.count >= 5) {
+            // "MOM GET THE CAMERA" for 5+ kill streaks
+            playMomGetTheCamera();
+        }
     }
 }
 

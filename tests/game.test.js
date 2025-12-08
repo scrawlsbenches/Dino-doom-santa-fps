@@ -1867,6 +1867,310 @@ describe('REFACTOR-005: Audio Error Handling', () => {
     });
 });
 
+// ==================== TASK-015: MLG SOUND PACK TESTS ====================
+describe('MLG Sound Pack', () => {
+    test('Audio system exports MLG sound functions', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        assert.ok(audioContent.includes('export function playTripleKillSound'), 'Should export playTripleKillSound');
+        assert.ok(audioContent.includes('export function playAirhorn'), 'Should export playAirhorn');
+        assert.ok(audioContent.includes('export function playMomGetTheCamera'), 'Should export playMomGetTheCamera');
+        assert.ok(audioContent.includes('export function playSadViolin'), 'Should export playSadViolin');
+        assert.ok(audioContent.includes('export function playWowSound'), 'Should export playWowSound');
+    });
+
+    test('Audio system exports volume control functions', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        assert.ok(audioContent.includes('export function getVolume'), 'Should export getVolume');
+        assert.ok(audioContent.includes('export function setVolume'), 'Should export setVolume');
+        assert.ok(audioContent.includes('let masterVolume'), 'Should have masterVolume variable');
+    });
+
+    test('playTripleKillSound creates voice-like tones', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const funcMatch = audioContent.match(/export function playTripleKillSound[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(funcMatch[0].includes('sawtooth'), 'playTripleKillSound should use sawtooth wave');
+            assert.ok(funcMatch[0].includes('masterVolume'), 'playTripleKillSound should use masterVolume');
+            assert.ok(funcMatch[0].includes('notes'), 'playTripleKillSound should use notes array');
+        }
+    });
+
+    test('playAirhorn creates airhorn chord', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const funcMatch = audioContent.match(/export function playAirhorn[\s\S]*?^}/m);
+        if (funcMatch) {
+            // Airhorn uses A major chord: A4 (440), C#5 (554), E5 (659)
+            assert.ok(funcMatch[0].includes('440'), 'playAirhorn should use A4 frequency (440Hz)');
+            assert.ok(funcMatch[0].includes('554'), 'playAirhorn should use C#5 frequency (554Hz)');
+            assert.ok(funcMatch[0].includes('659'), 'playAirhorn should use E5 frequency (659Hz)');
+            assert.ok(funcMatch[0].includes('masterVolume'), 'playAirhorn should use masterVolume');
+        }
+    });
+
+    test('playMomGetTheCamera creates excited voice effect', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const funcMatch = audioContent.match(/export function playMomGetTheCamera[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(funcMatch[0].includes('square'), 'playMomGetTheCamera should use square wave');
+            assert.ok(funcMatch[0].includes('masterVolume'), 'playMomGetTheCamera should use masterVolume');
+            assert.ok(funcMatch[0].includes('Rising pitch'), 'playMomGetTheCamera should have rising pitch effect');
+        }
+    });
+
+    test('playSadViolin creates mournful melody with vibrato', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const funcMatch = audioContent.match(/export function playSadViolin[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(funcMatch[0].includes('vibrato'), 'playSadViolin should use vibrato');
+            assert.ok(funcMatch[0].includes('sine'), 'playSadViolin should use sine wave');
+            assert.ok(funcMatch[0].includes('masterVolume'), 'playSadViolin should use masterVolume');
+            // Check for descending melody (E5, D5, C5, B4, A4)
+            assert.ok(funcMatch[0].includes('659'), 'playSadViolin should have E5 (659Hz)');
+            assert.ok(funcMatch[0].includes('440'), 'playSadViolin should have A4 (440Hz)');
+        }
+    });
+
+    test('playWowSound creates formant sweep', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const funcMatch = audioContent.match(/export function playWowSound[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(funcMatch[0].includes('sawtooth'), 'playWowSound should use sawtooth wave');
+            assert.ok(funcMatch[0].includes('masterVolume'), 'playWowSound should use masterVolume');
+            assert.ok(funcMatch[0].includes('linearRampToValueAtTime'), 'playWowSound should use frequency sweeps');
+        }
+    });
+
+    test('setVolume clamps value between 0 and 1', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const funcMatch = audioContent.match(/export function setVolume[\s\S]*?^}/m);
+        if (funcMatch) {
+            assert.ok(funcMatch[0].includes('Math.max'), 'setVolume should clamp minimum');
+            assert.ok(funcMatch[0].includes('Math.min'), 'setVolume should clamp maximum');
+        }
+    });
+
+    test('All playSound cases use masterVolume', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        // Count masterVolume usages in playSound
+        const playSoundMatch = audioContent.match(/export function playSound\(type\)[\s\S]*?^}/m);
+        if (playSoundMatch) {
+            const masterVolumeCount = (playSoundMatch[0].match(/masterVolume/g) || []).length;
+            // Should have at least one masterVolume per sound type (13+ cases)
+            assert.ok(masterVolumeCount >= 13, `playSound should use masterVolume in all cases (found ${masterVolumeCount})`);
+        }
+    });
+});
+
+describe('MLG Sound Hooks', () => {
+    test('Kill streak system imports MLG sound functions', () => {
+        const killstreakContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'killstreak.js'),
+            'utf8'
+        );
+
+        assert.ok(killstreakContent.includes('playTripleKillSound'), 'Should import playTripleKillSound');
+        assert.ok(killstreakContent.includes('playMomGetTheCamera'), 'Should import playMomGetTheCamera');
+    });
+
+    test('Kill streak plays triple kill sound at count 3', () => {
+        const killstreakContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'killstreak.js'),
+            'utf8'
+        );
+
+        assert.ok(killstreakContent.includes('tier.count === 3'), 'Should check for triple kill');
+        assert.ok(killstreakContent.includes('playTripleKillSound()'), 'Should call playTripleKillSound for triple kills');
+    });
+
+    test('Kill streak plays MOM GET THE CAMERA at count 5+', () => {
+        const killstreakContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'killstreak.js'),
+            'utf8'
+        );
+
+        assert.ok(killstreakContent.includes('tier.count >= 5'), 'Should check for 5+ kill streaks');
+        assert.ok(killstreakContent.includes('playMomGetTheCamera()'), 'Should call playMomGetTheCamera for 5+ streaks');
+    });
+
+    test('Achievements system imports MLG sound functions', () => {
+        const achievementsContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'achievements.js'),
+            'utf8'
+        );
+
+        assert.ok(achievementsContent.includes('playAirhorn'), 'Should import playAirhorn');
+        assert.ok(achievementsContent.includes('playWowSound'), 'Should import playWowSound');
+    });
+
+    test('Wave complete plays airhorn', () => {
+        const achievementsContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'achievements.js'),
+            'utf8'
+        );
+
+        const onWaveCompleteMatch = achievementsContent.match(/export function onWaveComplete[\s\S]*?^}/m);
+        if (onWaveCompleteMatch) {
+            assert.ok(onWaveCompleteMatch[0].includes('playAirhorn()'), 'onWaveComplete should call playAirhorn');
+        }
+    });
+
+    test('Boss defeat plays WOW sound', () => {
+        const achievementsContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'achievements.js'),
+            'utf8'
+        );
+
+        const checkKillMatch = achievementsContent.match(/export function checkKillAchievements[\s\S]*?^}/m);
+        if (checkKillMatch) {
+            assert.ok(checkKillMatch[0].includes('enemy.isBoss'), 'Should check for boss');
+            assert.ok(checkKillMatch[0].includes('playWowSound()'), 'Should call playWowSound for boss defeat');
+        }
+    });
+
+    test('Game over plays sad violin', () => {
+        const gameContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'game.js'),
+            'utf8'
+        );
+
+        assert.ok(gameContent.includes('playSadViolin'), 'Should import playSadViolin');
+
+        const gameOverMatch = gameContent.match(/export function gameOver[\s\S]*?^}/m);
+        if (gameOverMatch) {
+            assert.ok(gameOverMatch[0].includes('playSadViolin()'), 'gameOver should call playSadViolin');
+        }
+    });
+});
+
+describe('Volume Control UI', () => {
+    test('HTML has volume control elements', () => {
+        const htmlContent = fs.readFileSync(
+            path.join(__dirname, '..', 'index.html'),
+            'utf8'
+        );
+
+        assert.ok(htmlContent.includes('id="volume-control"'), 'HTML should have volume-control container');
+        assert.ok(htmlContent.includes('id="volume-slider"'), 'HTML should have volume-slider input');
+        assert.ok(htmlContent.includes('id="volume-value"'), 'HTML should have volume-value display');
+    });
+
+    test('CSS has volume control styles', () => {
+        const cssContent = fs.readFileSync(
+            path.join(__dirname, '..', 'css', 'styles.css'),
+            'utf8'
+        );
+
+        assert.ok(cssContent.includes('#volume-control'), 'CSS should style volume-control');
+        assert.ok(cssContent.includes('#volume-slider'), 'CSS should style volume-slider');
+        assert.ok(cssContent.includes('#volume-value'), 'CSS should style volume-value');
+    });
+
+    test('Main.js imports setVolume and sets up volume slider', () => {
+        const mainContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'main.js'),
+            'utf8'
+        );
+
+        assert.ok(mainContent.includes('setVolume'), 'main.js should import setVolume');
+        assert.ok(mainContent.includes('volume-slider'), 'main.js should reference volume-slider element');
+        assert.ok(mainContent.includes('volume-value'), 'main.js should reference volume-value element');
+    });
+});
+
+describe('MLG Sound Functions Have Error Handling', () => {
+    test('All MLG sound functions have try-catch', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const mlgFunctions = [
+            'playTripleKillSound',
+            'playAirhorn',
+            'playMomGetTheCamera',
+            'playSadViolin',
+            'playWowSound'
+        ];
+
+        mlgFunctions.forEach(funcName => {
+            const funcRegex = new RegExp(`export function ${funcName}[\\s\\S]*?^}`, 'm');
+            const funcMatch = audioContent.match(funcRegex);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('try {'),
+                    `${funcName} should have try block`
+                );
+                assert.ok(
+                    funcMatch[0].includes('catch {'),
+                    `${funcName} should have catch block`
+                );
+            }
+        });
+    });
+
+    test('All MLG sound functions check for audioCtx', () => {
+        const audioContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'audio.js'),
+            'utf8'
+        );
+
+        const mlgFunctions = [
+            'playTripleKillSound',
+            'playAirhorn',
+            'playMomGetTheCamera',
+            'playSadViolin',
+            'playWowSound'
+        ];
+
+        mlgFunctions.forEach(funcName => {
+            const funcRegex = new RegExp(`export function ${funcName}[\\s\\S]*?^}`, 'm');
+            const funcMatch = audioContent.match(funcRegex);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('if (!audioCtx) return'),
+                    `${funcName} should check for audioCtx before playing`
+                );
+            }
+        });
+    });
+});
+
 // ==================== TASK-014: COMBO COUNTER SYSTEM TESTS ====================
 describe('TASK-014: Combo Counter System', () => {
     describe('Combo Constants', () => {

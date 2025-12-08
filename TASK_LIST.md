@@ -340,33 +340,6 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 
 ## 🟢 STRETCH GOAL TASKS
 
-### TASK-015: MLG Sound Pack
-**Estimate**: 4 hours (max 1 day)
-**Priority**: P3
-**Dependencies**: TASK-001 ✅, TASK-002 ✅ (both complete)
-
-**Scope**:
-- Create Web Audio API synthesized sounds for:
-  - "OH BABY A TRIPLE" (for triple kills)
-  - MLG airhorn (wave complete)
-  - "MOM GET THE CAMERA" (for 5+ kill streaks)
-  - Sad violin (player death)
-  - "WOW" sound (boss defeat)
-- Sounds should be procedurally generated, not audio files
-- Add volume slider in settings
-
-**Files to modify**:
-- `js/systems/audio.js` - New sound functions
-- `js/systems/killstreak.js` - Hook MLG sounds to streaks
-- `js/systems/death.js` - Sad violin on death
-- `index.html` / `css/styles.css` - Volume slider UI
-
-**Acceptance Criteria**:
-- [ ] All sounds implemented via Web Audio
-- [ ] Sounds trigger at correct moments
-- [ ] Volume control works
-- [ ] No audio clipping/distortion
-
 ---
 
 ### TASK-017: Fake Twitch Chat
@@ -491,10 +464,10 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 | P1 (UX/Enjoyment - High) | 2 | 6-9 hours |
 | P2 (UX/Enjoyment - Medium) | 4 | 10-12 hours |
 | P3 (UX/Enjoyment - Low) | 4 | 5-7 hours |
-| P3 (Stretch Features) | 5 | 16-22 hours |
-| **TOTAL** | **15** | **37-50 hours** |
+| P3 (Stretch Features) | 4 | 14-19 hours |
+| **TOTAL** | **14** | **35-47 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, and TASK-016 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, and TASK-016 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -730,6 +703,27 @@ All refactoring tasks completed!
 - Integrated combo system into Enemy class (die/attack methods)
 - Combo resets on both melee attacks and enemy projectile damage
 - Score floating text shows combo bonus when active
+
+### TASK-015: MLG Sound Pack ✅
+**Completed**: Feature implementation
+- Added 5 MLG sound functions to `js/systems/audio.js`:
+  - `playTripleKillSound()` - "OH BABY A TRIPLE" voice-like tones
+  - `playAirhorn()` - MLG airhorn chord (A major)
+  - `playMomGetTheCamera()` - excited voice effect for 5+ streaks
+  - `playSadViolin()` - mournful melody with vibrato on death
+  - `playWowSound()` - "WOW" formant sweep on boss defeat
+- Added volume control system:
+  - `masterVolume` variable for global volume
+  - `getVolume()` and `setVolume()` functions
+  - All sound functions respect master volume
+- Added volume slider UI:
+  - Volume control in start screen (`index.html`)
+  - Styled slider in `css/styles.css`
+  - Event listener in `js/main.js`
+- Hooked sounds to game events:
+  - `js/systems/killstreak.js` - triple kill and 5+ streak sounds
+  - `js/systems/achievements.js` - airhorn on wave complete, WOW on boss defeat
+  - `js/game.js` - sad violin on death
 
 ### TASK-016: Deep Fried Mode ✅
 **Completed**: Meme visual effects
