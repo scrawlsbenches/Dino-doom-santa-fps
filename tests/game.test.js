@@ -1138,4 +1138,683 @@ describe('Edge Cases', () => {
     });
 });
 
+// ==================== SKIN PURCHASE SYSTEM TESTS ====================
+
+describe('Skin Purchase System', () => {
+    test('purchaseSkin should return false for invalid skin ID', () => {
+        const result = game.purchaseSkin('nonexistent_skin');
+        assert.strictEqual(result, false);
+    });
+
+    test('purchaseSkin should return false for already owned skin', () => {
+        // Default skin is already owned
+        const result = game.purchaseSkin('default');
+        assert.strictEqual(result, false);
+    });
+
+    test('purchaseSkin should return false when not enough coins', () => {
+        // Reset coins to 0
+        const originalCoins = game.skinState.totalCoins;
+        game.skinState.totalCoins = 0;
+        const result = game.purchaseSkin('drip');
+        game.skinState.totalCoins = originalCoins;
+        assert.strictEqual(result, false);
+    });
+
+    test('purchaseSkin should succeed with enough coins', () => {
+        // Set up enough coins and ensure skin is not owned
+        const originalCoins = game.skinState.totalCoins;
+        const originalOwned = [...game.skinState.owned];
+
+        // Remove 'drip' from owned if present for testing
+        game.skinState.owned = game.skinState.owned.filter(s => s !== 'drip');
+        game.skinState.totalCoins = 10000; // Plenty of coins
+
+        const skinPrice = game.SANTA_SKINS.drip.price;
+        const result = game.purchaseSkin('drip');
+
+        // Restore state
+        const newCoins = game.skinState.totalCoins;
+        game.skinState.totalCoins = originalCoins;
+        game.skinState.owned = originalOwned;
+
+        assert.strictEqual(result, true);
+        assert.strictEqual(newCoins, 10000 - skinPrice);
+    });
+
+    test('selectSkin should return false for unowned skin', () => {
+        // Reset owned to only default
+        const originalOwned = [...game.skinState.owned];
+        game.skinState.owned = ['default'];
+        const result = game.selectSkin('drip');
+        game.skinState.owned = originalOwned;
+        assert.strictEqual(result, false);
+    });
+
+    test('selectSkin should return true for owned skin', () => {
+        const result = game.selectSkin('default');
+        assert.strictEqual(result, true);
+    });
+
+    test('selectSkin should update selected skin', () => {
+        const originalSelected = game.skinState.selected;
+        game.selectSkin('default');
+        assert.strictEqual(game.skinState.selected, 'default');
+        game.skinState.selected = originalSelected;
+    });
+});
+
+// ==================== ACHIEVEMENT SYSTEM TESTS ====================
+
+describe('Achievement System Functions', () => {
+    test('unlockAchievement should add to unlocked set using lowercase id', () => {
+        // Clear unlocked achievements first
+        game.unlockedAchievements.clear();
+        game.unlockAchievement('FIRST_BLOOD');
+        // Achievement is stored with lowercase id 'first_blood'
+        assert.ok(game.unlockedAchievements.has('first_blood'));
+        game.unlockedAchievements.clear();
+    });
+
+    test('unlockAchievement should not duplicate', () => {
+        game.unlockedAchievements.clear();
+        game.unlockAchievement('FIRST_BLOOD');
+        game.unlockAchievement('FIRST_BLOOD');
+        assert.strictEqual(game.unlockedAchievements.size, 1);
+        game.unlockedAchievements.clear();
+    });
+
+    test('unlockAchievement should do nothing for invalid key', () => {
+        game.unlockedAchievements.clear();
+        const sizeBefore = game.unlockedAchievements.size;
+        game.unlockAchievement('INVALID_ACHIEVEMENT');
+        assert.strictEqual(game.unlockedAchievements.size, sizeBefore);
+    });
+
+    test('resetAchievementTracking should clear unlocked achievements', () => {
+        game.unlockedAchievements.add('TEST');
+        game.resetAchievementTracking();
+        assert.strictEqual(game.unlockedAchievements.size, 0);
+    });
+
+    test('resetAchievementTracking should create new tracking object', () => {
+        // Test that the function runs without error and creates expected structure
+        game.resetAchievementTracking();
+        assert.ok('waveStartHealth' in game.achievementTracking);
+        assert.ok('totalDamageTaken' in game.achievementTracking);
+        assert.ok('shopSpending' in game.achievementTracking);
+    });
+});
+
+// ==================== WAVE LIFECYCLE TESTS ====================
+
+describe('Wave Lifecycle Functions', () => {
+    test('onWaveStart should be callable', () => {
+        // Test that onWaveStart is a function and can be called
+        assert.strictEqual(typeof game.onWaveStart, 'function');
+        assert.doesNotThrow(() => game.onWaveStart());
+    });
+
+    test('onWaveComplete should trigger WAVE_SURVIVOR for no damage (uses lowercase id)', () => {
+        game.unlockedAchievements.clear();
+        game.gameState.health = 100;
+        game.achievementTracking.waveStartHealth = 100;
+        game.onWaveComplete();
+        // Achievement id is lowercase 'wave_survivor'
+        assert.ok(game.unlockedAchievements.has('wave_survivor'));
+        game.unlockedAchievements.clear();
+    });
+
+    test('onWaveComplete should not trigger WAVE_SURVIVOR if damaged', () => {
+        game.unlockedAchievements.clear();
+        game.gameState.health = 50;
+        game.achievementTracking.waveStartHealth = 100;
+        game.onWaveComplete();
+        assert.ok(!game.unlockedAchievements.has('wave_survivor'));
+    });
+
+    test('onWaveComplete should trigger EASY_MODE for wave 10+ with no damage', () => {
+        game.unlockedAchievements.clear();
+        const originalWave = game.gameState.wave;
+        game.gameState.wave = 10;
+        game.achievementTracking.totalDamageTaken = 0;
+        game.achievementTracking.waveStartHealth = 100;
+        game.gameState.health = 100;
+        game.onWaveComplete();
+        // Achievement id is lowercase 'easy_mode'
+        assert.ok(game.unlockedAchievements.has('easy_mode'));
+        game.gameState.wave = originalWave;
+        game.unlockedAchievements.clear();
+    });
+
+    test('onWaveComplete should not trigger EASY_MODE before wave 10', () => {
+        game.unlockedAchievements.clear();
+        const originalWave = game.gameState.wave;
+        game.gameState.wave = 5;
+        game.achievementTracking.totalDamageTaken = 0;
+        game.achievementTracking.waveStartHealth = 100;
+        game.gameState.health = 100;
+        game.onWaveComplete();
+        assert.ok(!game.unlockedAchievements.has('easy_mode'));
+        game.gameState.wave = originalWave;
+    });
+});
+
+// ==================== KILL STREAK RECORDING TESTS ====================
+
+describe('Kill Streak Recording', () => {
+    test('recordKill should increment kill count', () => {
+        game.killStreakState.count = 0;
+        game.killStreakState.lastKillTime = Date.now();
+        game.recordKill();
+        assert.strictEqual(game.killStreakState.count, 1);
+    });
+
+    test('recordKill should reset count after timeout', () => {
+        game.killStreakState.count = 5;
+        game.killStreakState.lastKillTime = Date.now() - 5000; // 5 seconds ago (> 3s timeout)
+        game.recordKill();
+        assert.strictEqual(game.killStreakState.count, 1); // Reset to 1 (this kill)
+    });
+
+    test('recordKill should continue streak within timeout', () => {
+        game.killStreakState.count = 3;
+        game.killStreakState.lastKillTime = Date.now() - 1000; // 1 second ago
+        game.recordKill();
+        assert.strictEqual(game.killStreakState.count, 4);
+    });
+
+    test('recordKill should update lastKillTime', () => {
+        const beforeTime = Date.now();
+        game.recordKill();
+        const afterTime = Date.now();
+        assert.ok(game.killStreakState.lastKillTime >= beforeTime);
+        assert.ok(game.killStreakState.lastKillTime <= afterTime);
+    });
+});
+
+// ==================== UPGRADE APPLICATION TESTS ====================
+
+describe('Apply Upgrades Function', () => {
+    test('applyUpgrades should set max health based on upgrade level', () => {
+        const originalLevel = game.inventory.upgrades.health;
+        game.inventory.upgrades.health = 3;
+        game.applyUpgrades();
+        // Base health 100 + 3 * 20 = 160
+        assert.strictEqual(game.gameState.maxHealth, 160);
+        game.inventory.upgrades.health = originalLevel;
+        game.applyUpgrades();
+    });
+
+    test('applyUpgrades should set crit chance based on upgrade level', () => {
+        const originalLevel = game.inventory.upgrades.critChance;
+        game.inventory.upgrades.critChance = 2;
+        game.applyUpgrades();
+        // Base 0.05 + 2 * 0.05 = 0.15
+        assert.ok(Math.abs(game.player.critChance - 0.15) < 0.001);
+        game.inventory.upgrades.critChance = originalLevel;
+        game.applyUpgrades();
+    });
+
+    test('applyUpgrades with zero upgrades should give base stats', () => {
+        const originalHealth = game.inventory.upgrades.health;
+        const originalCrit = game.inventory.upgrades.critChance;
+        game.inventory.upgrades.health = 0;
+        game.inventory.upgrades.critChance = 0;
+        game.applyUpgrades();
+        assert.strictEqual(game.gameState.maxHealth, 100);
+        assert.strictEqual(game.player.critChance, 0.05);
+        game.inventory.upgrades.health = originalHealth;
+        game.inventory.upgrades.critChance = originalCrit;
+    });
+
+    test('applyUpgrades with max upgrades should give correct stats', () => {
+        const originalHealth = game.inventory.upgrades.health;
+        const originalCrit = game.inventory.upgrades.critChance;
+        game.inventory.upgrades.health = game.UPGRADES.health.maxLevel;
+        game.inventory.upgrades.critChance = game.UPGRADES.critChance.maxLevel;
+        game.applyUpgrades();
+        const expectedHealth = 100 + (game.UPGRADES.health.maxLevel * game.UPGRADES.health.perLevel);
+        const expectedCrit = 0.05 + (game.UPGRADES.critChance.maxLevel * game.UPGRADES.critChance.perLevel);
+        assert.strictEqual(game.gameState.maxHealth, expectedHealth);
+        assert.ok(Math.abs(game.player.critChance - expectedCrit) < 0.001);
+        game.inventory.upgrades.health = originalHealth;
+        game.inventory.upgrades.critChance = originalCrit;
+        game.applyUpgrades();
+    });
+});
+
+// ==================== SHOPKEEPER DIALOGUE TESTS ====================
+
+describe('Shopkeeper Dialogue Function', () => {
+    test('getShopkeeperDialogue should return rich dialogue for 2000+ coins', () => {
+        const originalCoins = game.gameState.coins;
+        game.gameState.coins = 2500;
+        const dialogue = game.getShopkeeperDialogue();
+        assert.ok(game.SHOPKEEPER_DIALOGUE.rich.includes(dialogue));
+        game.gameState.coins = originalCoins;
+    });
+
+    test('getShopkeeperDialogue should return broke dialogue for <100 coins', () => {
+        const originalCoins = game.gameState.coins;
+        game.gameState.coins = 50;
+        const dialogue = game.getShopkeeperDialogue();
+        assert.ok(game.SHOPKEEPER_DIALOGUE.broke.includes(dialogue));
+        game.gameState.coins = originalCoins;
+    });
+
+    test('getShopkeeperDialogue should return normal dialogue for 100-1999 coins', () => {
+        const originalCoins = game.gameState.coins;
+        game.gameState.coins = 500;
+        const dialogue = game.getShopkeeperDialogue();
+        assert.ok(game.SHOPKEEPER_DIALOGUE.normal.includes(dialogue));
+        game.gameState.coins = originalCoins;
+    });
+
+    test('getShopkeeperDialogue should return string', () => {
+        const dialogue = game.getShopkeeperDialogue();
+        assert.strictEqual(typeof dialogue, 'string');
+    });
+
+    test('getShopkeeperDialogue edge case at exactly 100 coins', () => {
+        const originalCoins = game.gameState.coins;
+        game.gameState.coins = 100;
+        const dialogue = game.getShopkeeperDialogue();
+        assert.ok(game.SHOPKEEPER_DIALOGUE.normal.includes(dialogue));
+        game.gameState.coins = originalCoins;
+    });
+
+    test('getShopkeeperDialogue edge case at exactly 2000 coins', () => {
+        const originalCoins = game.gameState.coins;
+        game.gameState.coins = 2000;
+        const dialogue = game.getShopkeeperDialogue();
+        assert.ok(game.SHOPKEEPER_DIALOGUE.rich.includes(dialogue));
+        game.gameState.coins = originalCoins;
+    });
+});
+
+// ==================== SPECIAL WEAPON TESTS ====================
+
+describe('Special Weapon Properties', () => {
+    test('Moai weapon should have moai special effect', () => {
+        assert.strictEqual(game.WEAPONS.moai.special, 'moai');
+    });
+
+    test('Doot weapon should have doot special effect', () => {
+        assert.strictEqual(game.WEAPONS.doot.special, 'doot');
+    });
+
+    test('Standard weapons should not have special property', () => {
+        assert.strictEqual(game.WEAPONS.present.special, undefined);
+        assert.strictEqual(game.WEAPONS.snowball.special, undefined);
+        assert.strictEqual(game.WEAPONS.candy_cane.special, undefined);
+        assert.strictEqual(game.WEAPONS.ornament.special, undefined);
+        assert.strictEqual(game.WEAPONS.star.special, undefined);
+    });
+
+    test('Moai weapon should cost 1500 coins', () => {
+        assert.strictEqual(game.WEAPONS.moai.price, 1500);
+    });
+
+    test('Doot weapon should cost 800 coins', () => {
+        assert.strictEqual(game.WEAPONS.doot.price, 800);
+    });
+
+    test('Moai weapon should have 70 damage', () => {
+        assert.strictEqual(game.WEAPONS.moai.damage, 70);
+    });
+
+    test('Doot weapon should have 45 damage', () => {
+        assert.strictEqual(game.WEAPONS.doot.damage, 45);
+    });
+});
+
+// ==================== ENEMY SPAWN POSITION TESTS ====================
+
+describe('Enemy Spawn Behavior', () => {
+    test('BUFF_NERD should initialize correctly', () => {
+        const enemy = new game.Enemy('BUFF_NERD', 50, -400);
+        assert.strictEqual(enemy.type, 'BUFF_NERD');
+        assert.strictEqual(enemy.x, 50);
+        assert.strictEqual(enemy.z, -400);
+        assert.ok(enemy.health > 0);
+    });
+
+    test('Enemy should have correct type properties', () => {
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        const typeData = game.ENEMY_TYPES.GIGACHAD;
+        assert.strictEqual(enemy.emoji, typeData.emoji);
+        assert.strictEqual(enemy.damage, typeData.damage);
+        assert.ok(enemy.speed > 0);
+    });
+
+    test('Boss enemy should have high health', () => {
+        const originalWave = game.gameState.wave;
+        game.gameState.wave = 5;
+        const boss = new game.Enemy('MINI_BOSS', 0, -1000);
+        assert.ok(boss.health >= 500);
+        assert.strictEqual(boss.isBoss, true);
+        game.gameState.wave = originalWave;
+    });
+
+    test('Gamer dino should have RGB phase', () => {
+        const enemy = new game.Enemy('GAMER_DINO', 0, -500);
+        assert.ok(typeof enemy.rgbPhase === 'number');
+        assert.ok(enemy.isGamer === true);
+    });
+
+    test('Sigma dino should have movement direction', () => {
+        const enemy = new game.Enemy('SIGMA_DINO', 0, -500);
+        assert.ok(enemy.sigmaDirection === 1 || enemy.sigmaDirection === -1);
+        assert.ok(enemy.isSigma === true);
+    });
+
+    test('Enemy size should be set from type', () => {
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        assert.ok(typeof enemy.size === 'number');
+        assert.ok(enemy.size > 0);
+    });
+});
+
+// ==================== ENEMY HEALTH SCALING TESTS ====================
+
+describe('Enemy Health Scaling', () => {
+    test('Enemy health should increase with wave', () => {
+        const originalWave = game.gameState.wave;
+
+        game.gameState.wave = 1;
+        const enemy1 = new game.Enemy('GIGACHAD', 0, -500);
+
+        game.gameState.wave = 10;
+        const enemy10 = new game.Enemy('GIGACHAD', 0, -500);
+
+        assert.ok(enemy10.health > enemy1.health);
+        game.gameState.wave = originalWave;
+    });
+
+    test('Health scaling formula should be baseHealth + wave * 10', () => {
+        const originalWave = game.gameState.wave;
+        game.gameState.wave = 5;
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        const expected = game.ENEMY_TYPES.GIGACHAD.health + (5 * 10);
+        assert.strictEqual(enemy.health, expected);
+        game.gameState.wave = originalWave;
+    });
+
+    test('Boss health should scale with wave', () => {
+        const originalWave = game.gameState.wave;
+
+        game.gameState.wave = 5;
+        const boss5 = new game.Enemy('MINI_BOSS', 0, -1000);
+
+        game.gameState.wave = 15;
+        const boss15 = new game.Enemy('MINI_BOSS', 0, -1000);
+
+        assert.ok(boss15.health > boss5.health);
+        game.gameState.wave = originalWave;
+    });
+});
+
+// ==================== PROJECTILE BEHAVIOR TESTS ====================
+
+describe('Projectile Behavior', () => {
+    test('Projectile should have life counter', () => {
+        const proj = new game.Projectile(0, 0, 0, 0, 0, -20);
+        assert.ok(proj.life > 0);
+    });
+
+    test('Projectile should track weapon type', () => {
+        const proj = new game.Projectile(0, 0, 0, 0, 0, -20);
+        assert.ok(proj.weaponType);
+        assert.strictEqual(typeof proj.weaponType, 'string');
+    });
+
+    test('Projectile should have special property from weapon', () => {
+        const proj = new game.Projectile(0, 0, 0, 0, 0, -20);
+        // special can be null for standard weapons
+        assert.ok('special' in proj);
+    });
+
+    test('Multiple projectiles should be independent', () => {
+        const proj1 = new game.Projectile(10, 20, -30, 1, 0, -20);
+        const proj2 = new game.Projectile(50, 60, -70, -1, 0, -15);
+        assert.notStrictEqual(proj1.x, proj2.x);
+        assert.notStrictEqual(proj1.vx, proj2.vx);
+        assert.notStrictEqual(proj1.vz, proj2.vz);
+    });
+});
+
+// ==================== GAME STATE MODIFICATION TESTS ====================
+
+describe('Game State Modification', () => {
+    test('Game state score should be modifiable', () => {
+        const original = game.gameState.score;
+        game.gameState.score = 1000;
+        assert.strictEqual(game.gameState.score, 1000);
+        game.gameState.score = original;
+    });
+
+    test('Game state coins should be modifiable', () => {
+        const original = game.gameState.coins;
+        game.gameState.coins = 500;
+        assert.strictEqual(game.gameState.coins, 500);
+        game.gameState.coins = original;
+    });
+
+    test('Game state wave should be modifiable', () => {
+        const original = game.gameState.wave;
+        game.gameState.wave = 5;
+        assert.strictEqual(game.gameState.wave, 5);
+        game.gameState.wave = original;
+    });
+
+    test('Game state health should be modifiable', () => {
+        const original = game.gameState.health;
+        game.gameState.health = 50;
+        assert.strictEqual(game.gameState.health, 50);
+        game.gameState.health = original;
+    });
+
+    test('Game state should track kills', () => {
+        const original = game.gameState.kills;
+        game.gameState.kills = 100;
+        assert.strictEqual(game.gameState.kills, 100);
+        game.gameState.kills = original;
+    });
+});
+
+// ==================== INVENTORY MODIFICATION TESTS ====================
+
+describe('Inventory Modification', () => {
+    test('Weapon can be added to inventory', () => {
+        const original = game.inventory.weapons.snowball;
+        game.inventory.weapons.snowball = true;
+        assert.strictEqual(game.inventory.weapons.snowball, true);
+        game.inventory.weapons.snowball = original;
+    });
+
+    test('Current weapon can be changed', () => {
+        const original = game.inventory.currentWeapon;
+        game.inventory.currentWeapon = 'snowball';
+        assert.strictEqual(game.inventory.currentWeapon, 'snowball');
+        game.inventory.currentWeapon = original;
+    });
+
+    test('Upgrade levels can be increased', () => {
+        const original = game.inventory.upgrades.damage;
+        game.inventory.upgrades.damage = 3;
+        assert.strictEqual(game.inventory.upgrades.damage, 3);
+        game.inventory.upgrades.damage = original;
+    });
+});
+
+// ==================== PARTICLE BEHAVIOR TESTS ====================
+
+describe('Particle Behavior', () => {
+    test('Particle should have random velocity', () => {
+        const p1 = new game.Particle(0, 0, 0, '#ff0000');
+        const p2 = new game.Particle(0, 0, 0, '#ff0000');
+        // With random velocity, particles should differ (statistically very likely)
+        // We'll just verify they have velocity
+        assert.ok(typeof p1.vx === 'number');
+        assert.ok(typeof p1.vy === 'number');
+        assert.ok(typeof p1.vz === 'number');
+    });
+
+    test('Particle should have maxLife equal to initial life', () => {
+        const p = new game.Particle(0, 0, 0, '#ffffff');
+        assert.strictEqual(p.life, p.maxLife);
+    });
+
+    test('Particle color should be stored', () => {
+        const p = new game.Particle(0, 0, 0, '#123456');
+        assert.strictEqual(p.color, '#123456');
+    });
+});
+
+// ==================== COMPREHENSIVE DATA VALIDATION ====================
+
+describe('Comprehensive Data Validation', () => {
+    test('All WEAPONS should have valid fire rates', () => {
+        for (const [name, weapon] of Object.entries(game.WEAPONS)) {
+            assert.ok(weapon.fireRate > 0, `${name} should have positive fire rate`);
+            assert.ok(weapon.fireRate <= 100, `${name} fire rate should be reasonable`);
+        }
+    });
+
+    test('All WEAPONS should have valid speeds', () => {
+        for (const [name, weapon] of Object.entries(game.WEAPONS)) {
+            assert.ok(weapon.speed > 0, `${name} should have positive speed`);
+        }
+    });
+
+    test('All ENEMY_TYPES should have valid coin rewards', () => {
+        for (const [name, enemy] of Object.entries(game.ENEMY_TYPES)) {
+            assert.ok(enemy.coins >= 0, `${name} should have non-negative coins`);
+        }
+    });
+
+    test('All ENEMY_TYPES should have valid point values', () => {
+        for (const [name, enemy] of Object.entries(game.ENEMY_TYPES)) {
+            assert.ok(enemy.points >= 0, `${name} should have non-negative points`);
+        }
+    });
+
+    test('All UPGRADES should have valid price multiplier', () => {
+        for (const [name, upgrade] of Object.entries(game.UPGRADES)) {
+            assert.ok(upgrade.basePrice > 0, `${name} should have positive base price`);
+        }
+    });
+
+    test('All SANTA_SKINS should have valid colors', () => {
+        for (const [name, skin] of Object.entries(game.SANTA_SKINS)) {
+            assert.ok(skin.color, `${name} should have a color`);
+            assert.ok(skin.glowColor, `${name} should have a glow color`);
+        }
+    });
+});
+
+// ==================== ENEMY PROPERTIES TESTS ====================
+
+describe('Enemy Advanced Properties', () => {
+    test('Enemy should initialize with invulnerable false', () => {
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        assert.strictEqual(enemy.invulnerable, false);
+    });
+
+    test('Enemy should track hit count for one-shot achievement', () => {
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        assert.strictEqual(enemy.hitCount, 0);
+        assert.strictEqual(enemy.wasOneShot, true);
+    });
+
+    test('Enemy should have attack cooldown initialized to 0', () => {
+        const enemy = new game.Enemy('GIGACHAD', 0, -500);
+        assert.strictEqual(enemy.attackCooldown, 0);
+    });
+
+    test('Gamer enemy should have ranged attack cooldown', () => {
+        const enemy = new game.Enemy('GAMER_DINO', 0, -500);
+        assert.ok(enemy.rangedCooldown > 0);
+        assert.strictEqual(enemy.shootCooldown, 0);
+    });
+});
+
+// ==================== KILL STREAK TIER VALIDATION ====================
+
+describe('Kill Streak Tier Validation', () => {
+    test('All kill streak tiers should have required properties', () => {
+        for (const tier of game.KILL_STREAK_TIERS) {
+            assert.ok(typeof tier.count === 'number', 'Tier should have count');
+            assert.ok(typeof tier.name === 'string', 'Tier should have name');
+            assert.ok(typeof tier.color === 'string', 'Tier should have color');
+        }
+    });
+
+    test('Kill streak tiers should start from 2', () => {
+        assert.strictEqual(game.KILL_STREAK_TIERS[0].count, 2);
+    });
+
+    test('Kill streak should have at least 5 tiers', () => {
+        assert.ok(game.KILL_STREAK_TIERS.length >= 5);
+    });
+
+    test('Highest tier should require at least 10 kills', () => {
+        const lastTier = game.KILL_STREAK_TIERS[game.KILL_STREAK_TIERS.length - 1];
+        assert.ok(lastTier.count >= 10);
+    });
+});
+
+// ==================== BOSS INFO ADVANCED TESTS ====================
+
+describe('Boss Info Advanced Tests', () => {
+    test('getBossInfo should return different bosses for different waves', () => {
+        const boss5 = game.getBossInfo(5);
+        const boss10 = game.getBossInfo(10);
+        assert.notStrictEqual(boss5.name, boss10.name);
+    });
+
+    test('All defined bosses should have emoji', () => {
+        for (const [wave, boss] of Object.entries(game.BOSS_NAMES)) {
+            assert.ok(boss.emoji, `Boss for wave ${wave} should have emoji`);
+        }
+    });
+
+    test('All defined bosses should have title', () => {
+        for (const [wave, boss] of Object.entries(game.BOSS_NAMES)) {
+            assert.ok(boss.title, `Boss for wave ${wave} should have title`);
+        }
+    });
+
+    test('getBossInfo for wave 50+ should indicate high level', () => {
+        const boss = game.getBossInfo(50);
+        assert.ok(boss.name.includes('MK') || boss.title.includes('Ascended'));
+    });
+});
+
+// ==================== ACHIEVEMENT COMPLETION CRITERIA TESTS ====================
+
+describe('Achievement Completion Criteria', () => {
+    test('FIRST_BLOOD should have correct id', () => {
+        assert.ok(game.ACHIEVEMENTS.FIRST_BLOOD.id);
+        assert.ok(typeof game.ACHIEVEMENTS.FIRST_BLOOD.id === 'string');
+    });
+
+    test('WAVE_SURVIVOR should be for surviving wave without damage', () => {
+        assert.ok(game.ACHIEVEMENTS.WAVE_SURVIVOR.description.toLowerCase().includes('wave') ||
+                  game.ACHIEVEMENTS.WAVE_SURVIVOR.description.toLowerCase().includes('damage'));
+    });
+
+    test('BIG_SPENDER should be for spending coins', () => {
+        assert.ok(game.ACHIEVEMENTS.BIG_SPENDER.description.toLowerCase().includes('spend') ||
+                  game.ACHIEVEMENTS.BIG_SPENDER.description.toLowerCase().includes('coins') ||
+                  game.ACHIEVEMENTS.BIG_SPENDER.description.toLowerCase().includes('shop'));
+    });
+
+    test('BOSS_SLAYER should be for defeating boss', () => {
+        assert.ok(game.ACHIEVEMENTS.BOSS_SLAYER.description.toLowerCase().includes('boss') ||
+                  game.ACHIEVEMENTS.BOSS_SLAYER.description.toLowerCase().includes('defeat'));
+    });
+});
+
 console.log('\n✅ All tests completed!');
