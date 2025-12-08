@@ -199,6 +199,51 @@ export const UPGRADES = {
     }
 };
 
+// ==================== PRESTIGE UPGRADES ====================
+// Unlocked after maxing all basic upgrades - infinite scaling for late game
+export const PRESTIGE_UPGRADES = {
+    overkill: {
+        name: 'Overkill',
+        icon: '💪🔥',
+        basePrice: 2000,
+        priceIncrease: 500,
+        perLevel: 0.05,  // +5% damage multiplier per level
+        description: '+5% damage per level (stacks)'
+    },
+    bulletHell: {
+        name: 'Bullet Hell',
+        icon: '⚡🔥',
+        basePrice: 2500,
+        priceIncrease: 600,
+        perLevel: 0.05,  // +5% fire rate per level
+        description: '+5% fire rate per level'
+    },
+    titanHealth: {
+        name: 'Titan Health',
+        icon: '❤️🔥',
+        basePrice: 2000,
+        priceIncrease: 500,
+        perLevel: 0.10,  // +10% max HP per level
+        description: '+10% max HP per level'
+    },
+    criticalMass: {
+        name: 'Critical Mass',
+        icon: '🎯🔥',
+        basePrice: 3000,
+        priceIncrease: 700,
+        perLevel: 0.02,  // +2% crit chance per level
+        description: '+2% crit chance per level'
+    },
+    coinMagnet: {
+        name: 'Coin Magnet',
+        icon: '🪙✨',
+        basePrice: 1500,
+        priceIncrease: 400,
+        perLevel: 0.10,  // +10% coin drops per level
+        description: '+10% coins per level'
+    }
+};
+
 // ==================== ENEMY TYPES ====================
 export const ENEMY_TYPES = {
     GIGACHAD: {

@@ -29,8 +29,10 @@ export function updateHUD() {
 
     const weapon = WEAPONS[inventory.currentWeapon];
     document.getElementById('weapon-name').textContent = weapon.name;
+    // Calculate damage with base, bonus, and prestige multiplier
+    const displayDamage = Math.floor((weapon.damage + player.damage + player.damageBonus) * player.damageMultiplier);
     document.getElementById('weapon-stats').textContent =
-        `DMG: ${weapon.damage + player.damage + (inventory.upgrades.damage * 10)} | CRIT: ${Math.floor(player.critChance * 100)}%`;
+        `DMG: ${displayDamage} | CRIT: ${Math.floor(player.critChance * 100)}%`;
 
     // Healing power display
     const healPercent = (gameState.healKills / gameState.healKillsRequired) * 100;
