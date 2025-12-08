@@ -1403,4 +1403,144 @@ describe('Data Consistency', () => {
     });
 });
 
+// ==================== BUG FIX REGRESSION TESTS ====================
+describe('Bug Fix Regressions', () => {
+    // BUG-007: Shop guard condition must use || to prevent shop opening after game over
+    test('BUG-007: Shop guard uses OR condition to prevent post-game-over access', () => {
+        const shopContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+            'utf8'
+        );
+
+        // The guard must use || (OR) not && (AND) to correctly prevent shop access
+        // Correct: if (!gameState.betweenWaves || !gameState.running) return;
+        // Wrong: if (!gameState.betweenWaves && gameState.running) return;
+        assert.ok(
+            shopContent.includes('!gameState.betweenWaves || !gameState.running'),
+            'Shop guard should use OR (||) condition: if (!gameState.betweenWaves || !gameState.running) return'
+        );
+        assert.ok(
+            !shopContent.includes('!gameState.betweenWaves && gameState.running'),
+            'Shop guard should NOT use AND (&&) with mixed negation which allows shop access when game is not running'
+        );
+    });
+
+    // BUG-008: Enemy cleanup must use simple reverse-order loop, not confusing double-filter ternary
+    test('BUG-008: Enemy cleanup uses reverse-order loop pattern', () => {
+        const gameContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'game.js'),
+            'utf8'
+        );
+
+        // Should use simple reverse loop with markedForRemoval
+        assert.ok(
+            gameContent.includes('for (let i = enemies.length - 1; i >= 0; i--)'),
+            'Enemy cleanup should use reverse-order for loop'
+        );
+        assert.ok(
+            gameContent.includes('enemies[i].markedForRemoval'),
+            'Enemy cleanup should check markedForRemoval flag'
+        );
+        // Should NOT use the confusing double-filter ternary pattern
+        assert.ok(
+            !gameContent.includes('enemies.filter(e => !e.markedForRemoval).length === enemies.length'),
+            'Enemy cleanup should NOT use confusing double-filter ternary pattern'
+        );
+    });
+
+    // BUG-009: Minigame boss removal must use markedForRemoval flag, not direct splice
+    test('BUG-009: Minigame boss removal uses markedForRemoval flag', () => {
+        const minigameContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'minigame.js'),
+            'utf8'
+        );
+
+        // Should use markedForRemoval flag for consistency
+        assert.ok(
+            minigameContent.includes('gameState.currentBoss.markedForRemoval = true'),
+            'Minigame should set markedForRemoval flag on boss death'
+        );
+        // Should NOT directly splice from enemies array
+        assert.ok(
+            !minigameContent.includes('enemies.splice(idx, 1)'),
+            'Minigame should NOT directly splice boss from enemies array'
+        );
+        assert.ok(
+            !minigameContent.includes('enemies.indexOf(gameState.currentBoss)'),
+            'Minigame should NOT search for boss index to splice'
+        );
+    });
+
+    // BUG-010: applyUpgrades must set damageBonus and fireRateBonus consistently
+    test('BUG-010: applyUpgrades sets damageBonus and fireRateBonus', () => {
+        const shopContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'shop.js'),
+            'utf8'
+        );
+
+        // Should apply all upgrades consistently in applyUpgrades()
+        assert.ok(
+            shopContent.includes('player.damageBonus = inventory.upgrades.damage * UPGRADES.damage.perLevel'),
+            'applyUpgrades should set player.damageBonus'
+        );
+        assert.ok(
+            shopContent.includes('player.fireRateBonus = inventory.upgrades.fireRate * UPGRADES.fireRate.perLevel'),
+            'applyUpgrades should set player.fireRateBonus'
+        );
+    });
+
+    // BUG-010: Player state must include damageBonus and fireRateBonus properties
+    test('BUG-010: Player state includes damageBonus and fireRateBonus', () => {
+        const stateContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'state.js'),
+            'utf8'
+        );
+
+        // Player object should have these properties initialized
+        assert.ok(
+            stateContent.includes('damageBonus: 0'),
+            'Player state should initialize damageBonus to 0'
+        );
+        assert.ok(
+            stateContent.includes('fireRateBonus: 0'),
+            'Player state should initialize fireRateBonus to 0'
+        );
+    });
+
+    // BUG-010: resetPlayerState must reset damageBonus and fireRateBonus
+    test('BUG-010: resetPlayerState resets damageBonus and fireRateBonus', () => {
+        const stateContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'state.js'),
+            'utf8'
+        );
+
+        // Extract resetPlayerState function and check it resets these values
+        assert.ok(
+            stateContent.includes('player.damageBonus = 0'),
+            'resetPlayerState should reset damageBonus to 0'
+        );
+        assert.ok(
+            stateContent.includes('player.fireRateBonus = 0'),
+            'resetPlayerState should reset fireRateBonus to 0'
+        );
+    });
+
+    // BUG-009: Minigame should not import enemies array (no longer needed)
+    test('BUG-009: Minigame does not import unused enemies array', () => {
+        const minigameContent = fs.readFileSync(
+            path.join(__dirname, '..', 'js', 'systems', 'minigame.js'),
+            'utf8'
+        );
+
+        // Should NOT import enemies since we use markedForRemoval flag now
+        const importLine = minigameContent.match(/import\s*{[^}]*}\s*from\s*['"]\.\.\/state\.js['"]/);
+        if (importLine) {
+            assert.ok(
+                !importLine[0].includes('enemies'),
+                'Minigame should not import enemies array (uses markedForRemoval flag instead)'
+            );
+        }
+    });
+});
+
 console.log('All tests completed!');

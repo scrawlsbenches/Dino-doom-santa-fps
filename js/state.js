@@ -41,7 +41,9 @@ export const player = {
     fireRate: GAME_CONFIG.PLAYER_BASE_FIRE_RATE,
     fireCooldown: 0,
     critChance: GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE,
-    critMultiplier: GAME_CONFIG.PLAYER_CRIT_MULTIPLIER
+    critMultiplier: GAME_CONFIG.PLAYER_CRIT_MULTIPLIER,
+    damageBonus: 0,
+    fireRateBonus: 0
 };
 
 // ==================== INVENTORY ====================
@@ -160,6 +162,8 @@ export function resetPlayerState() {
     player.fireCooldown = 0;
     player.critChance = GAME_CONFIG.PLAYER_BASE_CRIT_CHANCE;
     player.critMultiplier = GAME_CONFIG.PLAYER_CRIT_MULTIPLIER;
+    player.damageBonus = 0;
+    player.fireRateBonus = 0;
 }
 
 /**
