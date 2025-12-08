@@ -601,3 +601,119 @@ export const SIGMA_ESCAPE_TAUNTS = [
     'The Sigma walks free. L.',
     'Couldn\'t stop the grindset!'
 ];
+
+// ==================== TWITCH CHAT SYSTEM ====================
+export const TWITCH_CHAT_CONFIG = {
+    MAX_MESSAGES: 8,
+    MESSAGE_DURATION_MS: 5000,
+    MESSAGE_FADE_DURATION_MS: 500
+};
+
+export const TWITCH_CHAT_USERNAMES = [
+    'xX_DinoSlayer_Xx',
+    'GigaChadFan69',
+    'SantaSimp420',
+    'BuffDinoHater',
+    'MLG_Snowball',
+    'CritsForDays',
+    'PresentWarlord',
+    'Poggers_Pete',
+    'NoobDestroyer99',
+    'EpicGamer2024',
+    'StreamSniper42',
+    'TwitchChatter',
+    'DonationAndy',
+    'SubGifter9000',
+    'LurkKing',
+    'ModAbuser',
+    'BitsMillionaire',
+    'EmoteSpammer',
+    'KappaKid',
+    'OMEGALUL_Larry',
+    'Sadge_Sam',
+    'copium_carl',
+    'ratJAM_Randy',
+    'PogChamp_Paul',
+    'monkaS_Mike',
+    'Weirdge_Will'
+];
+
+export const TWITCH_CHAT_MESSAGES = {
+    kill: [
+        'POG',
+        'POGGIES',
+        'NICE',
+        'CLEAN',
+        'EZ Clap',
+        'GET REKT',
+        'SHEEEESH',
+        'W',
+        'GG',
+        'SKILL',
+        'NO MISS',
+        'DIFF',
+        'too easy',
+        'aimbot?',
+        'hes gaming',
+        'built different',
+        'HES CRACKED'
+    ],
+    death: [
+        'F',
+        'RIP',
+        'NOOO',
+        'LMAO',
+        'skill issue',
+        'L + ratio',
+        'KEKW',
+        'unlucky',
+        'sadge',
+        'WASTED',
+        'get good',
+        'RIPBOZO',
+        'pack watch',
+        'should have dodged',
+        'Sadge',
+        'widepeepoSad'
+    ],
+    bossSpawn: [
+        'monkaS',
+        'HERE WE GO',
+        'BOSS TIME',
+        'monkaW',
+        'oh no no no',
+        'PauseChamp',
+        'ITS HAPPENING',
+        'BIGBOSS',
+        'ABSOLUTE UNIT',
+        'WE LIVE',
+        'peepoRun',
+        'PogU BOSS'
+    ],
+    waveComplete: [
+        'GGEZ',
+        'TOO EASY',
+        'LETS GO',
+        'PogChamp',
+        'W wave',
+        'FREE',
+        'next',
+        'EZ GAME',
+        'CLEAN WAVE',
+        'GGWP',
+        'nice wave',
+        'no sweat'
+    ],
+    bossKill: [
+        'LETS GOOOO',
+        'HE DID IT',
+        'PogU',
+        'BOSS DOWN',
+        'VICTORY',
+        'GIGACHAD',
+        'WE WON',
+        'ratJAM VICTORY',
+        'ABSOLUTE GAMING',
+        'WHAT A GAMER'
+    ]
+};

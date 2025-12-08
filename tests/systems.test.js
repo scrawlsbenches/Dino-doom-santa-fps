@@ -132,3 +132,46 @@ describe('Dialogue System', () => {
         assert.ok(dialogueContent.includes('ENEMY_DIALOGUE'), 'Should use ENEMY_DIALOGUE');
     });
 });
+
+describe('Chat System', () => {
+    test('Chat system file exists and has correct structure', () => {
+        const chatContent = readFile('js/systems/chat.js');
+
+        assert.ok(chatContent.includes('export function addChatMessage'), 'Should export addChatMessage');
+        assert.ok(chatContent.includes('export function triggerChatEvent'), 'Should export triggerChatEvent');
+        assert.ok(chatContent.includes('export function onChatKill'), 'Should export onChatKill');
+        assert.ok(chatContent.includes('export function onChatDeath'), 'Should export onChatDeath');
+        assert.ok(chatContent.includes('export function onChatBossSpawn'), 'Should export onChatBossSpawn');
+        assert.ok(chatContent.includes('export function onChatWaveComplete'), 'Should export onChatWaveComplete');
+        assert.ok(chatContent.includes('export function onChatBossKill'), 'Should export onChatBossKill');
+        assert.ok(chatContent.includes('export function clearChat'), 'Should export clearChat');
+        assert.ok(chatContent.includes('export function initChatSystem'), 'Should export initChatSystem');
+    });
+
+    test('Chat system uses Twitch chat constants', () => {
+        const chatContent = readFile('js/systems/chat.js');
+
+        assert.ok(chatContent.includes('TWITCH_CHAT_CONFIG'), 'Should use TWITCH_CHAT_CONFIG');
+        assert.ok(chatContent.includes('TWITCH_CHAT_USERNAMES'), 'Should use TWITCH_CHAT_USERNAMES');
+        assert.ok(chatContent.includes('TWITCH_CHAT_MESSAGES'), 'Should use TWITCH_CHAT_MESSAGES');
+    });
+
+    test('Chat system handles all event types', () => {
+        const chatContent = readFile('js/systems/chat.js');
+
+        // Check that all event types are handled
+        assert.ok(chatContent.includes("'kill'") || chatContent.includes('"kill"'), 'Should handle kill events');
+        assert.ok(chatContent.includes("'death'") || chatContent.includes('"death"'), 'Should handle death events');
+        assert.ok(chatContent.includes("'bossSpawn'") || chatContent.includes('"bossSpawn"'), 'Should handle boss spawn events');
+        assert.ok(chatContent.includes("'waveComplete'") || chatContent.includes('"waveComplete"'), 'Should handle wave complete events');
+        assert.ok(chatContent.includes("'bossKill'") || chatContent.includes('"bossKill"'), 'Should handle boss kill events');
+    });
+
+    test('Chat system has enable/disable functionality', () => {
+        const chatContent = readFile('js/systems/chat.js');
+
+        assert.ok(chatContent.includes('export function setChatEnabled'), 'Should export setChatEnabled');
+        assert.ok(chatContent.includes('export function isChatEnabled'), 'Should export isChatEnabled');
+        assert.ok(chatContent.includes('chatState.enabled'), 'Should track enabled state');
+    });
+});

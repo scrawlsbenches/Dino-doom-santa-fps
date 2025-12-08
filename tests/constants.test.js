@@ -574,3 +574,71 @@ describe('Last Words', () => {
         });
     });
 });
+
+// ==================== TWITCH CHAT TESTS ====================
+describe('Twitch Chat System', () => {
+    test('TWITCH_CHAT_CONFIG has required properties', () => {
+        const requiredProps = ['MAX_MESSAGES', 'MESSAGE_DURATION_MS', 'MESSAGE_FADE_DURATION_MS'];
+        requiredProps.forEach(prop => {
+            assert.ok(
+                gameData.TWITCH_CHAT_CONFIG.hasOwnProperty(prop),
+                `TWITCH_CHAT_CONFIG missing property: ${prop}`
+            );
+        });
+    });
+
+    test('TWITCH_CHAT_CONFIG values are reasonable', () => {
+        const config = gameData.TWITCH_CHAT_CONFIG;
+        assert.ok(config.MAX_MESSAGES > 0, 'MAX_MESSAGES should be positive');
+        assert.ok(config.MAX_MESSAGES <= 20, 'MAX_MESSAGES should not be excessive');
+        assert.ok(config.MESSAGE_DURATION_MS > 0, 'MESSAGE_DURATION_MS should be positive');
+        assert.ok(config.MESSAGE_FADE_DURATION_MS > 0, 'MESSAGE_FADE_DURATION_MS should be positive');
+    });
+
+    test('TWITCH_CHAT_USERNAMES has variety', () => {
+        assert.ok(Array.isArray(gameData.TWITCH_CHAT_USERNAMES), 'TWITCH_CHAT_USERNAMES should be an array');
+        assert.ok(gameData.TWITCH_CHAT_USERNAMES.length >= 10, 'Should have at least 10 usernames');
+
+        // All usernames should be non-empty strings
+        gameData.TWITCH_CHAT_USERNAMES.forEach((name, i) => {
+            assert.ok(typeof name === 'string', `Username ${i} should be a string`);
+            assert.ok(name.length > 0, `Username ${i} should not be empty`);
+        });
+    });
+
+    test('TWITCH_CHAT_MESSAGES has all event types', () => {
+        const requiredEvents = ['kill', 'death', 'bossSpawn', 'waveComplete', 'bossKill'];
+        requiredEvents.forEach(event => {
+            assert.ok(
+                gameData.TWITCH_CHAT_MESSAGES[event],
+                `TWITCH_CHAT_MESSAGES missing event type: ${event}`
+            );
+            assert.ok(
+                Array.isArray(gameData.TWITCH_CHAT_MESSAGES[event]),
+                `Messages for ${event} should be an array`
+            );
+            assert.ok(
+                gameData.TWITCH_CHAT_MESSAGES[event].length >= 5,
+                `Should have at least 5 messages for ${event}`
+            );
+        });
+    });
+
+    test('All chat messages are non-empty strings', () => {
+        Object.entries(gameData.TWITCH_CHAT_MESSAGES).forEach(([eventType, messages]) => {
+            messages.forEach((msg, i) => {
+                assert.ok(typeof msg === 'string', `${eventType}[${i}] should be a string`);
+                assert.ok(msg.length > 0, `${eventType}[${i}] should not be empty`);
+            });
+        });
+    });
+
+    test('Usernames are unique', () => {
+        const uniqueNames = new Set(gameData.TWITCH_CHAT_USERNAMES);
+        assert.strictEqual(
+            gameData.TWITCH_CHAT_USERNAMES.length,
+            uniqueNames.size,
+            'Usernames should be unique'
+        );
+    });
+});
