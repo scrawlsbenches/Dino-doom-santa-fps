@@ -735,6 +735,93 @@ export const TWITCH_CHAT_MESSAGES = {
     ]
 };
 
+// ==================== EASTER EGGS ====================
+export const EASTER_EGG_CONFIG = {
+    // Konami code sequence: up, up, down, down, left, right, left, right, b, a
+    KONAMI_CODE: ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'],
+    // Special wave numbers
+    NICE_WAVE: 69,
+    DANK_WAVE: 420,
+    // Hat clicks required for drip mode
+    HAT_CLICKS_REQUIRED: 10,
+    // Effect duration (in waves)
+    SHRINK_SCALE: 0.5,  // Enemies shrink to 50% size
+    // MORBIN code
+    MORBIN_CODE: 'MORBIN'
+};
+
+export const EASTER_EGGS = {
+    KONAMI: {
+        id: 'konami',
+        name: 'KONAMI SUPREMACY',
+        description: 'Enter the Konami code',
+        effect: 'All enemies shrink for one wave!',
+        icon: '⬆️⬆️⬇️⬇️'
+    },
+    DRIP_MODE: {
+        id: 'drip_mode',
+        name: 'DRIP CHECK',
+        description: 'Click Santa\'s hat 10 times',
+        effect: 'Unlock secret DRIP MODE skin!',
+        icon: '💎'
+    },
+    NICE: {
+        id: 'nice',
+        name: 'Nice.',
+        description: 'Reach wave 69',
+        effect: 'Nice.',
+        icon: '😏'
+    },
+    DANK: {
+        id: 'dank',
+        name: 'DANK',
+        description: 'Reach wave 420',
+        effect: 'Dank screen flash!',
+        icon: '🌿'
+    },
+    MORBIN: {
+        id: 'morbin',
+        name: 'IT\'S MORBIN\' TIME',
+        description: 'Type MORBIN during gameplay',
+        effect: 'All enemies become bats for one wave!',
+        icon: '🦇'
+    }
+};
+
+// Secret achievements for easter eggs
+export const SECRET_ACHIEVEMENTS = {
+    KONAMI_MASTER: {
+        id: 'konami_master',
+        name: 'KONAMI MASTER',
+        description: 'Discovered the Konami code',
+        icon: '🎮'
+    },
+    DRIP_LORD: {
+        id: 'drip_lord',
+        name: 'DRIP LORD',
+        description: 'Unlocked DRIP MODE',
+        icon: '💎'
+    },
+    NICE_GUY: {
+        id: 'nice_guy',
+        name: 'Nice.',
+        description: 'Reached wave 69',
+        icon: '😏'
+    },
+    DANK_MASTER: {
+        id: 'dank_master',
+        name: 'DANK MASTER',
+        description: 'Reached wave 420 (legend)',
+        icon: '🌿'
+    },
+    MORBIN_TIME: {
+        id: 'morbin_time',
+        name: 'IT\'S MORBIN\' TIME',
+        description: 'Activated bat mode',
+        icon: '🦇'
+    }
+};
+
 // ==================== BACKGROUND MEME ELEMENTS (TASK-019) ====================
 export const MEME_BACKGROUND_CONFIG = {
     // Doge on the moon (static, top-right corner)

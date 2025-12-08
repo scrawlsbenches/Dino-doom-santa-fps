@@ -99,6 +99,9 @@ export function loadConstants() {
             TWITCH_CHAT_CONFIG,
             TWITCH_CHAT_USERNAMES,
             TWITCH_CHAT_MESSAGES,
+            EASTER_EGG_CONFIG,
+            EASTER_EGGS,
+            SECRET_ACHIEVEMENTS,
             MEME_BACKGROUND_CONFIG
         };
     `);
