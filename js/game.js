@@ -8,7 +8,7 @@
 import { WEAPONS, GAME_CONFIG } from './constants.js';
 import {
     gameState, player, inventory, enemies, projectiles, enemyProjectiles, particles,
-    floatingTexts, mousePos,
+    floatingTexts, mousePos, weakPoints,
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
     resetKillStreak, resetComboState, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
     achievementTracking, returnParticle, recordDamage, resetDamageHistory
@@ -26,7 +26,7 @@ import {
     showEnemyDialogue, showSigmaDialogue, showSigmaEscapeText, showGamerAttackText, drawDialogueBubbles,
     updateDeathScreen,
     openShop, closeShop, showShopIndicator, hideShopIndicator,
-    spawnBoss,
+    spawnBoss, showBossTutorial, shouldShowBossTutorial, resetBossTutorial,
     startMinigame,
     createLensFlareSpawner,
     onChatKill, onChatDeath, onChatBossKill, clearChat, initChatSystem
@@ -131,8 +131,16 @@ export function spawnWave() {
 
     if (isBossWave) {
         setTimeout(() => {
-            spawnBoss(getEnemyCallbacks());
-            gameState.waveSpawningComplete = true;
+            // UX-004: Show boss tutorial before first boss (wave 5)
+            if (shouldShowBossTutorial()) {
+                showBossTutorial(() => {
+                    spawnBoss(getEnemyCallbacks());
+                    gameState.waveSpawningComplete = true;
+                });
+            } else {
+                spawnBoss(getEnemyCallbacks());
+                gameState.waveSpawningComplete = true;
+            }
         }, 1000);
     } else {
         const enemyCount = GAME_CONFIG.ENEMIES_BASE_COUNT + gameState.wave * GAME_CONFIG.ENEMIES_PER_WAVE;
@@ -248,6 +256,7 @@ export function startGame() {
     resetAchievementTracking();
     resetDamageHistory();  // UX-008: Reset damage tracking for death tips
     resetMinigameState();
+    resetBossTutorial(); // UX-004: Reset tutorial state
     updateComboDisplay();
 
     // Initialize chat system
@@ -305,6 +314,21 @@ function gameLoop() {
                 }
             }
 
+            // UX-004: Check collisions with weak points
+            for (let k = weakPoints.length - 1; k >= 0; k--) {
+                const wp = weakPoints[k];
+                const dx = proj.x - wp.x;
+                const dy = proj.y - wp.y;
+                const dz = proj.z - wp.z;
+                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                if (dist < 60) { // Slightly larger hit radius for weak points
+                    wp.takeDamage(proj.damage);
+                    proj.life = 0;
+                    break;
+                }
+            }
+
             proj.draw(ctx, canvas);
             if (proj.isExpired()) {
                 projectiles.splice(i, 1);
@@ -349,6 +373,16 @@ function gameLoop() {
         for (let i = enemies.length - 1; i >= 0; i--) {
             if (enemies[i].markedForRemoval) {
                 enemies.splice(i, 1);
+            }
+        }
+
+        // UX-004: Update and draw weak points
+        for (let i = weakPoints.length - 1; i >= 0; i--) {
+            const wp = weakPoints[i];
+            wp.update();
+            wp.draw(ctx, canvas, player);
+            if (wp.isExpired()) {
+                weakPoints.splice(i, 1);
             }
         }
 

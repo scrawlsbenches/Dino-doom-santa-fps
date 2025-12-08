@@ -35,35 +35,8 @@ See archived section for implementation details.
 
 ---
 
-### UX-004: Boss Minigame Flow Disruption
-**Estimate**: 3-4 hours
-**Priority**: P2 (Medium Impact)
-**Dependencies**: None
-
-**Problem**:
-The clicking minigame at 50% boss HP completely breaks the FPS gameplay flow. Players go from "aim and shoot at moving target" to "click stationary spawning circles." This jarring transition interrupts combat momentum and feels like a different game.
-
-**Symptoms**:
-- Momentum loss during boss fights
-- Players confused by sudden mechanic change
-- Minigame skill doesn't transfer from main gameplay
-- Boss fights feel inconsistent
-
-**Suggested Solutions**:
-- Replace minigame with "weak point" shooting (aim at glowing spots on boss)
-- Make minigame optional with time-limited vulnerability window
-- Keep minigame but make targets appear in 3D space (shoot them like enemies)
-- Add minigame tutorial/warning before first boss
-
-**Files to modify**:
-- `js/systems/boss.js` - Minigame mechanics
-- `js/ui.js` - Weak point rendering if applicable
-- `index.html` - Minigame area modifications
-
-**Acceptance Criteria**:
-- [ ] Boss vulnerability phase uses FPS-consistent mechanics
-- [ ] No jarring context switch during combat
-- [ ] Players understand mechanic before first encounter
+### UX-004: Boss Minigame Flow Disruption ✅ COMPLETE
+See archived section for implementation details.
 
 ---
 
@@ -201,12 +174,12 @@ See archived section for implementation details.
 |----------|-------|----------------|
 | P0 (Critical Bugs) | 0 | ✅ Complete |
 | P1 (UX/Enjoyment - High) | 0 | ✅ Complete |
-| P2 (UX/Enjoyment - Medium) | 1 | 3-4 hours |
+| P2 (UX/Enjoyment - Medium) | 0 | ✅ Complete |
 | P3 (UX/Enjoyment - Low) | 0 | ✅ Complete |
 | P3 (Stretch Features) | 3 (1 done) | 9-11 hours |
-| **TOTAL** | **3** | **12-15 hours** |
+| **TOTAL** | **2** | **9-11 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-005, UX-006, UX-007, UX-008, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-004, UX-005, UX-006, UX-007, UX-008, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -223,13 +196,13 @@ All refactoring tasks completed!
 - UX-001 (Late-Game Progression) ✅ - Prestige upgrades system added!
 - UX-002 (Combo System Fragility) ✅ - Combo decay system added!
 
-**Phase 4: Medium-Impact UX Fixes** (Mostly Complete)
+**Phase 4: Medium-Impact UX Fixes** ✅ COMPLETE
 - UX-003 (Shop Visibility) ✅ - New player experience
-- UX-004 (Boss Minigame Flow) - Combat consistency
+- UX-004 (Boss Minigame Flow) ✅ - FPS-consistent weak points!
 - UX-005 (Volume Control) ✅ - Implemented in TASK-015
 - UX-010 (Sigma RNG) ✅ - Difficulty consistency
 
-**Phase 5: Low-Impact Polish & Stretch Goals** (Mostly Complete)
+**Phase 5: Low-Impact Polish & Stretch Goals** ✅ COMPLETE
 - UX-006 (Healing Progress) ✅ - Clearer heal status
 - UX-007 (Boss Phase Indicators) ✅ - Phase threshold visibility
 - UX-008 (Death Screen Tips) ✅ - Context-aware death tips
@@ -676,6 +649,49 @@ All refactoring tasks completed!
   - `@keyframes equipToastIn` - Scale-up entrance animation
   - `@keyframes equipToastOut` - Scale-up exit animation
   - `@keyframes equipEmojiPulse` - Emoji bounce effect
+
+### UX-004: Boss Minigame Flow Disruption ✅
+**Completed**: Replaced click-based minigame with FPS-consistent 3D weak points
+- Created new `js/classes/WeakPoint.js`:
+  - Shootable 3D targets that spawn around the boss during vulnerability phase
+  - Floating animation, pulsing effect, lifetime expiration
+  - One-shot destruction with particles and floating damage text
+  - Visual "🎯 WEAK POINT" labels above targets
+- Updated `js/systems/minigame.js`:
+  - Removed game pause during vulnerability phase
+  - Boss becomes "stunned" instead of invulnerable (can still be shot)
+  - Spawns 3D weak points around the boss
+  - HUD overlay shows timer and hits (not full-screen takeover)
+  - Damage bonus applied based on weak points hit
+- Updated `js/state.js`:
+  - Added `weakPoints` array for 3D weak point entities
+  - Added to `clearEntities()` function
+- Updated `js/classes/Enemy.js`:
+  - Added `stunned` property for boss vulnerability phase
+  - Stunned enemies only wobble, don't move or attack
+  - "STUNNED - SHOOT WEAK POINTS!" indicator during vulnerability
+- Updated `js/game.js`:
+  - Import and handle weak points array
+  - Collision detection for projectiles hitting weak points
+  - Update and draw weak points in game loop
+  - Boss tutorial integration before wave 5
+- Updated `js/systems/boss.js`:
+  - Added `showBossTutorial()` function
+  - Added `shouldShowBossTutorial()` check
+  - Added `resetBossTutorial()` for game restart
+- Added boss tutorial in `index.html`:
+  - Informative popup before first boss (wave 5)
+  - Explains 50% HP vulnerability and weak point shooting
+  - "Keep shooting - the game won't pause!" reminder
+- Updated CSS in `css/styles.css`:
+  - `.hud-mode` class for minigame screen as HUD overlay
+  - `@keyframes vulnerablePulse` for pulsing title
+  - Boss tutorial styling with popup animation
+- Benefits:
+  - No jarring context switch during boss fights
+  - Maintains FPS gameplay flow throughout
+  - Players understand mechanic before first encounter
+  - Skill transfers from main gameplay to boss vulnerability phase
 
 ### UX-010: Sigma Dino RNG Creates Inconsistent Difficulty ✅
 **Completed**: Sigma spawn cap and wave-based spawn rate

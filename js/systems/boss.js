@@ -3,6 +3,7 @@
  * Boss System
  *
  * Boss intro cutscenes and battle mechanics.
+ * UX-004: Added boss tutorial before first boss encounter.
  */
 
 import { BOSS_NAMES, GAME_CONFIG } from '../constants.js';
@@ -10,6 +11,9 @@ import { gameState, trackTimeout, enemies } from '../state.js';
 import { Enemy } from '../classes/Enemy.js';
 import { playSound } from './audio.js';
 import { onChatBossSpawn } from './chat.js';
+
+// UX-004: Track if tutorial has been shown this session
+let bossTutorialShown = false;
 
 /**
  * Gets boss info for current wave
@@ -117,4 +121,46 @@ export function spawnBoss(callbacks) {
         // Twitch chat reaction to boss spawn
         onChatBossSpawn();
     }, callbacks);
+}
+
+/**
+ * UX-004: Shows boss tutorial before first boss encounter
+ * @param {Function} callback - Called when tutorial is dismissed
+ */
+export function showBossTutorial(callback) {
+    const tutorial = document.getElementById('boss-tutorial');
+    const btn = document.getElementById('boss-tutorial-btn');
+
+    if (!tutorial || !btn) {
+        if (callback) callback();
+        return;
+    }
+
+    gameState.paused = true;
+    tutorial.classList.add('visible');
+
+    const handleClick = () => {
+        tutorial.classList.remove('visible');
+        gameState.paused = false;
+        bossTutorialShown = true;
+        btn.removeEventListener('click', handleClick);
+        if (callback) callback();
+    };
+
+    btn.addEventListener('click', handleClick);
+}
+
+/**
+ * UX-004: Checks if boss tutorial should be shown
+ * @returns {boolean} True if tutorial should be shown
+ */
+export function shouldShowBossTutorial() {
+    return gameState.wave === 5 && !bossTutorialShown;
+}
+
+/**
+ * UX-004: Resets tutorial state (call on game restart)
+ */
+export function resetBossTutorial() {
+    bossTutorialShown = false;
 }

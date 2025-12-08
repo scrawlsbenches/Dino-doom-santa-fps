@@ -196,6 +196,78 @@ body {
     text-align: center;
 }
 
+/* Boss Tutorial (UX-004) */
+#boss-tutorial {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+#boss-tutorial.visible {
+    display: flex;
+}
+
+.boss-tutorial-content {
+    background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+    border: 3px solid #ff3333;
+    border-radius: 15px;
+    padding: 30px 50px;
+    text-align: center;
+    max-width: 500px;
+    animation: tutorialPop 0.3s ease-out;
+}
+
+@keyframes tutorialPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.boss-tutorial-content h2 {
+    font-family: 'Bungee', cursive;
+    font-size: 32px;
+    color: #ff3333;
+    text-shadow: 0 0 20px #ff3333;
+    margin-bottom: 15px;
+}
+
+.boss-tutorial-content .tutorial-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+}
+
+.boss-tutorial-content .tutorial-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    color: #ffffff;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.boss-tutorial-content .highlight {
+    color: #ffcc00;
+    font-weight: bold;
+}
+
+.boss-tutorial-content .tutorial-hint {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: #00ff88;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+#boss-tutorial-btn {
+    font-size: 18px;
+    padding: 12px 40px;
+}
+
 /* Shop Available Indicator (UX-003) */
 #shop-indicator {
     position: absolute;
@@ -1085,7 +1157,7 @@ body {
     padding: 15px 50px;
 }
 
-/* Minigame screen */
+/* Minigame screen - UX-004: Now a HUD overlay instead of full-screen */
 #minigame-screen {
     position: absolute;
     top: 0;
@@ -1099,6 +1171,41 @@ body {
     align-items: center;
     z-index: 150;
     cursor: crosshair;
+    pointer-events: none;
+}
+
+/* UX-004: HUD mode - overlay at top, gameplay visible */
+#minigame-screen.hud-mode {
+    background: transparent;
+    justify-content: flex-start;
+    padding-top: 80px;
+    pointer-events: none;
+}
+
+#minigame-screen.hud-mode h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    animation: vulnerablePulse 0.5s ease-in-out infinite;
+}
+
+#minigame-screen.hud-mode #minigame-instructions {
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+#minigame-screen.hud-mode #minigame-timer {
+    font-size: 36px;
+    margin-top: 5px;
+}
+
+#minigame-screen.hud-mode #minigame-hits {
+    font-size: 18px;
+    margin-top: 5px;
+}
+
+@keyframes vulnerablePulse {
+    0%, 100% { text-shadow: 0 0 20px #ff3333, 0 0 40px #ff3333; }
+    50% { text-shadow: 0 0 40px #ff3333, 0 0 80px #ff3333; }
 }
 
 #minigame-screen h1 {
@@ -1115,6 +1222,7 @@ body {
     color: #ffcc00;
     margin-bottom: 30px;
     text-align: center;
+    text-shadow: 0 0 10px #000, 0 0 20px #000;
 }
 
 #minigame-area {
@@ -1127,6 +1235,7 @@ body {
     overflow: hidden;
 }
 
+/* Legacy click targets - no longer used in UX-004 */
 .minigame-target {
     position: absolute;
     width: 60px;
@@ -1148,6 +1257,7 @@ body {
     font-size: 48px;
     color: #00ffff;
     margin-top: 20px;
+    text-shadow: 0 0 10px #000, 0 0 20px #00ffff;
 }
 
 #minigame-hits {
@@ -1155,6 +1265,7 @@ body {
     font-size: 24px;
     color: #00ff88;
     margin-top: 10px;
+    text-shadow: 0 0 10px #000, 0 0 15px #00ff88;
 }
 
 /* Game over screen */
