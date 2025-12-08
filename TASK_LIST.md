@@ -7,64 +7,39 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 ## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
 
 ### REFACTOR-001: Extract Magic Numbers to Constants
-**Estimate**: 2 hours
+**Estimate**: 1 hour (remaining work)
 **Priority**: P2 (Medium)
 **Source**: Code Review
+**Status**: ~60% Complete
 
-**Issue**: Many hardcoded values without explanation throughout the codebase.
+**Progress**: `js/constants.js` now has `GAME_CONFIG` with many values extracted:
+- ✅ `ENEMY_MIN_Z: -80`
+- ✅ `PROJECTILE_HIT_RADIUS_BASE: 60`
+- ✅ `KILL_STREAK_TIMEOUT_MS: 3000`
+- ✅ Enemy/boss/weapon stats
 
-**Examples**:
+**Remaining Work** - Magic numbers still hardcoded:
 ```javascript
-const minZ = -80;  // What does this represent?
-const hitRadius = 60 + (e.size / 3);  // Why this formula?
-if (-e.z < 50 || -e.z > 2000) return;  // Render distance?
+// Perspective scale (400) appears in 7+ locations:
+// - js/ui.js:218-219
+// - js/classes/Particle.js:46-48
+// - js/classes/EnemyProjectile.js:64-66
+// - js/classes/GamerProjectile.js:72-73
+
+// Enemy spawn positions in js/game.js:74-88:
+const x = startSide * 500;        // Should be GAME_CONFIG.SIGMA_SPAWN_X
+const z = -400 - Math.random() * 200;  // SIGMA_SPAWN_Z_BASE/RANGE
+const x = (Math.random() - 0.5) * 800; // ENEMY_SPAWN_X_RANGE
+const z = -800 - Math.random() * 500;  // ENEMY_SPAWN_Z_BASE/RANGE
 ```
 
-**Fix**: Create a CONSTANTS section:
-```javascript
-const GAME_CONSTANTS = {
-    RENDER_MIN_DISTANCE: 50,
-    RENDER_MAX_DISTANCE: 2000,
-    ENEMY_MIN_Z_POSITION: -80,
-    HIT_RADIUS_BASE: 60,
-    HIT_RADIUS_SIZE_FACTOR: 3,
-    PERSPECTIVE_SCALE: 400,
-    KILL_STREAK_TIMEOUT_MS: 3000,
-    // ... etc
-};
-```
+**Files to modify**: `js/constants.js`, `js/game.js`, `js/ui.js`, `js/classes/*.js`
 
 **Acceptance Criteria**:
-- [ ] All magic numbers extracted to constants
-- [ ] Constants have descriptive names
-- [ ] Code is more self-documenting
-
----
-
-### REFACTOR-002: Consolidate Duplicate Achievement Check
-**Estimate**: 30 minutes
-**Priority**: P2 (Medium)
-**Source**: Code Review
-
-**Issue**: BIG_SPENDER achievement check is duplicated in weapons and upgrades purchase handlers.
-
-**Locations**:
-- `SantaGigaChadDino.htm:3412-3416`
-- `SantaGigaChadDino.htm:3449-3453`
-
-**Fix**: Extract to helper function:
-```javascript
-function trackShopSpending(amount) {
-    achievementTracking.shopSpending += amount;
-    if (achievementTracking.shopSpending >= 1000) {
-        unlockAchievement('BIG_SPENDER');
-    }
-}
-```
-
-**Acceptance Criteria**:
-- [ ] Single source of truth for spending logic
-- [ ] Achievement still triggers correctly
+- [x] Core game constants extracted to GAME_CONFIG
+- [ ] Perspective scale (400) extracted to constant
+- [ ] Spawn position values extracted to constants
+- [ ] All classes use constants instead of magic numbers
 
 ---
 
@@ -75,14 +50,15 @@ function trackShopSpending(amount) {
 
 **Issue**: Each particle is created with `new`, causing GC pressure during intense gameplay.
 
-**Location**: `SantaGigaChadDino.htm:3121-3157`
+**Location**: `js/classes/Particle.js`
 
-**Fix**:
+**Fix**: Add pooling system to `js/state.js` and modify particle creation:
 ```javascript
-const particlePool = [];
+// In js/state.js:
+export const particlePool = [];
 const MAX_POOL_SIZE = 200;
 
-function getParticle(x, y, z, color) {
+export function getParticle(x, y, z, color) {
     let p = particlePool.pop();
     if (!p) {
         p = new Particle(x, y, z, color);
@@ -92,10 +68,18 @@ function getParticle(x, y, z, color) {
     return p;
 }
 
-function returnParticle(p) {
+export function returnParticle(p) {
     if (particlePool.length < MAX_POOL_SIZE) {
         particlePool.push(p);
     }
+}
+
+// In js/classes/Particle.js - add reset() method:
+reset(x, y, z, color) {
+    this.x = x; this.y = y; this.z = z;
+    this.color = color;
+    this.life = this.maxLife = 30;
+    // Reset velocities...
 }
 ```
 
@@ -113,14 +97,18 @@ function returnParticle(p) {
 
 **Issue**: The `keys` object tracks keyboard state but is never used (WASD movement isn't implemented).
 
-**Location**: `SantaGigaChadDino.htm:1333`
+**Locations**:
+- `js/state.js:77` - `export const keys = {}`
+- `js/state.js:263-265` - `setKeyState()` function
+- `js/main.js` - keydown/keyup event listeners call `setKeyState()`
 
 **Fix**: Either implement WASD movement or remove the tracking:
 ```javascript
-// Remove these lines if not implementing movement:
-let keys = {};
-document.addEventListener('keydown', (e) => { keys[e.key] = true; ... });
-document.addEventListener('keyup', (e) => { keys[e.key] = false; });
+// Option A: Remove from js/state.js:
+// Delete: export const keys = {};
+// Delete: export function setKeyState(key, pressed) { ... }
+
+// Option B: Implement movement in js/game.js using keys object
 ```
 
 **Acceptance Criteria**:
@@ -136,19 +124,23 @@ document.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
 **Issue**: `playSound()` doesn't handle oscillator creation failures (can happen if audio context limit is reached).
 
-**Location**: `SantaGigaChadDino.htm:1564-1688`
+**Location**: `js/systems/audio.js:36-178`
 
-**Fix**:
+**Fix**: Wrap oscillator creation in try-catch:
 ```javascript
-function playSound(type) {
+// In js/systems/audio.js:
+export function playSound(type) {
     if (!audioCtx) return;
     try {
         const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
         // ... rest of sound code
     } catch (e) {
-        console.warn('Failed to play sound:', e);
+        // Graceful degradation - game continues without sound
     }
 }
+
+// Also update playHitMarkerSound() and playKillStreakSound()
 ```
 
 **Acceptance Criteria**:
@@ -172,7 +164,11 @@ function playSound(type) {
 - Combo resets when player takes damage
 - Visual/audio feedback when combo increases
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Files to modify**:
+- `js/state.js` - Add combo state tracking
+- `js/systems/killstreak.js` or new `js/systems/combo.js` - Combo logic
+- `js/ui.js` - Combo display rendering
+- `js/game.js` - Hook into damage/kill events
 
 **Acceptance Criteria**:
 - [ ] Combo counter displays correctly
@@ -187,7 +183,7 @@ function playSound(type) {
 ### TASK-015: MLG Sound Pack
 **Estimate**: 4 hours (max 1 day)
 **Priority**: P3
-**Dependencies**: TASK-001, TASK-002
+**Dependencies**: TASK-001 ✅, TASK-002 ✅ (both complete)
 
 **Scope**:
 - Create Web Audio API synthesized sounds for:
@@ -199,7 +195,11 @@ function playSound(type) {
 - Sounds should be procedurally generated, not audio files
 - Add volume slider in settings
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Files to modify**:
+- `js/systems/audio.js` - New sound functions
+- `js/systems/killstreak.js` - Hook MLG sounds to streaks
+- `js/systems/death.js` - Sad violin on death
+- `index.html` / `css/styles.css` - Volume slider UI
 
 **Acceptance Criteria**:
 - [ ] All sounds implemented via Web Audio
@@ -223,7 +223,11 @@ function playSound(type) {
   - Text gets "deep fried" distortion
 - Performance consideration: can be toggled off
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Files to modify**:
+- `js/state.js` - Add deepFriedMode toggle
+- `js/ui.js` - Apply CSS filters to canvas
+- `css/styles.css` - Deep fried filter styles
+- `index.html` - Toggle button on start screen
 
 **Acceptance Criteria**:
 - [ ] Toggle on start screen
@@ -248,7 +252,12 @@ function playSound(type) {
 - Random usernames: "xX_DinoSlayer_Xx", "GigaChadFan69", etc.
 - Messages scroll up and fade
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Files to modify**:
+- `js/constants.js` - Chat messages and usernames
+- `js/systems/chat.js` (new) - Chat system logic
+- `js/ui.js` - Render chat overlay
+- `css/styles.css` - Chat styling
+- `index.html` - Chat container element
 
 **Acceptance Criteria**:
 - [ ] Chat visible during gameplay
@@ -273,7 +282,11 @@ function playSound(type) {
 - Track discovered eggs in localStorage
 - Secret achievements for finding eggs
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Files to modify**:
+- `js/systems/eastereggs.js` (new) - Easter egg detection & effects
+- `js/state.js` - Track discovered eggs
+- `js/constants.js` - Secret achievements
+- `js/main.js` - Input detection for codes
 
 **Acceptance Criteria**:
 - [ ] All easter eggs functional
@@ -297,7 +310,10 @@ function playSound(type) {
 - Elements don't interfere with gameplay
 - Subtle parallax effect when "moving"
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Files to modify**:
+- `js/ui.js` - Render background elements (in `drawBackground()`)
+- `js/constants.js` - Meme element configurations
+- `js/state.js` - Toggle setting
 
 **Acceptance Criteria**:
 - [ ] Background elements visible
@@ -310,7 +326,7 @@ function playSound(type) {
 ### TASK-020: Advanced Boss Phases
 **Estimate**: 4 hours (max 1 day)
 **Priority**: P3
-**Dependencies**: TASK-011 (completed)
+**Dependencies**: TASK-011 ✅ (completed)
 
 **Scope**:
 - Enhance boss fights with phases:
@@ -321,7 +337,11 @@ function playSound(type) {
 - Boss health bar shows phase thresholds
 - Different music intensity per phase
 
-**Files to modify**: `SantaGigaChadDino.htm`
+**Files to modify**:
+- `js/systems/boss.js` - Phase logic and transitions
+- `js/classes/Enemy.js` - Boss phase state tracking
+- `js/ui.js` - Phase threshold markers on health bar
+- `js/systems/audio.js` - Phase-specific music/sounds
 
 **Acceptance Criteria**:
 - [ ] Phases trigger at correct HP thresholds
@@ -337,21 +357,23 @@ function playSound(type) {
 |----------|-------|----------------|
 | P0 (Critical Bugs) | 0 | ✅ Complete |
 | P1 (High Bugs) | 0 | ✅ Complete |
-| P2 (Medium/Refactor) | 4 | 5-6 hours |
+| P2 (Medium/Refactor) | 3 | 3-4 hours |
 | P3 (Low/Features) | 8 | 21-29 hours |
-| **TOTAL** | **12** | **26-35 hours** |
+| **TOTAL** | **11** | **24-33 hours** |
+
+**Note**: REFACTOR-001 is ~60% complete (1 hour remaining). REFACTOR-002 completed and archived.
 
 ---
 
 ## 🏃 SUGGESTED ORDER
 
 **Phase 1: Code Quality**
-1. REFACTOR-001 (Magic Numbers) - Maintainability
-2. REFACTOR-002 (Duplicate Code) - DRY principle
-3. REFACTOR-003 (Object Pooling) - Performance
+1. REFACTOR-001 (Magic Numbers) - ~60% done, finish remaining
+2. REFACTOR-003 (Object Pooling) - Performance improvement
+3. REFACTOR-004/005 (Cleanup) - Low priority polish
 
 **Phase 2: Features**
-4. TASK-014 (Combo Counter) - Core gameplay
+4. TASK-014 (Combo Counter) - Core gameplay enhancement
 5. Continue with stretch goals based on interest
 
 ---
@@ -511,6 +533,13 @@ function playSound(type) {
 - Added player.damageBonus and player.fireRateBonus
 - All upgrades now applied consistently in applyUpgrades()
 - Player state properly initialized and reset
+
+### REFACTOR-002: Consolidate Duplicate Achievement Check ✅
+**Completed**: Modular codebase refactor
+- Created `checkShopAchievements()` in `js/systems/achievements.js:108-113`
+- Both weapon and upgrade purchases call centralized function
+- Single source of truth for BIG_SPENDER achievement logic
+- Shop spending tracked via `achievementTracking.shopSpending`
 
 </details>
 
