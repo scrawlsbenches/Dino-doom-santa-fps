@@ -10,7 +10,7 @@ import {
     gameState, player, inventory, enemies, projectiles, enemyProjectiles, particles,
     floatingTexts, mousePos,
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
-    resetKillStreak, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
+    resetKillStreak, resetComboState, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
     achievementTracking, returnParticle
 } from './state.js';
 import { Enemy } from './classes/Enemy.js';
@@ -22,6 +22,7 @@ import {
     showHitMarker,
     onWaveStart, onWaveComplete, checkKillAchievements, checkDeathAchievements, checkWeaponAchievements,
     recordKill,
+    incrementCombo, breakCombo, getComboBonus, updateComboDisplay,
     showEnemyDialogue, showSigmaDialogue, showSigmaEscapeText, showGamerAttackText, drawDialogueBubbles,
     updateDeathScreen,
     openShop, closeShop,
@@ -56,6 +57,9 @@ function getEnemyCallbacks() {
         updateHUD,
         addKillFeed,
         recordKill,
+        incrementCombo,
+        breakCombo,
+        getComboBonus,
         startMinigame,
         gameOver,
         checkAchievements: checkKillAchievements
@@ -201,9 +205,11 @@ export function startGame() {
     resetInventory();
     clearEntities();
     resetKillStreak();
+    resetComboState();
     clearDialogueBubbles();
     resetAchievementTracking();
     resetMinigameState();
+    updateComboDisplay();
 
     updateHUD();
     spawnWave();
@@ -274,6 +280,7 @@ function gameLoop() {
                 playSound('damage');
                 showDamageOverlay();
                 shakeOnDamage();
+                breakCombo();
 
                 if (gameState.health <= 0) {
                     gameOver();

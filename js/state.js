@@ -92,6 +92,12 @@ export const killStreakState = {
     streakTimeout: GAME_CONFIG.KILL_STREAK_TIMEOUT_MS
 };
 
+// ==================== COMBO STATE ====================
+export const comboState = {
+    count: 0,
+    showWomboCombo: false
+};
+
 // ==================== DIALOGUE BUBBLES ====================
 export const activeDialogueBubbles = [];
 
@@ -217,6 +223,14 @@ export function clearTimeouts() {
 export function resetKillStreak() {
     killStreakState.count = 0;
     killStreakState.lastKillTime = 0;
+}
+
+/**
+ * Resets combo state
+ */
+export function resetComboState() {
+    comboState.count = 0;
+    comboState.showWomboCombo = false;
 }
 
 /**
