@@ -27,7 +27,8 @@ import {
     updateDeathScreen,
     openShop, closeShop,
     spawnBoss,
-    startMinigame
+    startMinigame,
+    createLensFlareSpawner
 } from './systems/index.js';
 import {
     updateHUD, updateCrosshair, addKillFeed,
@@ -37,6 +38,7 @@ import {
 // Canvas reference
 let canvas;
 let ctx;
+let lensFlareSpawner = null;
 
 /**
  * Creates callback object for enemy events
@@ -62,7 +64,8 @@ function getEnemyCallbacks() {
         getComboBonus,
         startMinigame,
         gameOver,
-        checkAchievements: checkKillAchievements
+        checkAchievements: checkKillAchievements,
+        spawnLensFlare: lensFlareSpawner
     };
 }
 
@@ -358,6 +361,9 @@ function gameLoop() {
 export function initGame(canvasElement) {
     canvas = canvasElement;
     ctx = canvas.getContext('2d');
+
+    // Initialize lens flare spawner for deep fried mode
+    lensFlareSpawner = createLensFlareSpawner(canvas);
 
     resizeCanvas(canvas);
     window.addEventListener('resize', () => resizeCanvas(canvas));

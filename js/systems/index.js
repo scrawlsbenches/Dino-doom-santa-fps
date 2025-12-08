@@ -16,3 +16,4 @@ export * from './shop.js';
 export * from './death.js';
 export * from './boss.js';
 export * from './minigame.js';
+export * from './deepfried.js';

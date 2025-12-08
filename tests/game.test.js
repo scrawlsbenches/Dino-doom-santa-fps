@@ -2319,4 +2319,524 @@ describe('TASK-014: Combo Counter System', () => {
     });
 });
 
+// ==================== DEEP FRIED MODE TESTS ====================
+describe('Deep Fried Mode System', () => {
+    describe('State', () => {
+        test('State.js exports deepFriedState', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('export const deepFriedState = {'),
+                'state.js should export deepFriedState object'
+            );
+        });
+
+        test('deepFriedState has required properties', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('enabled:'),
+                'deepFriedState should have enabled property'
+            );
+            assert.ok(
+                stateContent.includes('lensFlares:'),
+                'deepFriedState should have lensFlares array'
+            );
+        });
+
+        test('State.js exports deep fried functions', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                stateContent.includes('export function loadDeepFriedState()'),
+                'state.js should export loadDeepFriedState function'
+            );
+            assert.ok(
+                stateContent.includes('export function saveDeepFriedState()'),
+                'state.js should export saveDeepFriedState function'
+            );
+            assert.ok(
+                stateContent.includes('export function toggleDeepFriedMode()'),
+                'state.js should export toggleDeepFriedMode function'
+            );
+            assert.ok(
+                stateContent.includes('export function clearLensFlares()'),
+                'state.js should export clearLensFlares function'
+            );
+            assert.ok(
+                stateContent.includes('export function addLensFlare('),
+                'state.js should export addLensFlare function'
+            );
+        });
+
+        test('loadDeepFriedState handles localStorage errors gracefully', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            // Find loadDeepFriedState function
+            const funcMatch = stateContent.match(/export function loadDeepFriedState\(\)[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('try'),
+                    'loadDeepFriedState should use try-catch'
+                );
+                assert.ok(
+                    funcMatch[0].includes('catch'),
+                    'loadDeepFriedState should handle errors'
+                );
+            }
+        });
+
+        test('saveDeepFriedState handles localStorage errors gracefully', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            // Find saveDeepFriedState function
+            const funcMatch = stateContent.match(/export function saveDeepFriedState\(\)[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('try'),
+                    'saveDeepFriedState should use try-catch'
+                );
+                assert.ok(
+                    funcMatch[0].includes('catch'),
+                    'saveDeepFriedState should handle errors'
+                );
+            }
+        });
+
+        test('toggleDeepFriedMode toggles and saves state', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            // Find toggleDeepFriedMode function
+            const funcMatch = stateContent.match(/export function toggleDeepFriedMode\(\)[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('deepFriedState.enabled'),
+                    'toggleDeepFriedMode should modify enabled state'
+                );
+                assert.ok(
+                    funcMatch[0].includes('saveDeepFriedState()'),
+                    'toggleDeepFriedMode should call saveDeepFriedState'
+                );
+                assert.ok(
+                    funcMatch[0].includes('return'),
+                    'toggleDeepFriedMode should return the new state'
+                );
+            }
+        });
+
+        test('addLensFlare adds flare to array with correct properties', () => {
+            const stateContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'state.js'),
+                'utf8'
+            );
+
+            // Find addLensFlare function
+            const funcMatch = stateContent.match(/export function addLensFlare\([\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('deepFriedState.lensFlares.push'),
+                    'addLensFlare should push to lensFlares array'
+                );
+                assert.ok(
+                    funcMatch[0].includes('emoji:'),
+                    'addLensFlare should set emoji property'
+                );
+                assert.ok(
+                    funcMatch[0].includes('life:'),
+                    'addLensFlare should set life property'
+                );
+                assert.ok(
+                    funcMatch[0].includes('scale:'),
+                    'addLensFlare should set scale property'
+                );
+                assert.ok(
+                    funcMatch[0].includes('rotation:'),
+                    'addLensFlare should set rotation property'
+                );
+            }
+        });
+    });
+
+    describe('Deep Fried System Module', () => {
+        test('deepfried.js exists', () => {
+            const filePath = path.join(__dirname, '..', 'js', 'systems', 'deepfried.js');
+            assert.ok(fs.existsSync(filePath), 'deepfried.js should exist');
+        });
+
+        test('deepfried.js exports required functions', () => {
+            const dfContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'deepfried.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                dfContent.includes('export function initDeepFriedSystem()'),
+                'deepfried.js should export initDeepFriedSystem'
+            );
+            assert.ok(
+                dfContent.includes('export function applyDeepFriedEffect()'),
+                'deepfried.js should export applyDeepFriedEffect'
+            );
+            assert.ok(
+                dfContent.includes('export function spawnLensFlare('),
+                'deepfried.js should export spawnLensFlare'
+            );
+            assert.ok(
+                dfContent.includes('export function isDeepFriedEnabled()'),
+                'deepfried.js should export isDeepFriedEnabled'
+            );
+            assert.ok(
+                dfContent.includes('export function createLensFlareSpawner('),
+                'deepfried.js should export createLensFlareSpawner'
+            );
+        });
+
+        test('initDeepFriedSystem loads state and sets up button', () => {
+            const dfContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'deepfried.js'),
+                'utf8'
+            );
+
+            const funcMatch = dfContent.match(/export function initDeepFriedSystem\(\)[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('loadDeepFriedState()'),
+                    'initDeepFriedSystem should call loadDeepFriedState'
+                );
+                assert.ok(
+                    funcMatch[0].includes('deep-fried-btn'),
+                    'initDeepFriedSystem should reference toggle button'
+                );
+                assert.ok(
+                    funcMatch[0].includes('addEventListener'),
+                    'initDeepFriedSystem should add click listener'
+                );
+            }
+        });
+
+        test('applyDeepFriedEffect adds/removes CSS class', () => {
+            const dfContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'deepfried.js'),
+                'utf8'
+            );
+
+            const funcMatch = dfContent.match(/export function applyDeepFriedEffect\(\)[\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('classList.add'),
+                    'applyDeepFriedEffect should add class when enabled'
+                );
+                assert.ok(
+                    funcMatch[0].includes('classList.remove'),
+                    'applyDeepFriedEffect should remove class when disabled'
+                );
+                assert.ok(
+                    funcMatch[0].includes('deep-fried'),
+                    'applyDeepFriedEffect should use deep-fried class'
+                );
+            }
+        });
+
+        test('spawnLensFlare checks if mode is enabled', () => {
+            const dfContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'deepfried.js'),
+                'utf8'
+            );
+
+            const funcMatch = dfContent.match(/export function spawnLensFlare\([\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('deepFriedState.enabled'),
+                    'spawnLensFlare should check if mode is enabled'
+                );
+                assert.ok(
+                    funcMatch[0].includes('return'),
+                    'spawnLensFlare should early return if disabled'
+                );
+            }
+        });
+
+        test('createLensFlareSpawner converts world to screen coordinates', () => {
+            const dfContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'deepfried.js'),
+                'utf8'
+            );
+
+            const funcMatch = dfContent.match(/export function createLensFlareSpawner\([\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('PERSPECTIVE_SCALE'),
+                    'createLensFlareSpawner should use perspective scale'
+                );
+                assert.ok(
+                    funcMatch[0].includes('canvas.width'),
+                    'createLensFlareSpawner should use canvas width'
+                );
+                assert.ok(
+                    funcMatch[0].includes('canvas.height'),
+                    'createLensFlareSpawner should use canvas height'
+                );
+            }
+        });
+    });
+
+    describe('Game Integration', () => {
+        test('main.js imports and initializes deep fried system', () => {
+            const mainContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'main.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                mainContent.includes('initDeepFriedSystem'),
+                'main.js should import initDeepFriedSystem'
+            );
+            assert.ok(
+                mainContent.includes('initDeepFriedSystem()'),
+                'main.js should call initDeepFriedSystem()'
+            );
+        });
+
+        test('systems/index.js exports deepfried module', () => {
+            const indexContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'systems', 'index.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                indexContent.includes("'./deepfried.js'"),
+                'systems/index.js should export deepfried.js'
+            );
+        });
+
+        test('game.js imports createLensFlareSpawner', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            assert.ok(
+                gameContent.includes('createLensFlareSpawner'),
+                'game.js should import createLensFlareSpawner'
+            );
+        });
+
+        test('game.js initializes lens flare spawner in initGame', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            const funcMatch = gameContent.match(/export function initGame\([\s\S]*?^}/m);
+            if (funcMatch) {
+                assert.ok(
+                    funcMatch[0].includes('lensFlareSpawner'),
+                    'initGame should initialize lensFlareSpawner'
+                );
+                assert.ok(
+                    funcMatch[0].includes('createLensFlareSpawner'),
+                    'initGame should call createLensFlareSpawner'
+                );
+            }
+        });
+
+        test('Enemy callbacks include spawnLensFlare', () => {
+            const gameContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'game.js'),
+                'utf8'
+            );
+
+            const callbacksMatch = gameContent.match(/function getEnemyCallbacks[\s\S]*?return {[\s\S]*?};/);
+            if (callbacksMatch) {
+                assert.ok(
+                    callbacksMatch[0].includes('spawnLensFlare'),
+                    'getEnemyCallbacks should include spawnLensFlare'
+                );
+            }
+        });
+
+        test('Enemy.js calls spawnLensFlare callback on die', () => {
+            const enemyContent = fs.readFileSync(
+                path.join(__dirname, '..', 'js', 'classes', 'Enemy.js'),
+                'utf8'
+            );
+
+            // Check that die method exists and calls spawnLensFlare callback
+            assert.ok(
+                enemyContent.includes('die()'),
+                'Enemy should have die method'
+            );
+            assert.ok(
+                enemyContent.includes('this.callbacks.spawnLensFlare'),
+                'Enemy.die() should call spawnLensFlare callback'
+            );
+        });
+    });
+
+    describe('HTML and CSS', () => {
+        test('index.html has deep fried toggle button', () => {
+            const htmlContent = fs.readFileSync(
+                path.join(__dirname, '..', 'index.html'),
+                'utf8'
+            );
+
+            assert.ok(
+                htmlContent.includes('id="deep-fried-toggle"'),
+                'index.html should have deep-fried-toggle container'
+            );
+            assert.ok(
+                htmlContent.includes('id="deep-fried-btn"'),
+                'index.html should have deep-fried-btn button'
+            );
+        });
+
+        test('index.html has deep fried visual overlays', () => {
+            const htmlContent = fs.readFileSync(
+                path.join(__dirname, '..', 'index.html'),
+                'utf8'
+            );
+
+            assert.ok(
+                htmlContent.includes('id="chromatic-overlay"'),
+                'index.html should have chromatic-overlay element'
+            );
+            assert.ok(
+                htmlContent.includes('id="lens-flare-container"'),
+                'index.html should have lens-flare-container element'
+            );
+        });
+
+        test('CSS has deep fried mode styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('#deep-fried-toggle'),
+                'CSS should have #deep-fried-toggle styles'
+            );
+            assert.ok(
+                cssContent.includes('.toggle-btn'),
+                'CSS should have .toggle-btn styles'
+            );
+            assert.ok(
+                cssContent.includes('.toggle-btn.active'),
+                'CSS should have active toggle button styles'
+            );
+        });
+
+        test('CSS has deep fried filter class', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('#game-container.deep-fried'),
+                'CSS should have #game-container.deep-fried styles'
+            );
+            assert.ok(
+                cssContent.includes('saturate'),
+                'CSS should apply saturate filter'
+            );
+            assert.ok(
+                cssContent.includes('contrast'),
+                'CSS should apply contrast filter'
+            );
+            assert.ok(
+                cssContent.includes('brightness'),
+                'CSS should apply brightness filter'
+            );
+        });
+
+        test('CSS has chromatic aberration overlay styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('#chromatic-overlay'),
+                'CSS should have #chromatic-overlay styles'
+            );
+        });
+
+        test('CSS has lens flare styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('#lens-flare-container'),
+                'CSS should have #lens-flare-container styles'
+            );
+            assert.ok(
+                cssContent.includes('.lens-flare'),
+                'CSS should have .lens-flare styles'
+            );
+        });
+
+        test('CSS has deep fried text distortion styles', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('#game-container.deep-fried .stat-value') ||
+                cssContent.includes('#game-container.deep-fried .stat-label'),
+                'CSS should have deep fried text distortion styles'
+            );
+        });
+
+        test('CSS has deep fried animations', () => {
+            const cssContent = fs.readFileSync(
+                path.join(__dirname, '..', 'css', 'styles.css'),
+                'utf8'
+            );
+
+            assert.ok(
+                cssContent.includes('@keyframes deepFriedPulse'),
+                'CSS should have deepFriedPulse animation'
+            );
+            assert.ok(
+                cssContent.includes('@keyframes chromaticAberration'),
+                'CSS should have chromaticAberration animation'
+            );
+            assert.ok(
+                cssContent.includes('@keyframes chromaticShift'),
+                'CSS should have chromaticShift animation'
+            );
+            assert.ok(
+                cssContent.includes('@keyframes textDistort'),
+                'CSS should have textDistort animation'
+            );
+            assert.ok(
+                cssContent.includes('@keyframes lensFlareAnim'),
+                'CSS should have lensFlareAnim animation'
+            );
+        });
+    });
+});
+
 console.log('All tests completed!');

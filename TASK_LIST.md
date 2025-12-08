@@ -47,34 +47,6 @@ All P2 feature tasks completed! Continuing with stretch goals.
 
 ---
 
-### TASK-016: Deep Fried Mode
-**Estimate**: 2-3 hours
-**Priority**: P3
-**Dependencies**: None
-
-**Scope**:
-- Add toggle in start screen for "DEEP FRIED MODE"
-- When enabled:
-  - Apply CSS filters: saturate(3) contrast(1.5) brightness(1.2)
-  - Add chromatic aberration effect
-  - Random lens flare emojis appear on kills
-  - Text gets "deep fried" distortion
-- Performance consideration: can be toggled off
-
-**Files to modify**:
-- `js/state.js` - Add deepFriedMode toggle
-- `js/ui.js` - Apply CSS filters to canvas
-- `css/styles.css` - Deep fried filter styles
-- `index.html` - Toggle button on start screen
-
-**Acceptance Criteria**:
-- [ ] Toggle on start screen
-- [ ] Visual effects apply correctly
-- [ ] Emojis appear on kills
-- [ ] Can be disabled for performance
-
----
-
 ### TASK-017: Fake Twitch Chat
 **Estimate**: 3-4 hours
 **Priority**: P3
@@ -196,10 +168,10 @@ All P2 feature tasks completed! Continuing with stretch goals.
 | P0 (Critical Bugs) | 0 | ✅ Complete |
 | P1 (High Bugs) | 0 | ✅ Complete |
 | P2 (Medium/Refactor) | 0 | ✅ Complete |
-| P3 (Low/Features) | 7 | 19-27 hours |
-| **TOTAL** | **7** | **19-27 hours** |
+| P3 (Low/Features) | 5 | 16-22 hours |
+| **TOTAL** | **5** | **16-22 hours** |
 
-**Note**: All code quality refactoring tasks and TASK-014 completed and archived.
+**Note**: All code quality refactoring tasks, TASK-014, and TASK-016 completed and archived.
 
 ---
 
@@ -212,7 +184,8 @@ All refactoring tasks completed!
 - TASK-014 (Combo Counter) ✅ - Core gameplay enhancement done!
 
 **Phase 3: Stretch Goals**
-Continue with remaining stretch goals based on interest (TASK-015 through TASK-020).
+- TASK-016 (Deep Fried Mode) ✅ - Meme visual effects done!
+Continue with remaining stretch goals based on interest (TASK-015, TASK-017 through TASK-020).
 
 ---
 
@@ -423,6 +396,23 @@ Continue with remaining stretch goals based on interest (TASK-015 through TASK-0
 - Integrated combo system into Enemy class (die/attack methods)
 - Combo resets on both melee attacks and enemy projectile damage
 - Score floating text shows combo bonus when active
+
+### TASK-016: Deep Fried Mode ✅
+**Completed**: Meme visual effects
+- Added `deepFriedState` to `js/state.js` for tracking mode enabled state
+- Created new `js/systems/deepfried.js` with deep fried mode logic:
+  - `initDeepFriedSystem()` - initializes toggle button and loads saved state
+  - `toggleDeepFriedMode()` - toggles mode and saves to localStorage
+  - `applyDeepFriedEffect()` - adds/removes CSS class on game container
+  - `spawnLensFlare()` - spawns emoji lens flares at screen position
+  - `createLensFlareSpawner()` - creates canvas-bound spawner for world coordinates
+- Added toggle button to start screen in `index.html`
+- Added chromatic aberration and lens flare container elements
+- Added CSS animations: deepFriedPulse, chromaticAberration, chromaticShift, textDistort, lensFlareAnim
+- CSS filters: saturate(3), contrast(1.5), brightness(1.2) when enabled
+- Lens flare emojis spawn on enemy kills
+- State persists in localStorage
+- Can be disabled for performance
 
 </details>
 
