@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DINO DOOM: Santa's Last Stand</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Orbitron:wght@700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <div id="hud">
+            <div class="hud-corner top-left">
+                <div class="stat-label">SCORE</div>
+                <div class="stat-value" id="score">0</div>
+                <div style="margin-top: 10px;">
+                    <div class="stat-label">COINS</div>
+                    <div id="coins-display">🪙 0</div>
+                </div>
+            </div>
+
+            <div class="hud-corner top-right">
+                <div class="stat-label">WAVE</div>
+                <div id="wave-display">WAVE 1</div>
+                <div style="margin-top: 10px;">
+                    <div class="stat-label">KILLS</div>
+                    <div class="stat-value" id="kills" style="font-size: 24px;">0</div>
+                </div>
+            </div>
+
+            <div class="hud-corner bottom-left">
+                <div class="stat-label">HEALTH</div>
+                <div id="health-bar-container">
+                    <div id="health-bar" style="width: 100%;"></div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div class="stat-label">AMMO</div>
+                    <div id="ammo-display" style="font-size: 32px; color: #00ffff; text-shadow: 0 0 10px #00ffff;">∞</div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div class="stat-label">HEALING POWER [E]</div>
+                    <div id="heal-power-container" style="width: 200px; height: 20px; background: rgba(0,0,0,0.7); border: 2px solid #00ff00; border-radius: 5px; overflow: hidden;">
+                        <div id="heal-power-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #00ff00, #88ff88); transition: width 0.3s;"></div>
+                    </div>
+                    <div id="heal-power-text" style="font-size: 14px; color: #00ff00; margin-top: 5px;">0 / 10 kills</div>
+                </div>
+            </div>
+
+            <div class="hud-corner bottom-right">
+                <div class="stat-label">WEAPON</div>
+                <div id="weapon-name">🎁 PRESENT LAUNCHER</div>
+                <div id="weapon-stats" style="font-size: 12px; color: #888; margin-top: 5px;"></div>
+            </div>
+
+            <div id="crosshair">
+                <div class="crosshair-line crosshair-h ch-left"></div>
+                <div class="crosshair-line crosshair-h ch-right"></div>
+                <div class="crosshair-line crosshair-v ch-top"></div>
+                <div class="crosshair-line crosshair-v ch-bottom"></div>
+                <div id="crosshair-dot"></div>
+            </div>
+
+            <div id="kill-feed"></div>
+            <div id="achievement-container"></div>
+
+            <!-- Boss Intro Cutscene Overlay -->
+            <div id="boss-intro-overlay">
+                <div id="boss-intro-emoji">👑</div>
+                <div id="boss-intro-name">BOSS NAME</div>
+                <div id="boss-intro-title">Boss Title</div>
+                <div id="boss-intro-flash"></div>
+            </div>
+
+            <div id="boss-health-container">
+                <div id="boss-name">💀 MEGA BOSS 💀</div>
+                <div id="boss-health-bar-bg">
+                    <div id="boss-health-bar" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="damage-overlay"></div>
+        <div id="muzzle-flash"></div>
+        <div id="wave-announcement"></div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>🦖 DINO DOOM 🦖</h1>
+            <h2>🎅 Santa's Last Stand Against The Buff Dinos! 🎅</h2>
+
+            <div class="enemy-preview">
+                <div class="enemy-card">
+                    <div style="font-size: 80px;">🦖</div>
+                    <h3>GIGACHAD DINO</h3>
+                    <p style="color: #ff6b6b; font-size: 12px; margin-top: 5px;">ULTRA SWOLE • SLOW</p>
+                </div>
+                <div class="enemy-card">
+                    <div style="font-size: 80px;">🤓🦕</div>
+                    <h3>BUFF NERD DINO</h3>
+                    <p style="color: #00ffff; font-size: 12px; margin-top: 5px;">BIG BRAIN • FAST</p>
+                </div>
+                <div class="enemy-card">
+                    <div style="font-size: 80px;">👑🦖</div>
+                    <h3>MINI BOSS</h3>
+                    <p style="color: #ffd700; font-size: 12px; margin-top: 5px;">EVERY 5 WAVES</p>
+                </div>
+            </div>
+
+            <!-- Santa Skin Selector -->
+            <div id="skin-selector">
+                <h3>🎅 SELECT YOUR SANTA 🎅</h3>
+                <div id="skin-options">
+                    <!-- Skins populated by JavaScript -->
+                </div>
+                <div id="skin-coins-display">🪙 <span id="skin-coins">0</span></div>
+            </div>
+
+            <button id="start-btn" class="game-btn">🎮 START GAME 🎮</button>
+
+            <div class="controls-info">
+                <p>MOUSE - AIM CROSSHAIR</p>
+                <p>CLICK or SPACEBAR - SHOOT</p>
+                <p>E - USE HEALING POWER (10 KILLS TO CHARGE)</p>
+                <p>R - OPEN SHOP (BETWEEN WAVES)</p>
+            </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="shop-screen">
+            <h1>💎 THE GRINDSET EMPORIUM 💎</h1>
+            <div id="shop-coins">🪙 0</div>
+
+            <!-- Shopkeeper -->
+            <div id="shopkeeper-container">
+                <div id="shopkeeper-emoji">🗿</div>
+                <div id="shopkeeper-dialogue">Welcome to the grind...</div>
+            </div>
+
+            <div class="shop-section">
+                <h2>⚔️ WEAPONS</h2>
+                <div class="shop-items" id="weapons-list"></div>
+            </div>
+
+            <div class="shop-section">
+                <h2>⬆️ UPGRADES</h2>
+                <div class="shop-items" id="upgrades-list"></div>
+            </div>
+
+            <button id="continue-btn" class="game-btn green">CONTINUE ➡️</button>
+        </div>
+
+        <!-- Minigame Screen -->
+        <div id="minigame-screen">
+            <h1>⚔️ BOSS VULNERABLE! ⚔️</h1>
+            <div id="minigame-instructions">CLICK THE TARGETS TO DAMAGE THE BOSS!</div>
+            <div id="minigame-area"></div>
+            <div id="minigame-timer">10</div>
+            <div id="minigame-hits">HITS: 0 / DAMAGE: 0</div>
+        </div>
+
+        <!-- Game Over Screen - Meme Receipt Style -->
+        <div id="game-over">
+            <div id="death-receipt">
+                <div class="receipt-header">
+                    <h1>💀 SKILL ISSUE DETECTED 💀</h1>
+                    <div class="receipt-subtitle">DINO DOOM - DEATH RECEIPT</div>
+                </div>
+                <div class="receipt-divider">═══════════════════════════════</div>
+                <div class="receipt-stats">
+                    <div class="receipt-row"><span>Waves Survived:</span><span id="stat-waves">0</span></div>
+                    <div class="receipt-row"><span>Dinos Eliminated:</span><span id="stat-kills">0</span></div>
+                    <div class="receipt-row"><span>Final Score:</span><span id="stat-score">0</span></div>
+                    <div class="receipt-row"><span>Coins Earned:</span><span id="stat-coins">0</span></div>
+                    <div class="receipt-row"><span>Time Survived:</span><span id="stat-time">0:00</span></div>
+                    <div class="receipt-row"><span>Cause of Death:</span><span id="stat-cause">Unknown</span></div>
+                </div>
+                <div class="receipt-divider">───────────────────────────────</div>
+                <div class="receipt-rating">
+                    <div class="rating-label">PERFORMANCE RATING:</div>
+                    <div id="stat-rating" class="rating-value">NPC</div>
+                </div>
+                <div class="receipt-divider">───────────────────────────────</div>
+                <div class="receipt-lastwords">
+                    <div class="lastwords-label">Last Words:</div>
+                    <div id="stat-lastwords" class="lastwords-text">"skill issue"</div>
+                </div>
+                <div class="receipt-divider">═══════════════════════════════</div>
+                <div class="receipt-buttons">
+                    <button id="copy-receipt-btn" class="game-btn" style="font-size: 16px; padding: 10px 20px;">📋 SHARE YOUR L</button>
+                    <button id="restart-btn" class="game-btn green">🔄 TRY AGAIN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
