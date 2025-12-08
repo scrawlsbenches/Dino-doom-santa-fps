@@ -11,6 +11,7 @@ import { gameState, trackTimeout, enemies } from '../state.js';
 import { Enemy } from '../classes/Enemy.js';
 import { playSound } from './audio.js';
 import { onChatBossSpawn } from './chat.js';
+import { applyEasterEggEffectsToEnemy } from './eastereggs.js';
 
 // UX-004: Track if tutorial has been shown this session
 let bossTutorialShown = false;
@@ -104,6 +105,10 @@ export function spawnBoss(callbacks) {
         boss.maxHealth = boss.health;
         boss.shootCooldown = 0;
         boss.customName = bossInfo.name;
+
+        // Apply easter egg effects to boss (bat mode, etc.)
+        applyEasterEggEffectsToEnemy(boss);
+
         enemies.push(boss);
 
         gameState.bossActive = true;

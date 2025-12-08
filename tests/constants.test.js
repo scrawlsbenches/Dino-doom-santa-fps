@@ -642,3 +642,96 @@ describe('Twitch Chat System', () => {
         );
     });
 });
+
+// ==================== EASTER EGG TESTS ====================
+describe('Easter Egg System', () => {
+    test('EASTER_EGG_CONFIG has required properties', () => {
+        const requiredProps = ['KONAMI_CODE', 'NICE_WAVE', 'DANK_WAVE', 'HAT_CLICKS_REQUIRED', 'SHRINK_SCALE', 'MORBIN_CODE'];
+        requiredProps.forEach(prop => {
+            assert.ok(
+                gameData.EASTER_EGG_CONFIG.hasOwnProperty(prop),
+                `EASTER_EGG_CONFIG missing property: ${prop}`
+            );
+        });
+    });
+
+    test('EASTER_EGG_CONFIG values are correct', () => {
+        const config = gameData.EASTER_EGG_CONFIG;
+        assert.strictEqual(config.NICE_WAVE, 69, 'NICE_WAVE should be 69');
+        assert.strictEqual(config.DANK_WAVE, 420, 'DANK_WAVE should be 420');
+        assert.strictEqual(config.HAT_CLICKS_REQUIRED, 10, 'HAT_CLICKS_REQUIRED should be 10');
+        assert.strictEqual(config.MORBIN_CODE, 'MORBIN', 'MORBIN_CODE should be MORBIN');
+        assert.ok(config.SHRINK_SCALE > 0 && config.SHRINK_SCALE < 1, 'SHRINK_SCALE should be between 0 and 1');
+    });
+
+    test('Konami code is correct sequence', () => {
+        const expectedCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        assert.deepStrictEqual(
+            gameData.EASTER_EGG_CONFIG.KONAMI_CODE,
+            expectedCode,
+            'Konami code should be the classic sequence'
+        );
+    });
+
+    test('EASTER_EGGS has all required easter eggs', () => {
+        const requiredEggs = ['KONAMI', 'DRIP_MODE', 'NICE', 'DANK', 'MORBIN'];
+        requiredEggs.forEach(egg => {
+            assert.ok(gameData.EASTER_EGGS[egg], `EASTER_EGGS should have ${egg}`);
+        });
+    });
+
+    test('All easter eggs have required properties', () => {
+        const requiredProps = ['id', 'name', 'description', 'effect', 'icon'];
+        Object.entries(gameData.EASTER_EGGS).forEach(([key, egg]) => {
+            requiredProps.forEach(prop => {
+                assert.ok(
+                    egg.hasOwnProperty(prop),
+                    `Easter egg ${key} missing property: ${prop}`
+                );
+            });
+        });
+    });
+
+    test('Easter egg IDs are unique', () => {
+        const ids = Object.values(gameData.EASTER_EGGS).map(e => e.id);
+        const uniqueIds = new Set(ids);
+        assert.strictEqual(ids.length, uniqueIds.size, 'Easter egg IDs should be unique');
+    });
+
+    test('SECRET_ACHIEVEMENTS has all required achievements', () => {
+        const requiredAchievements = ['KONAMI_MASTER', 'DRIP_LORD', 'NICE_GUY', 'DANK_MASTER', 'MORBIN_TIME'];
+        requiredAchievements.forEach(achievement => {
+            assert.ok(gameData.SECRET_ACHIEVEMENTS[achievement], `SECRET_ACHIEVEMENTS should have ${achievement}`);
+        });
+    });
+
+    test('All secret achievements have required properties', () => {
+        const requiredProps = ['id', 'name', 'description', 'icon'];
+        Object.entries(gameData.SECRET_ACHIEVEMENTS).forEach(([key, achievement]) => {
+            requiredProps.forEach(prop => {
+                assert.ok(
+                    achievement.hasOwnProperty(prop),
+                    `Secret achievement ${key} missing property: ${prop}`
+                );
+            });
+        });
+    });
+
+    test('Secret achievement IDs are unique', () => {
+        const ids = Object.values(gameData.SECRET_ACHIEVEMENTS).map(a => a.id);
+        const uniqueIds = new Set(ids);
+        assert.strictEqual(ids.length, uniqueIds.size, 'Secret achievement IDs should be unique');
+    });
+
+    test('Easter eggs have non-empty icons', () => {
+        Object.entries(gameData.EASTER_EGGS).forEach(([key, egg]) => {
+            assert.ok(egg.icon.length > 0, `Easter egg ${key} should have an icon`);
+        });
+    });
+
+    test('Secret achievements have non-empty icons', () => {
+        Object.entries(gameData.SECRET_ACHIEVEMENTS).forEach(([key, achievement]) => {
+            assert.ok(achievement.icon.length > 0, `Secret achievement ${key} should have an icon`);
+        });
+    });
+});

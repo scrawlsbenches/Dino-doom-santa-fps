@@ -84,32 +84,12 @@ See archived section for implementation details.
 
 ---
 
-### TASK-018: Easter Eggs Collection
+### TASK-018: Easter Eggs Collection ✅ COMPLETE
 **Estimate**: 3-4 hours
 **Priority**: P3
 **Dependencies**: None
 
-**Scope**:
-- Implement hidden easter eggs:
-  - Konami code: All enemies shrink for one wave
-  - Click Santa's hat 10x on start: Enable "DRIP MODE" skin
-  - Wave 69: Display "Nice." achievement
-  - Wave 420: Screen flashes green, "Dank" text
-  - Type "MORBIN": All enemies become bats for one wave
-- Track discovered eggs in localStorage
-- Secret achievements for finding eggs
-
-**Files to modify**:
-- `js/systems/eastereggs.js` (new) - Easter egg detection & effects
-- `js/state.js` - Track discovered eggs
-- `js/constants.js` - Secret achievements
-- `js/main.js` - Input detection for codes
-
-**Acceptance Criteria**:
-- [ ] All easter eggs functional
-- [ ] Tracked in localStorage
-- [ ] Hidden achievements unlock
-- [ ] Don't break normal gameplay
+**Completed**: See archived section for implementation details.
 
 ---
 
@@ -176,10 +156,10 @@ See archived section for implementation details.
 | P1 (UX/Enjoyment - High) | 0 | ✅ Complete |
 | P2 (UX/Enjoyment - Medium) | 0 | ✅ Complete |
 | P3 (UX/Enjoyment - Low) | 0 | ✅ Complete |
-| P3 (Stretch Features) | 3 (1 done) | 9-11 hours |
-| **TOTAL** | **2** | **9-11 hours** |
+| P3 (Stretch Features) | 3 (2 done) | 9-11 hours |
+| **TOTAL** | **1** | **6-7 hours** |
 
-**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, UX-001, UX-002, UX-003, UX-004, UX-005, UX-006, UX-007, UX-008, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, TASK-015, TASK-016, TASK-017, TASK-018, UX-001, UX-002, UX-003, UX-004, UX-005, UX-006, UX-007, UX-008, UX-009, and UX-010 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -208,7 +188,8 @@ All refactoring tasks completed!
 - UX-008 (Death Screen Tips) ✅ - Context-aware death tips
 - UX-009 (Weapon Feedback) ✅ - Equip sound and toast
 - TASK-017 (Fake Twitch Chat) ✅ - Chat overlay reacts to gameplay!
-- TASK-018 through TASK-020 (Fun features)
+- TASK-018 (Easter Eggs) ✅ - Konami code, MORBIN mode, wave 69/420!
+- TASK-019 through TASK-020 (Fun features)
 
 ---
 
@@ -713,6 +694,49 @@ All refactoring tasks completed!
   - Spawn chance increases with wave difficulty
   - More consistent wave difficulty
   - Skilled play matters more than RNG
+
+### TASK-018: Easter Eggs Collection ✅
+**Completed**: Hidden easter eggs for the dedicated players
+- Added `EASTER_EGG_CONFIG`, `EASTER_EGGS`, `SECRET_ACHIEVEMENTS` to `js/constants.js`:
+  - Konami code sequence for shrink enemies effect
+  - MORBIN code for bat mode
+  - Wave 69/420 special wave effects
+  - Hat clicks required (10) for DRIP MODE unlock
+- Created new `js/systems/eastereggs.js`:
+  - `initEasterEggSystem()` - Loads from localStorage, sets up hat click listener
+  - `handleKonamiCode()` - Tracks Konami code input (↑↑↓↓←→←→BA)
+  - `handleMorbinCode()` - Tracks MORBIN letter sequence
+  - `checkWaveEasterEggs()` - Checks for wave 69 ("Nice.") and wave 420 ("Dank")
+  - `applyEasterEggEffectsToEnemy()` - Applies shrink/bat effects to enemies
+  - `showEasterEggNotification()` - Shows discovery toast with pink gradient
+  - Visual announcements for each easter egg (MORBIN, Nice., Dank)
+- Updated `js/state.js`:
+  - Added `easterEggState` with `discoveredEggs`, `activeEffects`, code tracking
+  - Added `loadEasterEggState()` / `saveEasterEggState()` for localStorage persistence
+  - Added `discoverEasterEgg()` / `isEasterEggDiscovered()` functions
+  - Added `resetEasterEggEffects()` / `resetEasterEggInput()` for game restart
+- Updated `js/main.js`:
+  - Import and initialize easter egg system
+  - Added keydown listeners for Konami code and MORBIN detection
+- Updated `js/game.js`:
+  - Check wave easter eggs on wave start
+  - Apply easter egg effects to spawned enemies
+  - Reset effects on game restart
+- Updated `js/systems/boss.js`:
+  - Apply easter egg effects to bosses
+- Added CSS animations in `css/styles.css`:
+  - Easter egg toast styling (pink gradient, slide-in animation)
+  - MORBIN announcement (dark red, pulsing)
+  - Nice. announcement (pink, wiggle animation)
+  - Dank announcement (green flash, spinning entry)
+  - Santa hat hover/unlock effects
+- Easter Eggs implemented:
+  - **Konami Code** (↑↑↓↓←→←→BA): All enemies shrink for one wave
+  - **DRIP MODE** (Click Santa hat 10x): Unlocks drip skin permanently
+  - **Wave 69**: Displays "Nice." announcement
+  - **Wave 420**: Green screen flash with "DANK" text
+  - **MORBIN** (Type MORBIN): All enemies become 🦇 bats for one wave
+- All eggs tracked in localStorage with secret achievements
 
 </details>
 

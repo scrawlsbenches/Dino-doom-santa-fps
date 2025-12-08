@@ -11,7 +11,8 @@ import {
     floatingTexts, mousePos, weakPoints,
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
     resetKillStreak, resetComboState, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
-    achievementTracking, returnParticle, recordDamage, resetDamageHistory
+    achievementTracking, returnParticle, recordDamage, resetDamageHistory,
+    resetEasterEggEffects, resetEasterEggInput
 } from './state.js';
 import { Enemy } from './classes/Enemy.js';
 import { Projectile } from './classes/Projectile.js';
@@ -29,7 +30,8 @@ import {
     spawnBoss, showBossTutorial, shouldShowBossTutorial, resetBossTutorial,
     startMinigame,
     createLensFlareSpawner,
-    onChatKill, onChatDeath, onChatBossKill, clearChat, initChatSystem
+    onChatKill, onChatDeath, onChatBossKill, clearChat, initChatSystem,
+    checkWaveEasterEggs, applyEasterEggEffectsToEnemy
 } from './systems/index.js';
 import {
     updateHUD, updateCrosshair, addKillFeed,
@@ -101,7 +103,12 @@ export function spawnEnemy() {
         const startSide = Math.random() > 0.5 ? 1 : -1;
         const x = startSide * GAME_CONFIG.SIGMA_SPAWN_X;
         const z = GAME_CONFIG.SIGMA_SPAWN_Z_BASE - Math.random() * GAME_CONFIG.SIGMA_SPAWN_Z_RANGE;
-        enemies.push(new Enemy(type, x, z, getEnemyCallbacks()));
+        const sigmaEnemy = new Enemy(type, x, z, getEnemyCallbacks());
+
+        // Apply easter egg effects to sigma
+        applyEasterEggEffectsToEnemy(sigmaEnemy);
+
+        enemies.push(sigmaEnemy);
         return;
     } else if (gameState.wave >= 3 && roll < 0.30) {
         type = 'GAMER_DINO';
@@ -113,7 +120,12 @@ export function spawnEnemy() {
 
     const x = (Math.random() - 0.5) * GAME_CONFIG.ENEMY_SPAWN_X_RANGE;
     const z = GAME_CONFIG.ENEMY_SPAWN_Z_BASE - Math.random() * GAME_CONFIG.ENEMY_SPAWN_Z_RANGE;
-    enemies.push(new Enemy(type, x, z, getEnemyCallbacks()));
+    const enemy = new Enemy(type, x, z, getEnemyCallbacks());
+
+    // Apply easter egg effects to the spawned enemy
+    applyEasterEggEffectsToEnemy(enemy);
+
+    enemies.push(enemy);
 }
 
 /**
@@ -124,6 +136,12 @@ export function spawnWave() {
     gameState.sigmaSpawnedThisWave = 0; // UX-010: Reset sigma counter
     gameState.waveSpawningComplete = false;
     onWaveStart();
+
+    // Easter eggs: Check for wave-based easter eggs (wave 69, 420)
+    checkWaveEasterEggs(gameState.wave);
+
+    // Easter eggs: Reset active effects at start of new wave
+    resetEasterEggEffects();
 
     const isBossWave = gameState.wave % GAME_CONFIG.BOSS_WAVE_INTERVAL === 0;
 
@@ -257,6 +275,8 @@ export function startGame() {
     resetDamageHistory();  // UX-008: Reset damage tracking for death tips
     resetMinigameState();
     resetBossTutorial(); // UX-004: Reset tutorial state
+    resetEasterEggInput(); // Reset easter egg input tracking
+    resetEasterEggEffects(); // Reset active easter egg effects
     updateComboDisplay();
 
     // Initialize chat system

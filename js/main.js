@@ -10,6 +10,7 @@ import { initSkinSystem } from './systems/skins.js';
 import { copyDeathReceipt } from './systems/death.js';
 import { setVolume } from './systems/audio.js';
 import { initDeepFriedSystem } from './systems/deepfried.js';
+import { initEasterEggSystem, handleKonamiCode, handleMorbinCode } from './systems/eastereggs.js';
 import {
     initGame, startGame, shoot, useHealingPower,
     openShopWithCallbacks, closeShopWithCallbacks
@@ -28,6 +29,9 @@ function init() {
 
     // Initialize deep fried mode system (loads from localStorage)
     initDeepFriedSystem();
+
+    // Initialize easter egg system (loads from localStorage)
+    initEasterEggSystem();
 
     // Initialize game
     initGame(canvas);
@@ -53,6 +57,14 @@ function setupEventListeners() {
 
         if ((e.key === 'r' || e.key === 'R') && gameState.betweenWaves) {
             openShopWithCallbacks();
+        }
+
+        // Easter egg: Konami code detection (arrow keys + B, A)
+        handleKonamiCode(e);
+
+        // Easter egg: MORBIN code detection (letter keys only)
+        if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+            handleMorbinCode(e.key);
         }
     });
 

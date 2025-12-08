@@ -164,6 +164,25 @@ export const deepFriedState = {
     lensFlares: []  // Active lens flare emojis on screen
 };
 
+// ==================== EASTER EGG STATE ====================
+export const easterEggState = {
+    // Track discovered eggs in memory
+    discoveredEggs: new Set(),
+    // Active effects for current wave
+    activeEffects: {
+        shrinkEnemies: false,  // Konami code effect
+        batMode: false         // MORBIN effect
+    },
+    // Konami code tracking
+    konamiProgress: 0,
+    // MORBIN typing progress
+    morbinProgress: '',
+    // Santa hat click counter (for start screen)
+    hatClickCount: 0,
+    // Track if DRIP MODE is unlocked
+    dripModeUnlocked: false
+};
+
 // ==================== STATE RESET FUNCTIONS ====================
 
 /**
@@ -420,6 +439,73 @@ export function toggleDeepFriedMode() {
  */
 export function clearLensFlares() {
     deepFriedState.lensFlares.length = 0;
+}
+
+// ==================== EASTER EGG FUNCTIONS ====================
+
+/**
+ * Loads discovered easter eggs from localStorage
+ */
+export function loadEasterEggState() {
+    try {
+        const saved = localStorage.getItem('easterEggsDiscovered');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            easterEggState.discoveredEggs = new Set(parsed.discovered || []);
+            easterEggState.dripModeUnlocked = parsed.dripModeUnlocked || false;
+        }
+    } catch {
+        // Gracefully handle localStorage errors
+    }
+}
+
+/**
+ * Saves discovered easter eggs to localStorage
+ */
+export function saveEasterEggState() {
+    try {
+        localStorage.setItem('easterEggsDiscovered', JSON.stringify({
+            discovered: Array.from(easterEggState.discoveredEggs),
+            dripModeUnlocked: easterEggState.dripModeUnlocked
+        }));
+    } catch {
+        // Gracefully handle localStorage errors
+    }
+}
+
+/**
+ * Marks an easter egg as discovered
+ * @param {string} eggId - The easter egg ID
+ */
+export function discoverEasterEgg(eggId) {
+    easterEggState.discoveredEggs.add(eggId);
+    saveEasterEggState();
+}
+
+/**
+ * Checks if an easter egg has been discovered
+ * @param {string} eggId - The easter egg ID
+ * @returns {boolean} True if discovered
+ */
+export function isEasterEggDiscovered(eggId) {
+    return easterEggState.discoveredEggs.has(eggId);
+}
+
+/**
+ * Resets easter egg active effects for new wave
+ */
+export function resetEasterEggEffects() {
+    easterEggState.activeEffects.shrinkEnemies = false;
+    easterEggState.activeEffects.batMode = false;
+}
+
+/**
+ * Resets easter egg input tracking (for game restart)
+ */
+export function resetEasterEggInput() {
+    easterEggState.konamiProgress = 0;
+    easterEggState.morbinProgress = '';
+    easterEggState.hatClickCount = 0;
 }
 
 /**

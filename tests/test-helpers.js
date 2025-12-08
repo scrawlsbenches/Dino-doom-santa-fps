@@ -98,7 +98,10 @@ export function loadConstants() {
             SIGMA_ESCAPE_TAUNTS,
             TWITCH_CHAT_CONFIG,
             TWITCH_CHAT_USERNAMES,
-            TWITCH_CHAT_MESSAGES
+            TWITCH_CHAT_MESSAGES,
+            EASTER_EGG_CONFIG,
+            EASTER_EGGS,
+            SECRET_ACHIEVEMENTS
         };
     `);
     return fn();
