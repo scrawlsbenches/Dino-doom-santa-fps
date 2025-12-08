@@ -384,6 +384,11 @@ export class Enemy {
 
         if (this.callbacks.addKillFeed) this.callbacks.addKillFeed(this.name);
         if (this.callbacks.updateHUD) this.callbacks.updateHUD();
+
+        // Deep fried mode lens flare on kill
+        if (this.callbacks.spawnLensFlare) {
+            this.callbacks.spawnLensFlare(this.x, this.z);
+        }
     }
 
     /**

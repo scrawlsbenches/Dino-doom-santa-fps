@@ -369,34 +369,6 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 
 ---
 
-### TASK-016: Deep Fried Mode
-**Estimate**: 2-3 hours
-**Priority**: P3
-**Dependencies**: None
-
-**Scope**:
-- Add toggle in start screen for "DEEP FRIED MODE"
-- When enabled:
-  - Apply CSS filters: saturate(3) contrast(1.5) brightness(1.2)
-  - Add chromatic aberration effect
-  - Random lens flare emojis appear on kills
-  - Text gets "deep fried" distortion
-- Performance consideration: can be toggled off
-
-**Files to modify**:
-- `js/state.js` - Add deepFriedMode toggle
-- `js/ui.js` - Apply CSS filters to canvas
-- `css/styles.css` - Deep fried filter styles
-- `index.html` - Toggle button on start screen
-
-**Acceptance Criteria**:
-- [ ] Toggle on start screen
-- [ ] Visual effects apply correctly
-- [ ] Emojis appear on kills
-- [ ] Can be disabled for performance
-
----
-
 ### TASK-017: Fake Twitch Chat
 **Estimate**: 3-4 hours
 **Priority**: P3
@@ -519,10 +491,10 @@ Sigma Dino has 8% spawn rate, doesn't attack, and drops 2.4x normal coins. This 
 | P1 (UX/Enjoyment - High) | 2 | 6-9 hours |
 | P2 (UX/Enjoyment - Medium) | 4 | 10-12 hours |
 | P3 (UX/Enjoyment - Low) | 4 | 5-7 hours |
-| P3 (Stretch Features) | 6 | 19-27 hours |
-| **TOTAL** | **16** | **40-55 hours** |
+| P3 (Stretch Features) | 5 | 16-22 hours |
+| **TOTAL** | **15** | **37-50 hours** |
 
-**Note**: All code quality refactoring tasks and TASK-014 completed and archived. UX issues identified via enjoyment assessment.
+**Note**: All code quality refactoring tasks, TASK-014, and TASK-016 completed and archived. UX issues identified via enjoyment assessment.
 
 ---
 
@@ -533,6 +505,7 @@ All refactoring tasks completed!
 
 **Phase 2: Core Features** ✅ COMPLETE
 - TASK-014 (Combo Counter) ✅ - Core gameplay enhancement done!
+- TASK-016 (Deep Fried Mode) ✅ - Meme visual effects done!
 
 **Phase 3: High-Impact UX Fixes** (RECOMMENDED NEXT)
 - UX-001 (Late-Game Progression) - Critical for retention
@@ -546,7 +519,7 @@ All refactoring tasks completed!
 
 **Phase 5: Low-Impact Polish & Stretch Goals**
 - UX-006 through UX-009 (Minor polish)
-- TASK-015 through TASK-020 (Fun features)
+- TASK-015, TASK-017 through TASK-020 (Fun features)
 
 ---
 
@@ -757,6 +730,23 @@ All refactoring tasks completed!
 - Integrated combo system into Enemy class (die/attack methods)
 - Combo resets on both melee attacks and enemy projectile damage
 - Score floating text shows combo bonus when active
+
+### TASK-016: Deep Fried Mode ✅
+**Completed**: Meme visual effects
+- Added `deepFriedState` to `js/state.js` for tracking mode enabled state
+- Created new `js/systems/deepfried.js` with deep fried mode logic:
+  - `initDeepFriedSystem()` - initializes toggle button and loads saved state
+  - `toggleDeepFriedMode()` - toggles mode and saves to localStorage
+  - `applyDeepFriedEffect()` - adds/removes CSS class on game container
+  - `spawnLensFlare()` - spawns emoji lens flares at screen position
+  - `createLensFlareSpawner()` - creates canvas-bound spawner for world coordinates
+- Added toggle button to start screen in `index.html`
+- Added chromatic aberration and lens flare container elements
+- Added CSS animations: deepFriedPulse, chromaticAberration, chromaticShift, textDistort, lensFlareAnim
+- CSS filters: saturate(3), contrast(1.5), brightness(1.2) when enabled
+- Lens flare emojis spawn on enemy kills
+- State persists in localStorage
+- Can be disabled for performance
 
 </details>
 
