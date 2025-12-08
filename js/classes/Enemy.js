@@ -76,6 +76,13 @@ export class Enemy {
         // Boss specific
         if (this.isBoss) {
             this.shootCooldown = 0;
+            // TASK-020: Boss phase tracking
+            this.bossPhase = 1;
+            this.phaseTransitioning = false;
+            this.meteorCooldown = 0;
+            this.ascendOffset = 0;
+            this.targetAscendOffset = 0;
+            this.minigameTriggered = false;
         }
     }
 
@@ -172,17 +179,93 @@ export class Enemy {
 
     /**
      * Updates boss shooting behavior
+     * TASK-020: Modified for phase-based attack patterns
      */
     updateBossShooting() {
         if (!this.shootCooldown) this.shootCooldown = 0;
+        if (this.phaseTransitioning) return; // Don't attack during phase transition
+
         this.shootCooldown--;
+
+        // TASK-020: Apply phase-based cooldown multiplier
+        let cooldownMult = 1;
+        let damageMult = 1;
+        if (this.bossPhase === 2) {
+            cooldownMult = GAME_CONFIG.BOSS_PHASE_2_COOLDOWN_MULT;
+            damageMult = GAME_CONFIG.BOSS_PHASE_2_DAMAGE_MULT;
+        } else if (this.bossPhase === 3) {
+            cooldownMult = GAME_CONFIG.BOSS_PHASE_3_COOLDOWN_MULT;
+            damageMult = GAME_CONFIG.BOSS_PHASE_3_DAMAGE_MULT;
+        }
 
         if (this.shootCooldown <= 0) {
             enemyProjectiles.push(new EnemyProjectile(
-                this.x, this.y, this.z,
-                GAME_CONFIG.BOSS_FIREBALL_DAMAGE
+                this.x, this.y + this.ascendOffset, this.z,
+                Math.floor(GAME_CONFIG.BOSS_FIREBALL_DAMAGE * damageMult)
             ));
-            this.shootCooldown = GAME_CONFIG.BOSS_SHOOT_COOLDOWN;
+            this.shootCooldown = Math.floor(GAME_CONFIG.BOSS_SHOOT_COOLDOWN * cooldownMult);
+        }
+
+        // TASK-020: Phase 3 meteor rain
+        if (this.bossPhase === 3) {
+            this.updateMeteorRain(damageMult);
+        }
+
+        // TASK-020: Update ascend animation
+        if (this.ascendOffset !== this.targetAscendOffset) {
+            const diff = this.targetAscendOffset - this.ascendOffset;
+            this.ascendOffset += diff * 0.05; // Smooth interpolation
+        }
+    }
+
+    /**
+     * TASK-020: Updates meteor rain attack in phase 3
+     * @param {number} damageMult - Damage multiplier from phase
+     */
+    updateMeteorRain(damageMult) {
+        if (!this.meteorCooldown) this.meteorCooldown = 0;
+        this.meteorCooldown--;
+
+        if (this.meteorCooldown <= 0) {
+            // Spawn meteor at random X position
+            const meteorX = (Math.random() - 0.5) * 600;
+            const meteorZ = -200 - Math.random() * 300;
+            enemyProjectiles.push(new EnemyProjectile(
+                meteorX, -200, meteorZ,  // Start high
+                Math.floor(GAME_CONFIG.BOSS_METEOR_DAMAGE * damageMult),
+                true  // isMeteor flag
+            ));
+            this.meteorCooldown = GAME_CONFIG.BOSS_METEOR_COOLDOWN;
+        }
+    }
+
+    /**
+     * TASK-020: Checks and triggers phase transitions
+     * @returns {number|null} New phase if transitioned, null otherwise
+     */
+    checkPhaseTransition() {
+        if (!this.isBoss || this.phaseTransitioning) return null;
+
+        const healthPercent = this.health / this.maxHealth;
+
+        if (this.bossPhase === 1 && healthPercent <= GAME_CONFIG.BOSS_PHASE_2_THRESHOLD) {
+            return 2;
+        } else if (this.bossPhase === 2 && healthPercent <= GAME_CONFIG.BOSS_PHASE_3_THRESHOLD) {
+            return 3;
+        }
+        return null;
+    }
+
+    /**
+     * TASK-020: Applies phase transition effects
+     * @param {number} newPhase - The new phase to transition to
+     */
+    transitionToPhase(newPhase) {
+        this.bossPhase = newPhase;
+
+        if (newPhase === 3) {
+            // Phase 3: Ascend
+            this.targetAscendOffset = GAME_CONFIG.BOSS_ASCEND_HEIGHT;
         }
     }
 
@@ -283,11 +366,19 @@ export class Enemy {
                 bossHealthBar.style.width = `${Math.max(0, (this.health / this.maxHealth) * 100)}%`;
             }
 
-            // Minigame trigger
+            // TASK-020: Check for phase transitions
+            const newPhase = this.checkPhaseTransition();
+            if (newPhase !== null && this.callbacks.triggerPhaseTransition) {
+                this.callbacks.triggerPhaseTransition(this, newPhase);
+            }
+
+            // Minigame trigger (only in phase 2, and only if not already triggered)
             const healthPercent = this.health / this.maxHealth;
-            if (healthPercent <= GAME_CONFIG.BOSS_MINIGAME_THRESHOLD &&
-                healthPercent > GAME_CONFIG.BOSS_MINIGAME_THRESHOLD - 0.03) {
+            if (this.bossPhase >= 2 && !this.minigameTriggered &&
+                healthPercent <= GAME_CONFIG.BOSS_MINIGAME_THRESHOLD &&
+                healthPercent > GAME_CONFIG.BOSS_MINIGAME_THRESHOLD - 0.05) {
                 if (this.callbacks.startMinigame) {
+                    this.minigameTriggered = true;
                     this.callbacks.startMinigame();
                 }
             }
@@ -394,6 +485,8 @@ export class Enemy {
             if (bossContainer) bossContainer.style.display = 'none';
             gameState.bossActive = false;
             gameState.currentBoss = null;
+            // TASK-020: Clear phase effects on boss death
+            if (this.callbacks.clearPhaseEffects) this.callbacks.clearPhaseEffects();
         }
 
         if (this.callbacks.addKillFeed) this.callbacks.addKillFeed(this.name);
@@ -418,24 +511,34 @@ export class Enemy {
      * @param {HTMLCanvasElement} canvas - Canvas element
      */
     draw(ctx, canvas) {
+        // TASK-020: Apply ascend offset for boss phase 3
+        const ascendY = this.isBoss ? (this.ascendOffset || 0) : 0;
         const screenX = canvas.width / 2 + (this.x - player.x) * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z));
-        const screenY = canvas.height / 2 + 100 * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z));
+        const screenY = canvas.height / 2 + (100 + ascendY) * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z));
         const scale = PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z);
         const size = this.size * scale;
 
         if (-this.z < 50 || -this.z > 2000) return;
 
-        // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        // Shadow (smaller when ascended)
+        const shadowScale = this.isBoss && this.bossPhase === 3 ? 0.3 : 1;
+        ctx.fillStyle = `rgba(0,0,0,${0.3 * shadowScale})`;
         ctx.beginPath();
-        ctx.ellipse(screenX, screenY + size * 0.4, size * 0.5, size * 0.2, 0, 0, Math.PI * 2);
+        ctx.ellipse(screenX, canvas.height / 2 + 100 * (PERSPECTIVE_SCALE / Math.max(PERSPECTIVE_MIN_Z, -this.z)) + size * 0.4, size * 0.5 * shadowScale, size * 0.2 * shadowScale, 0, 0, Math.PI * 2);
         ctx.fill();
 
         const wobbleOffset = Math.sin(this.wobble) * 5;
 
-        // Body glow
-        ctx.shadowColor = this.color;
-        ctx.shadowBlur = this.hitFlash > 0 ? 30 : 15;
+        // TASK-020: Phase 3 glow effect
+        if (this.isBoss && this.bossPhase === 3) {
+            // Intense red/orange glow for ascended boss
+            ctx.shadowColor = '#ff3300';
+            ctx.shadowBlur = 40 + Math.sin(Date.now() / 100) * 10;
+        } else {
+            // Body glow
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = this.hitFlash > 0 ? 30 : 15;
+        }
 
         // Body
         ctx.fillStyle = this.hitFlash > 0 ? '#ffffff' : this.color;
@@ -451,16 +554,43 @@ export class Enemy {
         ctx.textBaseline = 'middle';
 
         if (this.isBoss) {
-            ctx.fillText(this.traits[0], screenX, screenY - size * 0.5 + wobbleOffset);
-            ctx.fillText('🦖', screenX, screenY - size * 0.1 + wobbleOffset);
+            // TASK-020: Phase-based boss visuals
+            if (this.bossPhase === 3) {
+                // Phase 3: Fire crown and angry dino
+                ctx.fillText('🔥', screenX, screenY - size * 0.5 + wobbleOffset);
+                ctx.fillText('🦖', screenX, screenY - size * 0.1 + wobbleOffset);
+                // Fire particles effect
+                ctx.font = `${size * 0.3}px Arial`;
+                const fireOffset = Math.sin(Date.now() / 50) * 10;
+                ctx.fillText('🔥', screenX - size * 0.3, screenY - size * 0.4 + fireOffset);
+                ctx.fillText('🔥', screenX + size * 0.3, screenY - size * 0.4 - fireOffset);
+            } else if (this.bossPhase === 2) {
+                // Phase 2: Sunglasses on
+                ctx.fillText(this.traits[0], screenX, screenY - size * 0.5 + wobbleOffset);
+                ctx.fillText('🦖', screenX, screenY - size * 0.1 + wobbleOffset);
+                // Sunglasses emoji on top
+                ctx.font = `${size * 0.5}px Arial`;
+                ctx.fillText('😎', screenX, screenY - size * 0.35 + wobbleOffset);
+            } else {
+                // Phase 1: Normal boss
+                ctx.fillText(this.traits[0], screenX, screenY - size * 0.5 + wobbleOffset);
+                ctx.fillText('🦖', screenX, screenY - size * 0.1 + wobbleOffset);
+            }
         } else {
             ctx.fillText(this.emoji, screenX, screenY - size * 0.3 + wobbleOffset);
         }
 
         // Rotating trait
-        const traitIndex = Math.floor(Date.now() / 500) % this.traits.length;
         ctx.font = `${size * 0.3}px Arial`;
-        ctx.fillText(this.traits[traitIndex], screenX + size * 0.4, screenY - size * 0.6);
+        if (this.isBoss && this.bossPhase === 3) {
+            // Phase 3: Show meteors and fire instead of traits
+            const meteorIndex = Math.floor(Date.now() / 300) % 3;
+            const meteorEmojis = ['☄️', '🔥', '💀'];
+            ctx.fillText(meteorEmojis[meteorIndex], screenX + size * 0.4, screenY - size * 0.6);
+        } else {
+            const traitIndex = Math.floor(Date.now() / 500) % this.traits.length;
+            ctx.fillText(this.traits[traitIndex], screenX + size * 0.4, screenY - size * 0.6);
+        }
 
         // Health bar (non-boss)
         if (!this.isBoss) {
@@ -478,7 +608,12 @@ export class Enemy {
         // Name
         ctx.font = 'bold 12px Orbitron';
         ctx.fillStyle = this.isBoss ? '#ffd700' : '#fff';
-        ctx.fillText(this.name, screenX, screenY - size - 35);
+        // TASK-020: Show phase in boss name
+        if (this.isBoss && this.bossPhase > 1) {
+            ctx.fillText(`${this.name} [PHASE ${this.bossPhase}]`, screenX, screenY - size - 35);
+        } else {
+            ctx.fillText(this.name, screenX, screenY - size - 35);
+        }
 
         // Invulnerable indicator
         if (this.invulnerable) {
@@ -492,6 +627,13 @@ export class Enemy {
             ctx.font = 'bold 16px Orbitron';
             ctx.fillStyle = '#ff3333';
             ctx.fillText('STUNNED - SHOOT WEAK POINTS!', screenX, screenY - size - 55);
+        }
+
+        // TASK-020: Phase transitioning indicator
+        if (this.phaseTransitioning) {
+            ctx.font = 'bold 20px Orbitron';
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillText('PHASE SHIFT!', screenX, screenY - size - 75);
         }
     }
 }

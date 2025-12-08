@@ -47,6 +47,18 @@ export const GAME_CONFIG = {
     MINIGAME_TARGET_LIFETIME: 1500,
     MINIGAME_DAMAGE_PER_HIT: 50,
 
+    // Boss Phases (TASK-020)
+    BOSS_PHASE_2_THRESHOLD: 0.50,  // Phase 2 at 50% HP
+    BOSS_PHASE_3_THRESHOLD: 0.25,  // Phase 3 at 25% HP
+    BOSS_PHASE_2_DAMAGE_MULT: 1.5, // +50% damage in phase 2
+    BOSS_PHASE_3_DAMAGE_MULT: 2.0, // +100% damage in phase 3
+    BOSS_PHASE_2_COOLDOWN_MULT: 0.75, // 25% faster attacks in phase 2
+    BOSS_PHASE_3_COOLDOWN_MULT: 0.5,  // 50% faster attacks in phase 3
+    BOSS_METEOR_DAMAGE: 20,        // Damage per meteor
+    BOSS_METEOR_COOLDOWN: 60,      // Frames between meteor spawns
+    BOSS_ASCEND_HEIGHT: -60,       // Y offset when ascended
+    BOSS_PHASE_TRANSITION_DURATION: 2000, // ms for phase transition cutscene
+
     // Gamer Dino
     GAMER_RANGED_COOLDOWN: 300,
     GAMER_PROJECTILE_DAMAGE: 15,
