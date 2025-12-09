@@ -103,21 +103,6 @@ The `floatingTexts` array could grow unbounded during intense gameplay. Add maxi
 
 ---
 
-### FUTURE: TypeScript Migration
-**Estimate**: 20+ hours
-**Priority**: Future consideration
-**Scope**: Entire codebase
-
-Consider migrating to TypeScript for:
-- Better type safety as codebase grows
-- Improved IDE support and autocomplete
-- Catch errors at compile time
-- Better documentation through types
-
-This is a significant undertaking and should only be considered if the project continues to grow.
-
----
-
 ### Previously Completed Code Quality Tasks
 All previous code quality tasks completed! See archived section below.
 
