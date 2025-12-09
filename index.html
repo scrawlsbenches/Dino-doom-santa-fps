@@ -68,6 +68,22 @@
             <div id="combo-counter"></div>
             <div id="achievement-container"></div>
 
+            <!-- Mobile Touch Controls -->
+            <div id="mobile-controls">
+                <div id="mobile-fire-btn" class="mobile-btn">
+                    <span class="mobile-btn-icon">🎯</span>
+                    <span class="mobile-btn-label">FIRE</span>
+                </div>
+                <div id="mobile-heal-btn" class="mobile-btn">
+                    <span class="mobile-btn-icon">💚</span>
+                    <span class="mobile-btn-label">HEAL</span>
+                </div>
+                <div id="mobile-shop-btn" class="mobile-btn">
+                    <span class="mobile-btn-icon">🛒</span>
+                    <span class="mobile-btn-label">SHOP</span>
+                </div>
+            </div>
+
             <!-- Fake Twitch Chat -->
             <div id="twitch-chat-container">
                 <div id="twitch-chat-header">
@@ -189,11 +205,17 @@
 
             <button id="start-btn" class="game-btn">🎮 START GAME 🎮</button>
 
-            <div class="controls-info">
+            <div class="controls-info" id="desktop-controls">
                 <p>MOUSE - AIM CROSSHAIR</p>
                 <p>CLICK or SPACEBAR - SHOOT</p>
                 <p>E - USE HEALING POWER (10 KILLS TO CHARGE)</p>
                 <p>R - OPEN SHOP (BETWEEN WAVES)</p>
+            </div>
+            <div class="controls-info" id="touch-controls" style="display: none;">
+                <p>DRAG ANYWHERE - AIM CROSSHAIR</p>
+                <p>TAP FIRE BUTTON - SHOOT</p>
+                <p>TAP HEAL BUTTON - USE HEALING POWER</p>
+                <p>TAP SHOP BUTTON - OPEN SHOP (BETWEEN WAVES)</p>
             </div>
         </div>
 

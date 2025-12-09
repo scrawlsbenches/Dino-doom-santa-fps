@@ -97,6 +97,35 @@ const MAX_POOL_SIZE = 200;
 // ==================== INPUT STATE ====================
 export const mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
+// ==================== TOUCH/MOBILE STATE ====================
+export const touchState = {
+    isTouchDevice: false,
+    isAiming: false,
+    lastTouchX: window.innerWidth / 2,
+    lastTouchY: window.innerHeight / 2
+};
+
+/**
+ * Detects if the device supports touch input
+ * @returns {boolean} True if touch device
+ */
+export function detectTouchDevice() {
+    touchState.isTouchDevice = (
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        window.matchMedia('(pointer: coarse)').matches
+    );
+    return touchState.isTouchDevice;
+}
+
+/**
+ * Checks if the current device is a touch device
+ * @returns {boolean} True if touch device
+ */
+export function isTouchDevice() {
+    return touchState.isTouchDevice;
+}
+
 // ==================== TIMEOUT TRACKING ====================
 // Track active timeouts for cleanup on game restart
 export const activeTimeouts = [];

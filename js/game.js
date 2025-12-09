@@ -12,7 +12,8 @@ import {
     resetGameState, resetPlayerState, resetInventory, clearEntities, clearTimeouts,
     resetKillStreak, resetComboState, clearDialogueBubbles, resetAchievementTracking, resetMinigameState,
     achievementTracking, returnParticle, recordDamage, resetDamageHistory,
-    resetEasterEggEffects, resetEasterEggInput, clearFloatingMemes
+    resetEasterEggEffects, resetEasterEggInput, clearFloatingMemes,
+    isTouchDevice
 } from './state.js';
 import { Enemy } from './classes/Enemy.js';
 import { Projectile } from './classes/Projectile.js';
@@ -44,6 +45,37 @@ import {
 let canvas;
 let ctx;
 let lensFlareSpawner = null;
+
+/**
+ * Updates mobile control button states based on game state
+ * Only runs on touch devices
+ */
+function updateMobileControlStates() {
+    if (!isTouchDevice()) return;
+
+    const healBtn = document.getElementById('mobile-heal-btn');
+    const shopBtn = document.getElementById('mobile-shop-btn');
+
+    if (healBtn) {
+        if (gameState.healReady) {
+            healBtn.classList.add('ready');
+            healBtn.classList.remove('disabled');
+        } else {
+            healBtn.classList.remove('ready');
+            healBtn.classList.add('disabled');
+        }
+    }
+
+    if (shopBtn) {
+        if (gameState.betweenWaves) {
+            shopBtn.classList.add('ready');
+            shopBtn.classList.remove('disabled');
+        } else {
+            shopBtn.classList.remove('ready');
+            shopBtn.classList.add('disabled');
+        }
+    }
+}
 
 /**
  * Creates callback object for enemy events
@@ -308,6 +340,7 @@ function gameLoop() {
 
     updateCrosshair();
     updateScreenShake();
+    updateMobileControlStates();
 
     if (gameState.running && !gameState.paused) {
         if (player.fireCooldown > 0) player.fireCooldown--;

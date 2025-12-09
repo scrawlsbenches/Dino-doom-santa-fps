@@ -9,7 +9,7 @@ import { WEAPONS, GAME_CONFIG, MEME_BACKGROUND_CONFIG } from './constants.js';
 import {
     gameState, player, inventory, mousePos,
     floatingTexts, minigameState, backgroundMemesState,
-    isBackgroundMemesEnabled
+    isBackgroundMemesEnabled, isTouchDevice
 } from './state.js';
 import { getCurrentSkin } from './systems/skins.js';
 
@@ -66,6 +66,7 @@ export function updateHUD() {
  */
 export function updateCrosshair() {
     const crosshair = document.getElementById('crosshair');
+    const isTouch = isTouchDevice();
 
     if (minigameState.active) {
         crosshair.style.display = 'none';
@@ -73,11 +74,13 @@ export function updateCrosshair() {
         return;
     } else {
         crosshair.style.display = 'block';
-        document.body.style.cursor = 'none';
+        // On touch devices, keep default cursor; on desktop, hide it
+        document.body.style.cursor = isTouch ? 'default' : 'none';
     }
 
     crosshair.style.left = mousePos.x + 'px';
     crosshair.style.top = mousePos.y + 'px';
+    // Touch devices get a slightly larger crosshair via CSS
     crosshair.style.transform = 'translate(-50%, -50%)';
 }
 
