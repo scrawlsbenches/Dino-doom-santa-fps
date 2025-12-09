@@ -157,4 +157,90 @@ describe('CSS Structure', () => {
             'CSS should have responsive styles'
         );
     });
+
+    test('CSS has mobile touch control styles', () => {
+        assert.ok(css.includes('#mobile-controls'), 'CSS should style mobile-controls container');
+        assert.ok(css.includes('.mobile-btn'), 'CSS should style mobile buttons');
+        assert.ok(css.includes('#mobile-fire-btn'), 'CSS should style fire button');
+        assert.ok(css.includes('#mobile-heal-btn'), 'CSS should style heal button');
+        assert.ok(css.includes('#mobile-shop-btn'), 'CSS should style shop button');
+    });
+
+    test('CSS has touch device body styles', () => {
+        assert.ok(css.includes('body.touch-device'), 'CSS should have touch-device body styles');
+        assert.ok(css.includes('touch-action'), 'CSS should include touch-action property');
+    });
+
+    test('CSS has mobile control responsive breakpoints', () => {
+        // Check for mobile-specific media queries
+        assert.ok(css.includes('@media screen and (max-width: 768px)'), 'CSS should have 768px breakpoint');
+        assert.ok(css.includes('@media screen and (max-width: 480px)'), 'CSS should have 480px breakpoint');
+    });
+});
+
+// ==================== MOBILE CONTROLS HTML TESTS ====================
+describe('Mobile Controls HTML Structure', () => {
+    const html = readFile('index.html');
+
+    test('HTML has mobile controls container', () => {
+        assert.ok(
+            html.includes('id="mobile-controls"'),
+            'HTML should have mobile-controls container'
+        );
+    });
+
+    test('HTML has mobile fire button', () => {
+        assert.ok(
+            html.includes('id="mobile-fire-btn"'),
+            'HTML should have mobile fire button'
+        );
+        assert.ok(
+            html.includes('FIRE'),
+            'Fire button should have FIRE label'
+        );
+    });
+
+    test('HTML has mobile heal button', () => {
+        assert.ok(
+            html.includes('id="mobile-heal-btn"'),
+            'HTML should have mobile heal button'
+        );
+        assert.ok(
+            html.includes('HEAL'),
+            'Heal button should have HEAL label'
+        );
+    });
+
+    test('HTML has mobile shop button', () => {
+        assert.ok(
+            html.includes('id="mobile-shop-btn"'),
+            'HTML should have mobile shop button'
+        );
+        assert.ok(
+            html.includes('SHOP'),
+            'Shop button should have SHOP label'
+        );
+    });
+
+    test('HTML has device-specific control instructions', () => {
+        assert.ok(
+            html.includes('id="desktop-controls"'),
+            'HTML should have desktop controls info'
+        );
+        assert.ok(
+            html.includes('id="touch-controls"'),
+            'HTML should have touch controls info'
+        );
+    });
+
+    test('Touch controls have appropriate instructions', () => {
+        assert.ok(
+            html.includes('DRAG ANYWHERE'),
+            'Touch controls should mention drag to aim'
+        );
+        assert.ok(
+            html.includes('TAP FIRE BUTTON'),
+            'Touch controls should mention tap to fire'
+        );
+    });
 });
