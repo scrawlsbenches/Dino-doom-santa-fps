@@ -233,15 +233,19 @@ export function shoot() {
     const baseCooldown = weapon.fireRate - player.fireRateBonus;
     player.fireCooldown = Math.max(3, Math.floor(baseCooldown / player.fireRateMultiplier));
 
-    const screenCenterX = canvas.width / 2;
-    const screenCenterY = canvas.height / 2;
+    // Aim from weapon screen position (where aim line starts) to crosshair
+    const weaponScreenX = canvas.width / 2;
+    const weaponScreenY = canvas.height - 100;
 
-    const aimOffsetX = (mousePos.x - screenCenterX) / screenCenterX;
-    const aimOffsetY = (mousePos.y - screenCenterY) / screenCenterY;
+    // Calculate direction from weapon to crosshair in screen space
+    const aimDirX = mousePos.x - weaponScreenX;
+    const aimDirY = mousePos.y - weaponScreenY;
 
+    // Map screen direction to 3D velocity using perspective scale
+    // This ensures projectiles travel toward where the crosshair points
     const vz = -weapon.speed;
-    const vx = aimOffsetX * weapon.speed * 0.8;
-    const vy = aimOffsetY * weapon.speed * 0.5 - 1;
+    const vx = (aimDirX / GAME_CONFIG.PERSPECTIVE_SCALE) * (-vz);
+    const vy = (aimDirY / GAME_CONFIG.PERSPECTIVE_SCALE) * (-vz) - 1;
 
     projectiles.push(new Projectile(player.x, 0, 0, vx, vy, vz));
 
