@@ -121,3 +121,68 @@ describe('Background Memes State (TASK-019)', () => {
         );
     });
 });
+
+// ==================== TOUCH/MOBILE STATE TESTS ====================
+describe('Touch/Mobile State', () => {
+    test('touchState is exported', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('export const touchState'),
+            'Should export touchState'
+        );
+    });
+
+    test('touchState has required properties', () => {
+        const stateContent = readFile('js/state.js');
+
+        const requiredProps = ['isTouchDevice', 'isAiming', 'lastTouchX', 'lastTouchY'];
+        requiredProps.forEach(prop => {
+            assert.ok(
+                stateContent.includes(prop),
+                `touchState should have ${prop} property`
+            );
+        });
+    });
+
+    test('Touch device detection function is exported', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('export function detectTouchDevice'),
+            'Should export detectTouchDevice function'
+        );
+    });
+
+    test('isTouchDevice function is exported', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('export function isTouchDevice'),
+            'Should export isTouchDevice function'
+        );
+    });
+
+    test('detectTouchDevice checks for touch support', () => {
+        const stateContent = readFile('js/state.js');
+
+        // Should check for various touch detection methods
+        assert.ok(
+            stateContent.includes('ontouchstart'),
+            'Should check for ontouchstart'
+        );
+        assert.ok(
+            stateContent.includes('maxTouchPoints'),
+            'Should check for maxTouchPoints'
+        );
+        assert.ok(
+            stateContent.includes('pointer: coarse'),
+            'Should check for coarse pointer media query'
+        );
+    });
+
+    test('isTouchDevice returns touchState value', () => {
+        const stateContent = readFile('js/state.js');
+        assert.ok(
+            stateContent.includes('return touchState.isTouchDevice'),
+            'isTouchDevice should return touchState.isTouchDevice'
+        );
+    });
+});

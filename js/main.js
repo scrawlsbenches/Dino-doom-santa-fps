@@ -6,8 +6,9 @@
  */
 
 import {
-    updateMousePos, gameState,
-    backgroundMemesState, loadBackgroundMemesState, toggleBackgroundMemes
+    updateMousePos, gameState, touchState,
+    backgroundMemesState, loadBackgroundMemesState, toggleBackgroundMemes,
+    detectTouchDevice, isTouchDevice
 } from './state.js';
 import { initSkinSystem } from './systems/skins.js';
 import { copyDeathReceipt } from './systems/death.js';
@@ -65,6 +66,10 @@ function updateBackgroundMemesToggleUI() {
 function init() {
     const canvas = document.getElementById('game-canvas');
 
+    // Detect touch device and set up appropriate controls
+    detectTouchDevice();
+    setupDeviceControls();
+
     // Initialize skin system (loads from localStorage)
     initSkinSystem();
 
@@ -83,6 +88,30 @@ function init() {
     // Set up event listeners
     setupEventListeners();
 }
+
+/**
+ * Sets up device-specific controls (touch vs desktop)
+ */
+function setupDeviceControls() {
+    const mobileControls = document.getElementById('mobile-controls');
+    const desktopControlsInfo = document.getElementById('desktop-controls');
+    const touchControlsInfo = document.getElementById('touch-controls');
+
+    if (isTouchDevice()) {
+        // Show mobile controls and touch instructions
+        if (mobileControls) mobileControls.classList.add('visible');
+        if (desktopControlsInfo) desktopControlsInfo.style.display = 'none';
+        if (touchControlsInfo) touchControlsInfo.style.display = 'block';
+        // Enable touch-friendly cursor on body
+        document.body.classList.add('touch-device');
+    } else {
+        // Hide mobile controls, show desktop instructions
+        if (mobileControls) mobileControls.classList.remove('visible');
+        if (desktopControlsInfo) desktopControlsInfo.style.display = 'block';
+        if (touchControlsInfo) touchControlsInfo.style.display = 'none';
+    }
+}
+
 
 /**
  * Sets up all event listeners
@@ -125,6 +154,110 @@ function setupEventListeners() {
 
     // Prevent context menu
     document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Touch events for aiming (drag anywhere to aim)
+    document.addEventListener('touchstart', (e) => {
+        // Don't interfere with button touches
+        if (e.target.closest('.mobile-btn') || e.target.closest('.game-btn') ||
+            e.target.closest('#shop-screen') || e.target.closest('#start-screen') ||
+            e.target.closest('#game-over')) {
+            return;
+        }
+
+        if (gameState.running && !gameState.paused) {
+            touchState.isAiming = true;
+            const touch = e.touches[0];
+            updateMousePos(touch.clientX, touch.clientY);
+            touchState.lastTouchX = touch.clientX;
+            touchState.lastTouchY = touch.clientY;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        // Don't interfere with button touches
+        if (e.target.closest('.mobile-btn') || e.target.closest('.game-btn') ||
+            e.target.closest('#shop-screen') || e.target.closest('#start-screen') ||
+            e.target.closest('#game-over')) {
+            return;
+        }
+
+        if (touchState.isAiming && gameState.running && !gameState.paused) {
+            const touch = e.touches[0];
+            updateMousePos(touch.clientX, touch.clientY);
+            touchState.lastTouchX = touch.clientX;
+            touchState.lastTouchY = touch.clientY;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+        touchState.isAiming = false;
+    }, { passive: true });
+
+    // Mobile control button events
+    const mobileFireBtn = document.getElementById('mobile-fire-btn');
+    const mobileHealBtn = document.getElementById('mobile-heal-btn');
+    const mobileShopBtn = document.getElementById('mobile-shop-btn');
+
+    if (mobileFireBtn) {
+        mobileFireBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (gameState.running && !gameState.paused) {
+                shoot();
+                mobileFireBtn.classList.add('active');
+            }
+        });
+        mobileFireBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            mobileFireBtn.classList.remove('active');
+        });
+    }
+
+    if (mobileHealBtn) {
+        mobileHealBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (gameState.running && !gameState.paused) {
+                useHealingPower();
+                mobileHealBtn.classList.add('active');
+            }
+        });
+        mobileHealBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            mobileHealBtn.classList.remove('active');
+        });
+    }
+
+    if (mobileShopBtn) {
+        mobileShopBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (gameState.betweenWaves) {
+                openShopWithCallbacks();
+                mobileShopBtn.classList.add('active');
+            }
+        });
+        mobileShopBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            mobileShopBtn.classList.remove('active');
+        });
+    }
+
+    // Prevent zooming on double-tap for touch devices
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
 
     // Button events
     document.getElementById('start-btn').addEventListener('click', startGame);

@@ -53,4 +53,45 @@ describe('Main Entry Point', () => {
         assert.ok(mainContent.includes('startGame'), 'Should import startGame');
         assert.ok(mainContent.includes('shoot'), 'Should import shoot');
     });
+
+    test('Main module imports touch-related functions', () => {
+        const mainContent = readFile('js/main.js');
+
+        assert.ok(mainContent.includes('touchState'), 'Should import touchState');
+        assert.ok(mainContent.includes('detectTouchDevice'), 'Should import detectTouchDevice');
+        assert.ok(mainContent.includes('isTouchDevice'), 'Should import isTouchDevice');
+    });
+
+    test('Main module sets up device controls', () => {
+        const mainContent = readFile('js/main.js');
+
+        assert.ok(mainContent.includes('setupDeviceControls'), 'Should have setupDeviceControls function');
+        assert.ok(mainContent.includes('detectTouchDevice()'), 'Should call detectTouchDevice');
+    });
+
+    test('Main module handles touch events', () => {
+        const mainContent = readFile('js/main.js');
+
+        assert.ok(mainContent.includes('touchstart'), 'Should listen for touchstart events');
+        assert.ok(mainContent.includes('touchmove'), 'Should listen for touchmove events');
+        assert.ok(mainContent.includes('touchend'), 'Should listen for touchend events');
+    });
+
+    test('Main module sets up mobile control buttons', () => {
+        const mainContent = readFile('js/main.js');
+
+        assert.ok(mainContent.includes('mobile-fire-btn'), 'Should reference mobile fire button');
+        assert.ok(mainContent.includes('mobile-heal-btn'), 'Should reference mobile heal button');
+        assert.ok(mainContent.includes('mobile-shop-btn'), 'Should reference mobile shop button');
+    });
+
+    test('Main module prevents double-tap zoom', () => {
+        const mainContent = readFile('js/main.js');
+
+        // Should prevent zooming on double-tap
+        assert.ok(
+            mainContent.includes('lastTouchEnd') || mainContent.includes('300'),
+            'Should handle double-tap prevention'
+        );
+    });
 });

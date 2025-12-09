@@ -63,7 +63,8 @@ test.describe('Start Screen UI', () => {
   });
 
   test('should show controls info', async ({ page }) => {
-    const controlsInfo = page.locator('.controls-info');
+    // Target desktop controls specifically (touch controls are hidden by default on desktop)
+    const controlsInfo = page.locator('#desktop-controls');
     await expect(controlsInfo).toBeVisible();
     await expect(controlsInfo).toContainText('MOUSE - AIM CROSSHAIR');
     await expect(controlsInfo).toContainText('CLICK or SPACEBAR - SHOOT');
