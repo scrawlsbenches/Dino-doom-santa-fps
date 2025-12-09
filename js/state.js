@@ -387,8 +387,8 @@ export function loadSkinState() {
             skinState.owned = parsed.owned || ['default'];
             skinState.totalCoins = parsed.totalCoins || 0;
         }
-    } catch (e) {
-        console.error('Failed to access localStorage:', e);
+    } catch {
+        // Gracefully handle localStorage errors (e.g., private browsing)
     }
 }
 
@@ -398,8 +398,8 @@ export function loadSkinState() {
 export function saveSkinState() {
     try {
         localStorage.setItem('santaSkinState', JSON.stringify(skinState));
-    } catch (e) {
-        console.error('Failed to save skin state:', e);
+    } catch {
+        // Gracefully handle localStorage errors
     }
 }
 

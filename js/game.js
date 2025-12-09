@@ -353,7 +353,7 @@ function gameLoop() {
                 const dz = proj.z - wp.z;
                 const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-                if (dist < 60) { // Slightly larger hit radius for weak points
+                if (dist < GAME_CONFIG.WEAK_POINT_HIT_RADIUS) {
                     wp.takeDamage(proj.damage);
                     proj.life = 0;
                     break;
