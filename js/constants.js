@@ -33,6 +33,7 @@ export const GAME_CONFIG = {
     ENEMY_MAX_X: 500,
     PROJECTILE_HIT_RADIUS_BASE: 60,
     PROJECTILE_GRAVITY: 0.05,
+    WEAK_POINT_HIT_RADIUS: 60,  // Hit radius for boss weak points
 
     // Boss
     BOSS_BASE_HEALTH: 500,

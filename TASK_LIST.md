@@ -4,9 +4,107 @@ Tasks broken down into 2-4 hour chunks. Each task is self-contained and testable
 
 ---
 
-## 🟠 CODE QUALITY TASKS (Medium Priority from Code Review)
+## 🟠 CODE QUALITY TASKS (December 2024 Code Review)
 
-All code quality tasks completed! See archived section below.
+### REFACTOR-006: Refactor audio.js Switch Statement to Data-Driven
+**Estimate**: 2-3 hours
+**Priority**: Low
+**File**: `js/systems/audio.js:46-248`
+
+The `playSound()` function has 18 case statements. Refactor to a sound definition map:
+```javascript
+const SOUND_DEFS = {
+  shoot: { type: 'sine', startFreq: 200, endFreq: 50, duration: 0.1, ... },
+  // ...
+};
+```
+
+**Acceptance Criteria**:
+- [ ] Create `SOUND_DEFS` constant with all sound definitions
+- [ ] Refactor `playSound()` to use the definition map
+- [ ] All existing sounds work identically
+- [ ] Easier to add new sounds
+
+---
+
+### REFACTOR-007: Cache DOM References at Initialization
+**Estimate**: 1-2 hours
+**Priority**: Medium
+**Files**: `js/game.js`, `js/classes/Enemy.js`, `js/systems/boss.js`
+
+Repeated `document.getElementById()` calls in the game loop and on every hit. Cache these references at initialization for better performance.
+
+**Locations**:
+- `js/classes/Enemy.js:364` - `boss-health-bar` queried on every hit
+- `js/game.js` - Various HUD elements
+- `js/systems/boss.js` - Phase indicator elements
+
+**Acceptance Criteria**:
+- [ ] Create cached DOM reference object during initialization
+- [ ] Replace repeated `getElementById()` calls with cached references
+- [ ] No performance regression in gameplay
+
+---
+
+### REFACTOR-008: Extract Draw Method Magic Numbers
+**Estimate**: 1-2 hours
+**Priority**: Low
+**File**: `js/classes/Enemy.js:524-606`
+
+Drawing ratios like `size * 0.5`, `size * 0.2`, `size * 0.4`, etc. are magic numbers. Extract to named constants for readability.
+
+**Example**:
+```javascript
+const ENEMY_DRAW = {
+  SHADOW_WIDTH_RATIO: 0.5,
+  SHADOW_HEIGHT_RATIO: 0.2,
+  BODY_WIDTH_RATIO: 0.4,
+  // ...
+};
+```
+
+**Acceptance Criteria**:
+- [ ] Create `ENEMY_DRAW` constants
+- [ ] Update Enemy.draw() to use constants
+- [ ] Visual output identical to before
+
+---
+
+### REFACTOR-009: Standardize Cooldown Naming Convention
+**Estimate**: 30 minutes
+**Priority**: Low
+**Files**: `js/classes/Enemy.js`, `js/state.js`
+
+Inconsistent naming:
+- `fireCooldown` (player)
+- `shootCooldown` (boss)
+- `rangedCooldown` (gamer dino)
+
+Pick one convention (`attackCooldown` recommended) and standardize.
+
+**Acceptance Criteria**:
+- [ ] Rename all cooldown variables to consistent naming
+- [ ] Update all references
+- [ ] All tests pass
+
+---
+
+### REFACTOR-010: Add Floating Texts Array Bounds
+**Estimate**: 1 hour
+**Priority**: Low
+**File**: `js/state.js`, `js/game.js`
+
+The `floatingTexts` array could grow unbounded during intense gameplay. Add maximum limit similar to particle pool.
+
+**Acceptance Criteria**:
+- [ ] Add `MAX_FLOATING_TEXTS` constant (e.g., 50)
+- [ ] Prevent array from exceeding limit
+- [ ] Old texts removed when limit reached (FIFO)
+
+---
+
+### Previously Completed Code Quality Tasks
+All previous code quality tasks completed! See archived section below.
 
 ---
 
